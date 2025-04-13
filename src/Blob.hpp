@@ -10,13 +10,18 @@
 
 class Blob {
 public:
-    Blob(vector<ofPoint> points);
-    
-    ofPoint centroid;
+    Blob(vector<ofPoint> coordinates, vector<int> intensities);
+    void setIndex(int index);
+
+    ofPoint centroid, center;
     ofRectangle bounds;
+    float intensity;
+    
+    int index;
 private:
-    void calcCentroid(vector<ofPoint>& points);
-    void calcBounds(vector<ofPoint>& points);
+    void calculateCentroid(vector<ofPoint>& coordinates);
+    void calculateBounds(vector<ofPoint>& coordinates);
+    void calculateIntensity(vector<int>& intensity);
 };
 
 #endif /* Blob_hpp */

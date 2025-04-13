@@ -4,32 +4,37 @@
 
 #include "Blob.hpp"
 
-Blob::Blob(vector<ofPoint> points) {
-    calcCentroid(points);
-    calcBounds(points);
+Blob::Blob(vector<ofPoint> coordinates, vector<int> intensities) {
+    calculateCentroid(coordinates);
+    calculateBounds(coordinates);
+    calculateIntensity(intensities);
 }
 
-void Blob::calcCentroid(vector<ofPoint>& points) {
+void Blob::setIndex(int _index) {
+    index = _index;
+}
+
+void Blob::calculateCentroid(vector<ofPoint>& coordinates) {
     float totalX = 0.0;
     float totalY = 0.0;
     
-    for (int i = 0; i < points.size(); i++) {
-        totalX += points[i].x;
-        totalY += points[i].y;
+    for (int i = 0; i < coordinates.size(); i++) {
+        totalX += coordinates[i].x;
+        totalY += coordinates[i].y;
     }
     
-    centroid = ofPoint(totalX / points.size(), totalY / points.size());
+    centroid = ofPoint(totalX / coordinates.size(), totalY / coordinates.size());
 }
 
-void Blob::calcBounds(vector<ofPoint>& points) {
+void Blob::calculateBounds(vector<ofPoint>& coordinates) {
     float minX = 10000;
     float maxX = -10000;
     float minY = 10000;
     float maxY = -10000;
     
-    for (int i = 0; i < points.size(); i++) {
-        float x = points[i].x;
-        float y = points[i].y;
+    for (int i = 0; i < coordinates.size(); i++) {
+        float x = coordinates[i].x;
+        float y = coordinates[i].y;
 
         if (x > maxX) maxX = x;
         if (x < minX) minX = x;
@@ -43,4 +48,13 @@ void Blob::calcBounds(vector<ofPoint>& points) {
     float rH = fabs(maxY - minY);
         
     bounds = ofRectangle(rX, rY, rW, rH);
+    center = ofPoint(rX + rW * 0.5, rY + rH * 0.5);
+}
+
+void Blob::calculateIntensity(vector<int>& intensities) {
+    int sum = 0;
+    for (int i = 0; i < intensities.size(); i++) {
+        sum += intensities[i];
+    }
+    intensity = (float)sum / intensities.size();
 }
