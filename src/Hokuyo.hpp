@@ -45,7 +45,6 @@ public:
     
     vector<string> splitStringByNewline(const string& str);
     
-    vector<ofPoint> cartesianCoordinates;
     vector<ofPoint> polarCoordinates;
     vector<int> intensities;
 

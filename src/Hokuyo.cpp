@@ -28,7 +28,6 @@ Hokuyo::Hokuyo() {
     
     // containers
     polarCoordinates.resize(1024);
-    cartesianCoordinates.resize(1024);
     intensities.resize(1024);
     
     callIntensitiesActive = true;
@@ -37,7 +36,6 @@ Hokuyo::Hokuyo() {
         float theta = ((float) i / polarCoordinates.size()) * TWO_PI - HALF_PI;
 
         polarCoordinates[i] = ofPoint(theta, 0.0);
-        cartesianCoordinates[i] = ofPoint(0.0, 0.0);
         intensities[i] = 0;
     }
 }
