@@ -57,6 +57,7 @@ void ofApp::draw(){
     ofPopMatrix();
     
     gui.draw();
+    drawFps();
 }
 
 void ofApp::drawFps() {
