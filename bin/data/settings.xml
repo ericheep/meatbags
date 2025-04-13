@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<group>
+	<scale>0.5</scale>
+	<area_x1>-3.3</area_x1>
+	<area_x2>2.5</area_x2>
+	<area_y1>0</area_y1>
+	<area_y2>4.25</area_y2>
+	<bounds_x1>-0.9</bounds_x1>
+	<bounds_x2>1.0625</bounds_x2>
+	<bounds_y1>0.775</bounds_y1>
+	<bounds_y2>2.55</bounds_y2>
+	<epsilon>75.85</epsilon>
+	<min_points>14</min_points>
+</group>
+<Hokuyo_LIDAR>
+	<scale>0.5</scale>
+	<area_x1>-2.8</area_x1>
+	<area_x2>2.5</area_x2>
+	<area_y1>0</area_y1>
+	<area_y2>5</area_y2>
+	<bounds_x1>-1</bounds_x1>
+	<bounds_x2>1</bounds_x2>
+	<bounds_y1>0.425</bounds_y1>
+	<bounds_y2>2.5</bounds_y2>
+	<epsilon>100</epsilon>
+	<min_points>10</min_points>
+</Hokuyo_LIDAR>
+<ofx-Hokuyo>
+	<scale>0.5</scale>
+	<area_x1>-2.5</area_x1>
+	<area_x2>2.5</area_x2>
+	<area_y1>0</area_y1>
+	<area_y2>3.025</area_y2>
+	<bounds_x1>-0.9625</bounds_x1>
+	<bounds_x2>1</bounds_x2>
+	<bounds_y1>0.8</bounds_y1>
+	<bounds_y2>2.5</bounds_y2>
+	<epsilon>100</epsilon>
+	<min_points>10</min_points>
+</ofx-Hokuyo>
