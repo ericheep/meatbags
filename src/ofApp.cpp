@@ -24,10 +24,10 @@ void ofApp::setup(){
     gui.add(epsilon.set( "epsilon", 100, 1, 500));
     gui.add(minPoints.set( "min points", 10, 1, 50));
         
-    viz.setSize(900, 900);
-    viz.setScanningArea(areaX1, areaX2, areaY1, areaY2);
-    viz.setFilterBounds(boundsX1, boundsX2, boundsY1, boundsY2);
-    viz.setEpsilon(epsilon);
+    meatbags.setSize(900, 900);
+    meatbags.setScanningArea(areaX1, areaX2, areaY1, areaY2);
+    meatbags.setFilterBounds(boundsX1, boundsX2, boundsY1, boundsY2);
+    meatbags.setEpsilon(epsilon);
     
     gui.loadFromFile("settings.xml");
 }
@@ -36,15 +36,15 @@ void ofApp::setup(){
 void ofApp::update(){
     hokuyo.update();
     
-    hokuyo.getPolarCoordinates(viz.polarCoordinates);
-    hokuyo.getIntensities(viz.intensities);
+    hokuyo.getPolarCoordinates(meatbags.polarCoordinates);
+    hokuyo.getIntensities(meatbags.intensities);
     
-    viz.setScale(scale);
-    viz.setScanningArea(areaX1, areaX2, areaY1, areaY2);
-    viz.setFilterBounds(boundsX1, boundsX2, boundsY1, boundsY2);
-    viz.setEpsilon(epsilon);
-    viz.setMinPoints(minPoints);
-    viz.update();
+    meatbags.setScale(scale);
+    meatbags.setScanningArea(areaX1, areaX2, areaY1, areaY2);
+    meatbags.setFilterBounds(boundsX1, boundsX2, boundsY1, boundsY2);
+    meatbags.setEpsilon(epsilon);
+    meatbags.setMinPoints(minPoints);
+    meatbags.update();
 }
 
 //--------------------------------------------------------------
@@ -53,7 +53,7 @@ void ofApp::draw(){
     
     ofPushMatrix();
     ofTranslate(50, 50);
-    viz.draw();
+    meatbags.draw();
     ofPopMatrix();
     
     gui.draw();

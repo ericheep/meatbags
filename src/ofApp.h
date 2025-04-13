@@ -5,7 +5,7 @@
 #include "ofxGui.h"
 
 #include "Hokuyo.hpp"
-#include "Viz.hpp"
+#include "Meatbags.hpp"
 
 class ofApp : public ofBaseApp{
     
@@ -17,7 +17,9 @@ public:
     void drawFps();
     
     Hokuyo hokuyo;
-    Viz viz;
+    
+    // blob tracking software
+    Meatbags meatbags;
     
     ofxPanel gui;
     ofParameter<float> scale;

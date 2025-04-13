@@ -1,5 +1,6 @@
 //
-//  Viz.hpp
+//  Meatbags.hpp
+//  https://www.mit.edu/people/dpolicar/writing/prose/text/thinkingMeat.html
 //
 
 #ifndef Viz_hpp
@@ -10,9 +11,9 @@
 #include "dbscan.hpp"
 #include "Blob.hpp"
 
-class Viz {
+class Meatbags {
 public:
-    Viz();
+    Meatbags();
     
     void draw();
     void update();
@@ -20,7 +21,7 @@ public:
     void polarToCartesian();
     void filterCoordinates();
     void calculateBlobs();
-    void compareBlobs();
+    void compareBlobs(Blob newBlob, Blob oldBlob);
     
     void setScale(float scale);
     void setSize(float width, float height);

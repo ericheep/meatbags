@@ -1,10 +1,10 @@
 //
-//  Viz.cpp
+//  Meatbags.cpp
 //
 
-#include "Viz.hpp"
+#include "Meatbags.hpp"
 
-Viz::Viz() {
+Meatbags::Meatbags() {
     polarCoordinates.resize(1024);
     cartesianCoordinates.resize(1024);
     intensities.resize(1024);
@@ -13,14 +13,14 @@ Viz::Viz() {
     minPoints = 5;
 }
 
-void Viz::update() {
+void Meatbags::update() {
     puckPosition = ofPoint(width / 2.0, 50);
     polarToCartesian();
     filterCoordinates();
     calculateBlobs();
 }
 
-void Viz::polarToCartesian() {
+void Meatbags::polarToCartesian() {
     for (int i = 0; i < polarCoordinates.size(); i++) {
         float theta = polarCoordinates[i].x;
         float radius = polarCoordinates[i].y;
@@ -33,7 +33,7 @@ void Viz::polarToCartesian() {
     }
 }
 
-void Viz::filterCoordinates() {
+void Meatbags::filterCoordinates() {
     filteredCoordinates.clear();
     
     for (int i = 0; i < cartesianCoordinates.size(); i++) {
@@ -49,11 +49,11 @@ void Viz::filterCoordinates() {
     }
 }
 
-float Viz::pointDistance(ofPoint a, ofPoint b) {
+float Meatbags::pointDistance(ofPoint a, ofPoint b) {
     return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
 
-void Viz::calculateBlobs() {
+void Meatbags::calculateBlobs() {
     if (filteredCoordinates.size() == 0) return;
         
     vector<struct point2> points;
@@ -92,7 +92,7 @@ void Viz::calculateBlobs() {
     }
 }
 
-void Viz::compareBlobs() {
+void Meatbags::compareBlobs(Blob newBLob, Blob oldBLob) {
     if (currentBlobs.size() > blobs.size()) {
         for (auto currentBlob : currentBlobs) {
             float lowestDistance = 10000;
@@ -118,7 +118,7 @@ void Viz::compareBlobs() {
     }
 }
 
-void Viz::draw() {
+void Meatbags::draw() {
     ofNoFill();
     ofSetColor(255);
     ofDrawRectangle(0, 0, width, height);
@@ -193,16 +193,16 @@ void Viz::draw() {
     }
 }
 
-void Viz::setSize(float _width, float _height) {
+void Meatbags::setSize(float _width, float _height) {
     width = _width;
     height = _height;
 }
 
-void Viz::setScale(float _scale) {
+void Meatbags::setScale(float _scale) {
     scale = _scale;
 }
 
-void Viz::setScanningArea(float _areaX1, float _areaX2, float _areaY1, float _areaY2) {
+void Meatbags::setScanningArea(float _areaX1, float _areaX2, float _areaY1, float _areaY2) {
     // meters to millimeers
     areaX1 = _areaX1 * 1000;
     areaX2 = _areaX2 * 1000;
@@ -210,7 +210,7 @@ void Viz::setScanningArea(float _areaX1, float _areaX2, float _areaY1, float _ar
     areaY2 = _areaY2 * 1000;
 }
 
-void Viz::setFilterBounds(float _boundsX1, float _boundsX2, float _boundsY1, float _boundsY2) {
+void Meatbags::setFilterBounds(float _boundsX1, float _boundsX2, float _boundsY1, float _boundsY2) {
     // meters to millimeers
     boundsX1 = _boundsX1 * 1000;
     boundsX2 = _boundsX2 * 1000;
@@ -218,10 +218,10 @@ void Viz::setFilterBounds(float _boundsX1, float _boundsX2, float _boundsY1, flo
     boundsY2 = _boundsY2 * 1000;
 }
 
-void Viz::setEpsilon(float _epsilon) {
+void Meatbags::setEpsilon(float _epsilon) {
     epsilon = _epsilon;
 }
 
-void Viz::setMinPoints(int _minPoints) {
+void Meatbags::setMinPoints(int _minPoints) {
     minPoints = _minPoints;
 }
