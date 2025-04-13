@@ -16,11 +16,44 @@ Viz::Viz() {
 void Viz::update() {
     puckPosition = ofPoint(width / 2.0, 50);
     polarToCartesian();
-    filter();
-    getBlobs();
+    filterCoordinates();
+    calculateBlobs();
 }
 
-void Viz::getBlobs() {
+void Viz::polarToCartesian() {
+    for (int i = 0; i < polarCoordinates.size(); i++) {
+        float theta = polarCoordinates[i].x;
+        float radius = polarCoordinates[i].y;
+        
+        float x = cos(theta) * radius;
+        float y = sin(theta) * radius;
+        
+        cartesianCoordinates[i].x = x;
+        cartesianCoordinates[i].y = y;
+    }
+}
+
+void Viz::filterCoordinates() {
+    filteredCoordinates.clear();
+    
+    for (int i = 0; i < cartesianCoordinates.size(); i++) {
+        float x = cartesianCoordinates[i].x;
+        float y = cartesianCoordinates[i].y;
+        
+        if (x != 0 && y != 0) {
+            if (x < boundsX2 && x > boundsX1 && y > boundsY1 && y < boundsY2) {
+                filteredCoordinates.push_back(ofPoint(x, y));
+                filteredIntensities.push_back(intensities[i]);
+            }
+        }
+    }
+}
+
+float Viz::pointDistance(ofPoint a, ofPoint b) {
+    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+}
+
+void Viz::calculateBlobs() {
     if (filteredCoordinates.size() == 0) return;
         
     vector<struct point2> points;
@@ -33,42 +66,53 @@ void Viz::getBlobs() {
     
     auto clusters = dbscan(points, epsilon, minPoints);
     
-    blobs.clear();
+    currentBlobs.clear();
+    
+    int index = 0;
     for(auto& cluster: clusters) {
-        vector<ofPoint> points;
+        vector<ofPoint> coordinates;
+        vector<int> intensities;
         for (int i = 0; i < cluster.size(); i++) {
             int index = cluster[i];
-            points.push_back(filteredCoordinates[index]);;
+            coordinates.push_back(filteredCoordinates[index]);;
+            intensities.push_back(filteredIntensities[index]);
         }
-        blobs.push_back(Blob(points));
-    }
-}
-
-void Viz::polarToCartesian() {
-    for (int i = 0; i < polarCoordinates.size(); i++) {
-        float theta = polarCoordinates[i].x;
-        float radius = polarCoordinates[i].y;
-
-        // theta = ofMap(theta, 0, TWO_PI, TWO_PI, 0);
+        Blob blob = Blob(coordinates, intensities);
+        blob.index = index;
+        currentBlobs.push_back(blob);
         
-        float x = cos(theta) * radius;
-        float y = sin(theta) * radius;
-        
-        cartesianCoordinates[i].x = x;
-        cartesianCoordinates[i].y = y;
+        index++;
     }
-}
-
-void Viz::filter() {
-    filteredCoordinates.clear();
     
-    for (int i = 0; i < cartesianCoordinates.size(); i++) {
-        float x = cartesianCoordinates[i].x;
-        float y = cartesianCoordinates[i].y;
-        
-        if (x != 0 && y != 0) {
-            if (x < boundsX2 && x > boundsX1 && y > boundsY1 && y < boundsY2) {
-                filteredCoordinates.push_back(ofPoint(x, y));
+    blobs.clear();
+    if (blobs.size() == 0) {
+        for (auto currentBlob : currentBlobs) {
+            blobs.push_back(currentBlob);
+        }
+    }
+}
+
+void Viz::compareBlobs() {
+    if (currentBlobs.size() > blobs.size()) {
+        for (auto currentBlob : currentBlobs) {
+            float lowestDistance = 10000;
+            
+            for (auto blob : blobs) {
+                float distance = pointDistance(blob.center, currentBlob.center);
+                
+                if (distance < lowestDistance) {
+                    lowestDistance = distance;
+                }
+            }
+        }
+    }
+    
+    if (currentBlobs.size() < blobs.size()) {
+        for (auto currentBlob : currentBlobs) {
+            blobs.push_back(currentBlob);
+            
+            for (auto blob : blobs) {
+                
             }
         }
     }
@@ -131,19 +175,21 @@ void Viz::draw() {
         ofSetColor(255, 0, 0);
         ofDrawEllipse(centroidX, centroidY, 9, 9);
 
-        std::stringstream strm;
-        strm << setprecision(3) << "x: " << centroidX / 1000.0;
-        strm << setprecision(3) << " y: " << centroidY / 1000.0;
-        
-        ofDrawBitmapString(strm.str(), centroidX + 15, centroidY - 4);
+        std::stringstream centroidStrm;
+        centroidStrm << setprecision(3) << "x: " << centroidX / 1000.0;
+        centroidStrm << setprecision(3) << " y: " << centroidY / 1000.0;
+        ofDrawBitmapString(centroidStrm.str(), centroidX + 15, centroidY - 4);
         
         float distance = sqrt(pow(blob.centroid.x, 2) + pow(blob.centroid.y, 2)) / 1000.0;
         
         std::stringstream distanceStrm;
-        distanceStrm << setprecision(3) << "distance: " << distance;
-        distanceStrm << setprecision(3) << "m " << distance * 3.28084 << "ft";
-
+        distanceStrm << setprecision(3) << "distance: " << distance << "m";
         ofDrawBitmapString(distanceStrm.str(), centroidX + 15, centroidY + 11);
+        
+        std::stringstream intensityStrm;
+        intensityStrm << setprecision(5) << "intensity: " << blob.intensity;
+        ofDrawBitmapString(intensityStrm.str(), centroidX + 15, centroidY + 26);
+
     }
 }
 
