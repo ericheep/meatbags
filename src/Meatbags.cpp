@@ -11,6 +11,7 @@ Meatbags::Meatbags() {
     
     epsilon = 100.0;
     minPoints = 5;
+    blobCounter = 0;
 }
 
 void Meatbags::update() {
@@ -53,9 +54,7 @@ float Meatbags::pointDistance(ofPoint a, ofPoint b) {
     return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
 
-void Meatbags::calculateBlobs() {
-    if (filteredCoordinates.size() == 0) return;
-        
+void Meatbags::getBlobs() {
     vector<struct point2> points;
     for (int i = 0; i < filteredCoordinates.size(); i++) {
         struct point2 point;
@@ -66,57 +65,172 @@ void Meatbags::calculateBlobs() {
     
     auto clusters = dbscan(points, epsilon, minPoints);
     
-    currentBlobs.clear();
-    
-    int index = 0;
+    // get new blobs
+    newBlobs.clear();
     for(auto& cluster: clusters) {
         vector<ofPoint> coordinates;
         vector<int> intensities;
         for (int i = 0; i < cluster.size(); i++) {
-            int index = cluster[i];
-            coordinates.push_back(filteredCoordinates[index]);;
-            intensities.push_back(filteredIntensities[index]);
+            int coordinateIndex = cluster[i];
+            coordinates.push_back(filteredCoordinates[coordinateIndex]);;
+            intensities.push_back(filteredIntensities[coordinateIndex]);
         }
-        Blob blob = Blob(coordinates, intensities);
-        blob.index = index;
-        currentBlobs.push_back(blob);
         
-        index++;
+        Blob newBlob = Blob(coordinates, intensities);
+        newBlobs.push_back(newBlob);
     }
     
-    blobs.clear();
-    if (blobs.size() == 0) {
-        for (auto currentBlob : currentBlobs) {
-            blobs.push_back(currentBlob);
+    // if no olds blobs present then we use all the new blobs
+    if (oldBlobs.size() == 0) {
+        int index = 0;
+        for (auto& newBlob : newBlobs) {
+            Blob blob = Blob();
+            blob.become(newBlob);
+            blob.index = index;
+            oldBlobs.push_back(blob);
+            
+            index++;
+        }
+    }
+    
+    // initialization
+    for (auto& oldBlob : oldBlobs) {
+        oldBlob.setMatched(false);
+        
+        if (oldBlobs.size() < newBlobs.size()) {
+            cout << "old blob index " << oldBlob.index << endl;
+        }
+    }
+    if (oldBlobs.size() < newBlobs.size()) cout << "---- " << endl;
+
+}
+
+float Meatbags::compareBlobs(Blob newBlob, Blob oldBlob) {
+    float epsilon = 1;
+    float distance = pointDistance(newBlob.centroid, oldBlob.centroid);
+    return 1.0 / (distance + epsilon);
+}
+
+void Meatbags::matchBlobs() {
+    int idx = 0;
+
+    for (auto& newBlob : newBlobs) {
+        int potentialMatchIndex = 0;
+        float highestScore = 0.0;
+        for (auto& oldBlob : oldBlobs) {
+            float score = compareBlobs(newBlob, oldBlob);
+            if (oldBlobs.size() < newBlobs.size()) {
+                std::stringstream strm;
+                strm << setprecision(3) << score;
+                cout << "new index " << idx << " old index " << oldBlob.index << " score " << strm.str() << "\tnew " << newBlob.centroid << " old " << oldBlob.centroid <<  endl;
+
+            }
+            if (score > highestScore) {
+                potentialMatchIndex = oldBlob.index;
+                highestScore = score;
+            }
+        }
+        idx = idx + 1;
+        
+        newBlob.setPotentialMatch(potentialMatchIndex, highestScore);
+    }
+    
+    if (oldBlobs.size() < newBlobs.size()) cout << "~ post score ~" << endl;
+
+    for (auto& newBlob : newBlobs) {
+        int matchIndex = 0;
+        float highestScore = 0.0;
+        
+        for (auto& oldBlob : oldBlobs) {
+            float score = newBlob.potentialMatchScore;
+      
+            if (newBlob.potentialMatchIndex == oldBlob.index) {
+                if (oldBlobs.size() < newBlobs.size()) {
+                    cout << "index " << matchIndex << " score " << score << "\tnew " << newBlob.centroid << " old " << oldBlob.centroid <<  endl;
+
+                }
+                if (score > highestScore) {
+                    matchIndex = oldBlob.index;
+                    highestScore = score;
+                }
+            }
+        }
+        
+        if (oldBlobs.size() < newBlobs.size()) cout << "--" << endl;
+
+        
+        for (auto& oldBlob : oldBlobs) {
+           
+            if (oldBlob.index == matchIndex && !oldBlob.isMatched()) {
+                if (oldBlobs.size() < newBlobs.size()) {
+                    cout << matchIndex << " " << highestScore << endl;
+                }
+                oldBlob.become(newBlob);
+                oldBlob.setMatched(true);
+                newBlob.setMatched(true);
+            }
+        }
+        
+    }
+    
+    if (oldBlobs.size() < newBlobs.size()) {
+        cout << "WTF" << endl;
+    }
+}
+
+void Meatbags::removeBlobs() {
+    oldBlobs.erase(std::remove_if(oldBlobs.begin(), oldBlobs.end(), [](Blob blob) {
+        return !blob.isMatched();
+    }), oldBlobs.end());
+}
+
+int Meatbags::findFreeBlobIndex() {
+    int freeIndex = 0;
+    Boolean lookingForFreeIndex = true;
+    
+    while (lookingForFreeIndex) {
+        lookingForFreeIndex = false;
+        
+        for (Blob oldBlob : oldBlobs) {
+            if (freeIndex == oldBlob.index) {
+                lookingForFreeIndex = true;
+            }
+        }
+        
+        if (lookingForFreeIndex) {
+            freeIndex++;
+        }
+    }
+    
+    return freeIndex;
+}
+
+void Meatbags::addBlobs() {
+    for (auto& newBlob : newBlobs) {
+        if (!newBlob.isMatched()) {
+            Blob blob;
+            
+            int freeIndex = findFreeBlobIndex();
+            
+            blob.index = freeIndex;
+            blob.setMatched(true);
+            blob.become(newBlob);
+            
+            oldBlobs.push_back(blob);
         }
     }
 }
 
-void Meatbags::compareBlobs(Blob newBLob, Blob oldBLob) {
-    if (currentBlobs.size() > blobs.size()) {
-        for (auto currentBlob : currentBlobs) {
-            float lowestDistance = 10000;
-            
-            for (auto blob : blobs) {
-                float distance = pointDistance(blob.center, currentBlob.center);
-                
-                if (distance < lowestDistance) {
-                    lowestDistance = distance;
-                }
-            }
-        }
-    }
+void Meatbags::calculateBlobs() {
+    if (filteredCoordinates.size() == 0) return;
     
-    if (currentBlobs.size() < blobs.size()) {
-        for (auto currentBlob : currentBlobs) {
-            blobs.push_back(currentBlob);
-            
-            for (auto blob : blobs) {
-                
-            }
-        }
-    }
+    getBlobs();
+    matchBlobs();
+    removeBlobs();
+    addBlobs();
 }
+
+
 
 void Meatbags::draw() {
     ofNoFill();
@@ -140,7 +254,7 @@ void Meatbags::draw() {
         
         x *= scaleWidth;
         y *= scaleHeight;
-
+        
         float x2 = x + puckPosition.x;
         float y2 = y + puckPosition.y;
         
@@ -157,7 +271,7 @@ void Meatbags::draw() {
     float bh = fabs(boundsY2 - boundsY1) * scaleHeight;
     ofDrawRectangle(bx, by, bw, bh);
     
-    for (auto blob : blobs) {
+    for (auto blob : oldBlobs) {
         ofRectangle blobBox = blob.bounds;
         blobBox.setX(blobBox.getX() * scaleWidth + puckPosition.x);
         blobBox.setY(blobBox.getY() * scaleHeight + puckPosition.y);
@@ -174,10 +288,14 @@ void Meatbags::draw() {
         ofFill();
         ofSetColor(255, 0, 0);
         ofDrawEllipse(centroidX, centroidY, 9, 9);
-
+        
+        std::stringstream indexStrm;
+        indexStrm << "index: " << blob.index;
+        ofDrawBitmapString(indexStrm.str(), centroidX + 15, centroidY - 20);
+        
         std::stringstream centroidStrm;
-        centroidStrm << setprecision(3) << "x: " << centroidX / 1000.0;
-        centroidStrm << setprecision(3) << " y: " << centroidY / 1000.0;
+        centroidStrm << setprecision(3) << "x: " << blob.centroid.x / 1000.0;
+        centroidStrm << setprecision(3) << " y: " << blob.centroid.y / 1000.0;
         ofDrawBitmapString(centroidStrm.str(), centroidX + 15, centroidY - 4);
         
         float distance = sqrt(pow(blob.centroid.x, 2) + pow(blob.centroid.y, 2)) / 1000.0;
@@ -189,7 +307,7 @@ void Meatbags::draw() {
         std::stringstream intensityStrm;
         intensityStrm << setprecision(5) << "intensity: " << blob.intensity;
         ofDrawBitmapString(intensityStrm.str(), centroidX + 15, centroidY + 26);
-
+        
     }
 }
 

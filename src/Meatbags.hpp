@@ -8,6 +8,7 @@
 
 #include "ofMain.h"
 #include <stdio.h>
+#include <algorithm>
 #include "dbscan.hpp"
 #include "Blob.hpp"
 
@@ -20,8 +21,17 @@ public:
     
     void polarToCartesian();
     void filterCoordinates();
+    
     void calculateBlobs();
-    void compareBlobs(Blob newBlob, Blob oldBlob);
+    
+    void getBlobs();
+    void matchBlobs();
+    void addBlobs();
+    void removeBlobs();
+
+    int findFreeBlobIndex();
+    
+    float compareBlobs(Blob newBlob, Blob oldBlob);
     
     void setScale(float scale);
     void setSize(float width, float height);
@@ -31,13 +41,12 @@ public:
     void setMinPoints(int minPoints);
     float pointDistance(ofPoint a, ofPoint b);
 
-    vector<Blob> currentBlobs, blobs;
+    vector<Blob> newBlobs, oldBlobs;
     vector<ofPoint> polarCoordinates;
     vector<ofPoint> cartesianCoordinates;
     vector<ofPoint> filteredCoordinates;
     vector<int> intensities;
     vector<int> filteredIntensities;
-
 
 private:
     float width, height;
@@ -46,7 +55,7 @@ private:
     
     // dbscan params
     float epsilon;
-    int minPoints;
+    int minPoints, blobCounter;
     
     ofPoint puckPosition;
 };

@@ -4,14 +4,39 @@
 
 #include "Blob.hpp"
 
+Blob::Blob() {
+    matched = false;
+}
+
 Blob::Blob(vector<ofPoint> coordinates, vector<int> intensities) {
     calculateCentroid(coordinates);
     calculateBounds(coordinates);
     calculateIntensity(intensities);
+    matched = false;
+}
+
+void Blob::become(Blob _blob) {
+    centroid = _blob.centroid;
+    center = _blob.center;
+    intensity = _blob.intensity;
+    bounds = _blob.bounds;
 }
 
 void Blob::setIndex(int _index) {
     index = _index;
+}
+
+void Blob::setMatched(bool _matched) {
+    matched = _matched;
+}
+
+bool Blob::isMatched() {
+    return matched;
+}
+
+void Blob::setPotentialMatch(int _potentialMatchIndex, float _score) {
+    potentialMatchIndex = _potentialMatchIndex;
+    potentialMatchScore = _score;
 }
 
 void Blob::calculateCentroid(vector<ofPoint>& coordinates) {
