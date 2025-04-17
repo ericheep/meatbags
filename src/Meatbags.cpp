@@ -67,6 +67,7 @@ void Meatbags::getBlobs() {
     
     // get new blobs
     newBlobs.clear();
+    int index = 0;
     for(auto& cluster: clusters) {
         vector<ofPoint> coordinates;
         vector<int> intensities;
@@ -77,7 +78,10 @@ void Meatbags::getBlobs() {
         }
         
         Blob newBlob = Blob(coordinates, intensities);
+        newBlob.index = index;
         newBlobs.push_back(newBlob);
+        
+        index++;
     }
     
     // if no olds blobs present then we use all the new blobs
@@ -96,13 +100,7 @@ void Meatbags::getBlobs() {
     // initialization
     for (auto& oldBlob : oldBlobs) {
         oldBlob.setMatched(false);
-        
-        if (oldBlobs.size() < newBlobs.size()) {
-            cout << "old blob index " << oldBlob.index << endl;
-        }
     }
-    if (oldBlobs.size() < newBlobs.size()) cout << "---- " << endl;
-
 }
 
 float Meatbags::compareBlobs(Blob newBlob, Blob oldBlob) {
@@ -112,69 +110,35 @@ float Meatbags::compareBlobs(Blob newBlob, Blob oldBlob) {
 }
 
 void Meatbags::matchBlobs() {
-    int idx = 0;
-
     for (auto& newBlob : newBlobs) {
         int potentialMatchIndex = 0;
-        float highestScore = 0.0;
+        float potentialHighestScore = 0.0;
+        
         for (auto& oldBlob : oldBlobs) {
             float score = compareBlobs(newBlob, oldBlob);
-            if (oldBlobs.size() < newBlobs.size()) {
-                std::stringstream strm;
-                strm << setprecision(3) << score;
-                cout << "new index " << idx << " old index " << oldBlob.index << " score " << strm.str() << "\tnew " << newBlob.centroid << " old " << oldBlob.centroid <<  endl;
-
-            }
-            if (score > highestScore) {
+            
+            if (score > potentialHighestScore) {
                 potentialMatchIndex = oldBlob.index;
-                highestScore = score;
+                potentialHighestScore = score;
             }
         }
-        idx = idx + 1;
         
-        newBlob.setPotentialMatch(potentialMatchIndex, highestScore);
+        newBlob.setPotentialMatch(potentialMatchIndex, potentialHighestScore);
     }
     
-    if (oldBlobs.size() < newBlobs.size()) cout << "~ post score ~" << endl;
-
+    sort(newBlobs.begin(), newBlobs.end(), [](const Blob& a, const Blob& b){
+        return a.potentialMatchScore > b.potentialMatchScore;
+    });
+    
     for (auto& newBlob : newBlobs) {
-        int matchIndex = 0;
-        float highestScore = 0.0;
-        
         for (auto& oldBlob : oldBlobs) {
-            float score = newBlob.potentialMatchScore;
-      
-            if (newBlob.potentialMatchIndex == oldBlob.index) {
-                if (oldBlobs.size() < newBlobs.size()) {
-                    cout << "index " << matchIndex << " score " << score << "\tnew " << newBlob.centroid << " old " << oldBlob.centroid <<  endl;
-
-                }
-                if (score > highestScore) {
-                    matchIndex = oldBlob.index;
-                    highestScore = score;
-                }
-            }
-        }
-        
-        if (oldBlobs.size() < newBlobs.size()) cout << "--" << endl;
-
-        
-        for (auto& oldBlob : oldBlobs) {
-           
-            if (oldBlob.index == matchIndex && !oldBlob.isMatched()) {
-                if (oldBlobs.size() < newBlobs.size()) {
-                    cout << matchIndex << " " << highestScore << endl;
-                }
+            if (oldBlob.index == newBlob.potentialMatchIndex && !newBlob.isMatched() && !oldBlob.isMatched()) {
                 oldBlob.become(newBlob);
-                oldBlob.setMatched(true);
+                
                 newBlob.setMatched(true);
+                oldBlob.setMatched(true);
             }
         }
-        
-    }
-    
-    if (oldBlobs.size() < newBlobs.size()) {
-        cout << "WTF" << endl;
     }
 }
 
@@ -192,14 +156,10 @@ int Meatbags::findFreeBlobIndex() {
         lookingForFreeIndex = false;
         
         for (Blob oldBlob : oldBlobs) {
-            if (freeIndex == oldBlob.index) {
-                lookingForFreeIndex = true;
-            }
+            if (freeIndex == oldBlob.index) lookingForFreeIndex = true;
         }
         
-        if (lookingForFreeIndex) {
-            freeIndex++;
-        }
+        if (lookingForFreeIndex) freeIndex++;
     }
     
     return freeIndex;
@@ -229,8 +189,6 @@ void Meatbags::calculateBlobs() {
     removeBlobs();
     addBlobs();
 }
-
-
 
 void Meatbags::draw() {
     ofNoFill();
@@ -342,4 +300,8 @@ void Meatbags::setEpsilon(float _epsilon) {
 
 void Meatbags::setMinPoints(int _minPoints) {
     minPoints = _minPoints;
+}
+// Comparator function
+bool comp(int a, int b) {
+    return a > b;
 }
