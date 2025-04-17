@@ -14,12 +14,12 @@ void ofApp::setup(){
     gui.add(areaX1.set( "area x1", -2.5, -5.0, 0.0));
     gui.add(areaX2.set( "area x2", 2.5, 0, 5.0));
     gui.add(areaY1.set( "area y1", 0.0, 0, 5.0));
-    gui.add(areaY2.set( "area y2", 5.0, 0, 5.0));
+    gui.add(areaY2.set( "area y2", 5.0, 0, 10.0));
    
     gui.add(boundsX1.set( "bounds x1", -1.0, -2.5, 0.0));
     gui.add(boundsX2.set( "bounds x2", 1.0, 0, 2.5));
     gui.add(boundsY1.set( "bounds y1", 0.0, 0, 5.0));
-    gui.add(boundsY2.set( "bounds y2", 2.5, 0, 5.0));
+    gui.add(boundsY2.set( "bounds y2", 2.5, 0, 10.0));
     
     gui.add(epsilon.set( "epsilon", 100, 1, 500));
     gui.add(minPoints.set( "min points", 10, 1, 50));
