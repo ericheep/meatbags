@@ -1,6 +1,4 @@
 # ofx-Hokuyo
-openFrameworks sketch that connects to a Hokuyo UST-LX LIDAR sensor.
+openFrameworks sketch that connects to a Hokuyo UST-LX LIDAR sensor and sends those coordinates out via OSC.
 
-This is merely a project that shares the Hokuyo protocol in openFrameworks. It could turn into an addon in the future but for now it's only an example.
-
-![ofx-hokuyo](https://github.com/user-attachments/assets/7c419203-6266-44b1-9b2a-5b13115b0576)
+![meatbags](https://github.com/user-attachments/assets/90e9dc17-1533-4ce9-8158-c45b2e61bcbd)
