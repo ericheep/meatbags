@@ -21,6 +21,7 @@ public:
     ofPoint centroid, center;
     ofRectangle bounds;
     float intensity;
+    float distanceFromSensor;
     
     int potentialMatchIndex;
     float potentialMatchScore;

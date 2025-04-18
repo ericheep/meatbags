@@ -12,6 +12,8 @@ Blob::Blob(vector<ofPoint> coordinates, vector<int> intensities) {
     calculateCentroid(coordinates);
     calculateBounds(coordinates);
     calculateIntensity(intensities);
+    distanceFromSensor = sqrt(pow(centroid.x, 2) + pow(centroid.y, 2));
+
     matched = false;
 }
 
@@ -20,6 +22,7 @@ void Blob::become(Blob _blob) {
     center = _blob.center;
     intensity = _blob.intensity;
     bounds = _blob.bounds;
+    distanceFromSensor = _blob.distanceFromSensor;
 }
 
 void Blob::setIndex(int _index) {

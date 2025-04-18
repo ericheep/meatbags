@@ -262,11 +262,9 @@ void Meatbags::draw() {
         centroidStrm << setprecision(3) << "x: " << blob.centroid.x / 1000.0;
         centroidStrm << setprecision(3) << " y: " << blob.centroid.y / 1000.0;
         ofDrawBitmapString(centroidStrm.str(), centroidX + 15, centroidY - 4);
-        
-        float distance = sqrt(pow(blob.centroid.x, 2) + pow(blob.centroid.y, 2)) / 1000.0;
-        
+                
         std::stringstream distanceStrm;
-        distanceStrm << setprecision(3) << "distance: " << distance << "m";
+        distanceStrm << setprecision(3) << "distance: " << blob.distanceFromSensor << "m";
         ofDrawBitmapString(distanceStrm.str(), centroidX + 15, centroidY + 11);
         
         std::stringstream intensityStrm;

@@ -110,6 +110,8 @@ void ofApp::sendBlobOsc() {
         
         msg.addFloatArg(x);
         msg.addFloatArg(y);
+        msg.addFloatArg(blob.intensity);
+        msg.addFloatArg(blob.distanceFromSensor);
         
         oscSender.sendMessage(msg);
     }
