@@ -132,7 +132,7 @@ void Meatbags::matchBlobs() {
     
     for (auto& newBlob : newBlobs) {
         for (auto& oldBlob : oldBlobs) {
-            if (oldBlob.index == newBlob.potentialMatchIndex && !newBlob.isMatched() && !oldBlob.isMatched()) {
+            if (oldBlob.index == newBlob.potentialMatchIndex && !newBlob.isMatched() && !oldBlob.isMatched())             {
                 oldBlob.become(newBlob);
                 
                 newBlob.setMatched(true);

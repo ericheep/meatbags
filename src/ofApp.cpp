@@ -24,7 +24,7 @@ void ofApp::setup(){
     gui.add(epsilon.set( "epsilon", 100, 1, 500));
     gui.add(minPoints.set( "min points", 10, 1, 50));
         
-    meatbags.setSize(900, 900);
+    meatbags.setSize(ofGetWidth() - 100, ofGetHeight() - 100);
     meatbags.setScanningArea(areaX1, areaX2, areaY1, areaY2);
     meatbags.setFilterBounds(boundsX1, boundsX2, boundsY1, boundsY2);
     meatbags.setEpsilon(epsilon);
