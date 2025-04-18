@@ -54,7 +54,7 @@ float Meatbags::pointDistance(ofPoint a, ofPoint b) {
     return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
 
-void Meatbags::getBlobs() {
+void Meatbags::clusterBlobs() {
     vector<struct point2> points;
     for (int i = 0; i < filteredCoordinates.size(); i++) {
         struct point2 point;
@@ -184,10 +184,17 @@ void Meatbags::addBlobs() {
 void Meatbags::calculateBlobs() {
     if (filteredCoordinates.size() == 0) return;
     
-    getBlobs();
+    clusterBlobs();
     matchBlobs();
     removeBlobs();
     addBlobs();
+}
+
+void::Meatbags::getBlobs(vector<Blob> &blobs) {
+    blobs.clear();
+    for (auto& oldBlob : oldBlobs) {
+        blobs.push_back(oldBlob);
+    }
 }
 
 void Meatbags::draw() {

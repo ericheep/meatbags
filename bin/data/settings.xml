@@ -37,4 +37,8 @@
 	<bounds_y2>1.35</bounds_y2>
 	<epsilon>100</epsilon>
 	<min_points>10</min_points>
+	<cluster_epsilon>100</cluster_epsilon>
+	<cluster_min_points>10</cluster_min_points>
+	<OSC_address>192.168.0.11</OSC_address>
+	<OSC_port>5432</OSC_port>
 </ofx-Hokuyo>

@@ -24,10 +24,11 @@ public:
     
     void calculateBlobs();
     
-    void getBlobs();
+    void clusterBlobs();
     void matchBlobs();
     void addBlobs();
     void removeBlobs();
+    void getBlobs(vector<Blob> &blob);
 
     int findFreeBlobIndex();
     

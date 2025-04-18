@@ -21,13 +21,22 @@ void ofApp::setup(){
     gui.add(boundsY1.set( "bounds y1", 0.0, 0, 5.0));
     gui.add(boundsY2.set( "bounds y2", 2.5, 0, 10.0));
     
-    gui.add(epsilon.set( "epsilon", 100, 1, 500));
-    gui.add(minPoints.set( "min points", 10, 1, 50));
+    gui.add(epsilon.set( "cluster epsilon", 100, 1, 500));
+    gui.add(minPoints.set( "cluster min points", 10, 1, 50));
+    
+    gui.add(normalizeBlobs.set("normalize blobs", true));
+    gui.add(oscSenderAddress.set( "OSC address", "192.168.0.11"));
+    gui.add(oscSenderPort.set( "OSC port", 5432, 4000, 12000));
         
     meatbags.setSize(ofGetWidth() - 100, ofGetHeight() - 100);
     meatbags.setScanningArea(areaX1, areaX2, areaY1, areaY2);
     meatbags.setFilterBounds(boundsX1, boundsX2, boundsY1, boundsY2);
     meatbags.setEpsilon(epsilon);
+    
+    oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
+    oscSenderPort.addListener(this, &ofApp::setOscSenderPort);
+
+    oscSender.setup(oscSenderAddress, oscSenderPort);
     
     gui.loadFromFile("settings.xml");
 }
@@ -45,6 +54,10 @@ void ofApp::update(){
     meatbags.setEpsilon(epsilon);
     meatbags.setMinPoints(minPoints);
     meatbags.update();
+    
+    // get blobs to send out via OSC
+    meatbags.getBlobs(blobs);
+    sendBlobOsc();
 }
 
 //--------------------------------------------------------------
@@ -70,4 +83,34 @@ void ofApp::drawFps() {
 void ofApp::exit(){
     gui.saveToFile("settings.xml");
     hokuyo.close();
+}
+
+void ofApp::setOscSenderAddress(string& oscSenderAddress) {
+    oscSender.setup(oscSenderAddress, oscSenderPort);
+}
+
+void ofApp::setOscSenderPort(int& oscSenderPort) {
+    oscSender.setup(oscSenderAddress, oscSenderPort);
+}
+
+void ofApp::sendBlobOsc() {
+    for (auto& blob : blobs) {
+        ofxOscMessage msg;
+        msg.setAddress("/blobs");
+        msg.addIntArg(blob.index);
+        
+        // millimeters to meters
+        float x = blob.centroid.x * 0.001;
+        float y = blob.centroid.y * 0.001;
+        
+        if (normalizeBlobs) {
+            x = ofMap(x, boundsX1, boundsX2, 0.0, 1.0);
+            y = ofMap(y, boundsY1, boundsY2, 0.0, 1.0);
+        }
+        
+        msg.addFloatArg(x);
+        msg.addFloatArg(y);
+        
+        oscSender.sendMessage(msg);
+    }
 }
