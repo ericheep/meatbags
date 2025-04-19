@@ -22,6 +22,7 @@ Meatbags::Meatbags() {
     numberFilteredCoordinates = 0;
     lastUpdateTime = 0;
     timeBetweenUpdates = 0;
+    mirrorX = false;
     
     boundsX1 = -2.5;
     boundsX2 = 2.5;
@@ -56,6 +57,8 @@ void Meatbags::polarToCartesian() {
         
         float x = cos(theta) * radius;
         float y = sin(theta) * radius;
+        
+        if (mirrorX) x = -x;
         
         cartesianCoordinates[i].x = x;
         cartesianCoordinates[i].y = y;
@@ -376,6 +379,10 @@ void Meatbags::setCanvasSize(float _width, float _height) {
     puckPosition = ofPoint(width / 2.0, 25);
     
     setAreaSize(areaSize);
+}
+
+void Meatbags::setMirrorX(bool _mirrorX) {
+    mirrorX = _mirrorX;
 }
 
 void Meatbags::setAreaSize(float _areaSize) {

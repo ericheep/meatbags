@@ -45,6 +45,7 @@ public:
     void setBlobBounds(float x1, float y1, float x2, float y2);
     void setBlobPersistence(float blobPersistence);
     void setAreaSize(float areaSize);
+    void setMirrorX(bool mirrorX);
     void setCanvasSize(float width, float height);
     void setEpsilon(float epsilon);
     void setMinPoints(int minPoints);
@@ -78,6 +79,7 @@ private:
     float lastUpdateTime;
     float timeBetweenUpdates;
     int numberFilteredCoordinates;
+    bool mirrorX;
     
     ofTrueTypeFont font;
     ofPoint puckPosition;

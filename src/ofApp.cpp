@@ -15,6 +15,7 @@ void ofApp::setup(){
     gui.setDefaultHeight(12);
 
     gui.add(areaSize.set( "area size (m)", 5.0, 0.5, 20.0));
+    gui.add(mirrorX.set("mirror x", false));
     gui.add(epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     gui.add(minPoints.set( "cluster min points", 10, 1, 50));
     gui.add(blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
@@ -31,6 +32,7 @@ void ofApp::setup(){
     hokuyo.setRectangle(10, ofGetHeight() - 200, ofGetWidth() / 2.0, 190);
     hokuyo.setAutoReconnect(autoReconnectActive);
     
+    meatbags.setMirrorX(mirrorX);
     meatbags.setCanvasSize(ofGetWidth(), ofGetHeight());
     meatbags.setAreaSize(areaSize);
     meatbags.setBlobPersistence(blobPersistence);
@@ -40,6 +42,7 @@ void ofApp::setup(){
     blobPersistence.addListener(this, &ofApp::setBlobPersistence);
     autoReconnectActive.addListener(this, &ofApp::setAutoReconnect);
     areaSize.addListener(this, &ofApp::setAreaSize);
+    mirrorX.addListener(this, &ofApp::setMirrorX);
     epsilon.addListener(this, &ofApp::setEpsilon);
     minPoints.addListener(this, &ofApp::setMinPoints);
     oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
@@ -94,6 +97,10 @@ void ofApp::windowResized(int width, int height) {
 
 void ofApp::setAutoReconnect(bool &autoReconnectActive) {
     hokuyo.setAutoReconnect(autoReconnectActive);
+}
+
+void ofApp::setMirrorX(bool &mirrorX) {
+    meatbags.setMirrorX(mirrorX);
 }
 
 void ofApp::setAreaSize(float &areaSize) {

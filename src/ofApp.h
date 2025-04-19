@@ -22,6 +22,7 @@ public:
     
     void setAutoReconnect(bool &autoReconnectActive);
     void setAreaSize(float &areaSize);
+    void setMirrorX(bool &mirrorX);
     void setBlobPersistence(float &blobPersistence);
     void setEpsilon(float &epsilon);
     void setMinPoints(int &minPoints);
@@ -39,6 +40,7 @@ public:
     
     ofxPanel gui;
     ofParameter<float> areaSize;
+    ofParameter<bool> mirrorX;
     ofParameter<float> epsilon;
     ofParameter<int> minPoints;
     ofParameter<float> blobPersistence;
