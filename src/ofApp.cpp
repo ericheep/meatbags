@@ -17,6 +17,7 @@ void ofApp::setup(){
     gui.add(areaSize.set( "area size", 5.0, 0.5, 20.0));
     gui.add(epsilon.set( "cluster epsilon", 100, 1, 500));
     gui.add(minPoints.set( "cluster min points", 10, 1, 50));
+    gui.add(blobPersistence.set("blob persistence", 0.1, 0.0, 3.0));
     
     gui.add(oscSenderAddress.set( "OSC address", "192.168.0.11"));
     gui.add(oscSenderPort.set( "OSC port", 5432, 4000, 12000));
@@ -27,7 +28,7 @@ void ofApp::setup(){
     gui.loadFromFile("settings.xml");
 
     hokuyo.setup(IP, PORT);
-    hokuyo.setRectangle(10, ofGetHeight() - 210, ofGetWidth() / 2.0, 200);
+    hokuyo.setRectangle(10, ofGetHeight() - 200, ofGetWidth() / 2.0, 190);
     hokuyo.setAutoReconnect(autoReconnectActive);
     
     meatbags.setCanvasSize(ofGetWidth(), ofGetHeight());
@@ -35,6 +36,7 @@ void ofApp::setup(){
     meatbags.setEpsilon(epsilon);
     meatbags.setMinPoints(minPoints);
 
+    blobPersistence.addListener(this, &ofApp::setBlobPersistence);
     autoReconnectActive.addListener(this, &ofApp::setAutoReconnect);
     areaSize.addListener(this, &ofApp::setAreaSize);
     epsilon.addListener(this, &ofApp::setEpsilon);
@@ -48,13 +50,14 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     hokuyo.update();
+    meatbags.update();
     
     if (!hokuyo.newCoordinatesAvailable) return;
         
     hokuyo.getPolarCoordinates(meatbags.polarCoordinates);
     hokuyo.getIntensities(meatbags.intensities);
         
-    meatbags.update();
+    meatbags.updateBlobs();
     meatbags.getBlobs(blobs);
     sendBlobOsc();
     
@@ -94,6 +97,10 @@ void ofApp::setAutoReconnect(bool &autoReconnectActive) {
 
 void ofApp::setAreaSize(float &areaSize) {
     meatbags.setAreaSize(areaSize);
+}
+
+void ofApp::setBlobPersistence(float &blobPersistence) {
+    meatbags.setBlobPersistence(blobPersistence);
 }
 
 void ofApp::setEpsilon(float &epsilon) {

@@ -12,6 +12,7 @@ Meatbags::Meatbags() {
     filteredIntensities.resize(1024);
     draggablePoints.resize(4);
     
+    blobPersistence = 0.1;
     epsilon = 100.0;
     minPoints = 5;
     mouseBoxSize = 8;
@@ -19,6 +20,8 @@ Meatbags::Meatbags() {
     pixelsPerUnit = 0;
     selectedDraggablePointIndex = 0;
     numberFilteredCoordinates = 0;
+    lastUpdateTime = 0;
+    timeBetweenUpdates = 0;
     
     boundsX1 = -2.5;
     boundsX2 = 2.5;
@@ -34,6 +37,13 @@ Meatbags::Meatbags() {
 }
 
 void Meatbags::update() {
+    timeBetweenUpdates += ofGetLastFrameTime();
+}
+
+void Meatbags::updateBlobs() {
+    lastUpdateTime = timeBetweenUpdates;
+    timeBetweenUpdates = 0;
+    
     polarToCartesian();
     filterCoordinates();
     calculateBlobs();
@@ -97,7 +107,7 @@ void Meatbags::clusterBlobs() {
             intensities.push_back(filteredIntensities[coordinateIndex]);
         }
         
-        Blob newBlob = Blob(coordinates, intensities);
+        Blob newBlob = Blob(coordinates, intensities, blobPersistence);
         newBlob.index = index;
         newBlobs.push_back(newBlob);
         
@@ -153,7 +163,7 @@ void Meatbags::matchBlobs() {
     
     for (auto& newBlob : newBlobs) {
         for (auto& oldBlob : oldBlobs) {
-            if (oldBlob.index == newBlob.potentialMatchIndex && !newBlob.isMatched() && !oldBlob.isMatched())             {
+            if (oldBlob.index == newBlob.potentialMatchIndex && !newBlob.isMatched() && !oldBlob.isMatched()) {
                 oldBlob.become(newBlob);
                 
                 newBlob.setMatched(true);
@@ -164,8 +174,16 @@ void Meatbags::matchBlobs() {
 }
 
 void Meatbags::removeBlobs() {
+    for (auto& oldBlob : oldBlobs) {
+        if (oldBlob.isMatched()) {
+            oldBlob.lifetime = 0;
+        } else {
+            oldBlob.updateLifetime(lastUpdateTime);
+        }
+    }
+    
     oldBlobs.erase(std::remove_if(oldBlobs.begin(), oldBlobs.end(), [](Blob blob) {
-        return !blob.isMatched();
+        return !blob.isAlive();
     }), oldBlobs.end());
 }
 
@@ -313,8 +331,6 @@ void Meatbags::drawBlobs() {
         "y: " + y.str();
         
         font.drawString(fontString, centroidX + 15, centroidY - 10);
-
-        
     }
 }
 
@@ -392,6 +408,14 @@ void Meatbags::updateBounds() {
     boundsY1 = (draggablePoints[1].y - puckPosition.y) / scale * 0.001;
     boundsX2 = (draggablePoints[2].x - puckPosition.x) / scale * 0.001;
     boundsY2 = (draggablePoints[3].y - puckPosition.y) / scale * 0.001;
+}
+
+void Meatbags::setBlobPersistence(float _blobPersistence) {
+    blobPersistence = _blobPersistence;
+    
+    for (auto& oldBlob : oldBlobs) {
+        oldBlob.lifetimeLength = blobPersistence;
+    }
 }
 
 void Meatbags::setEpsilon(float _epsilon) {

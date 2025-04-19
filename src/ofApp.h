@@ -22,6 +22,7 @@ public:
     
     void setAutoReconnect(bool &autoReconnectActive);
     void setAreaSize(float &areaSize);
+    void setBlobPersistence(float &blobPersistence);
     void setEpsilon(float &epsilon);
     void setMinPoints(int &minPoints);
     void setOscSenderAddress(string &oscSenderAddress);
@@ -40,6 +41,7 @@ public:
     ofParameter<float> areaSize;
     ofParameter<float> epsilon;
     ofParameter<int> minPoints;
+    ofParameter<float> blobPersistence;
     
     ofParameter<string> oscSenderAddress;
     ofParameter<int> oscSenderPort;

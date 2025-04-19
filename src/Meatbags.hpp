@@ -24,6 +24,7 @@ public:
     void drawBlobBounds();
     
     void update();
+    void updateBlobs();
     void updateDraggablePoints();
     void updateBounds();
     
@@ -42,6 +43,7 @@ public:
     float compareBlobs(Blob newBlob, Blob oldBlob);
         
     void setBlobBounds(float x1, float y1, float x2, float y2);
+    void setBlobPersistence(float blobPersistence);
     void setAreaSize(float areaSize);
     void setCanvasSize(float width, float height);
     void setEpsilon(float epsilon);
@@ -67,9 +69,14 @@ private:
     float scale;
     float scaleWidth, scaleHeight;
     
+    float blobPersistence;
+    
     // dbscan params
     float epsilon;
     int minPoints;
+    
+    float lastUpdateTime;
+    float timeBetweenUpdates;
     int numberFilteredCoordinates;
     
     ofTrueTypeFont font;

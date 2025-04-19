@@ -11,9 +11,11 @@
 class Blob {
 public:
     Blob();
-    Blob(vector<ofPoint> coordinates, vector<int> intensities);
+    Blob(vector<ofPoint> coordinates, vector<int> intensities, float blobPersistence);
+    void updateLifetime(float secondsLived);
     void setMatched(bool matched);
     bool isMatched();
+    bool isAlive();
     void setIndex(int index);
     void setPotentialMatch(int index, float score);
     void become(Blob blob);
@@ -25,8 +27,9 @@ public:
     
     int potentialMatchIndex;
     float potentialMatchScore;
+    float lifetime, lifetimeLength;
     
-    bool matched;
+    bool matched, alive;
     
     int index;
 private:
