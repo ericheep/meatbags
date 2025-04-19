@@ -15,6 +15,12 @@ This project was developed with openFrameowrks v0.12.0, it uses the following op
 - ofxGui
 - ofxOsc
 
+## use
+
+After opening and closing the application Meatbags will create two XML files that are automatically loaded on startup and saved on exit. These hold the configuration state of the application and allow easy startup for art install scenarios. 
+
+It its current state Meatbags expects to be able to read a single Hokuyo UST-10LX sensor at 192.168.0.10::10940. Future releases will include conifigurable methods to add more sensors and edit their address information.
+
 ## external code
 
 This project uses the DBSCAN algorithm for clustering the LiDAR measurements received from Hokuyo sensor. A performant C++ implementaion of DBSCAN by Eleobert is used in the project.
@@ -32,5 +38,6 @@ https://github.com/tcbrindle/span
 ## todo
 
 - add support for reading multiple sensors simultaneously
+- add sensor configuration methods
 
 ![meatbags](https://github.com/user-attachments/assets/573bc162-8214-4989-9b6e-8b0510f38e72)
