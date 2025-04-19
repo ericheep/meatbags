@@ -50,6 +50,8 @@ public:
     
     void saveToFile(const string& path);
     void loadFile(const string& path);
+    
+    void setFont(ofTrueTypeFont globalFont);
 
     vector<Blob> newBlobs, oldBlobs;
     vector<ofPoint> polarCoordinates;
@@ -70,6 +72,7 @@ private:
     int minPoints;
     int numberFilteredCoordinates;
     
+    ofTrueTypeFont font;
     ofPoint puckPosition;
     
 protected:

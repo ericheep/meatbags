@@ -222,10 +222,10 @@ void Meatbags::drawGrid() {
     ofSetColor(ofColor::grey);
     float crossHalfLength = scale * 25;
 
-    for (int i = 0; i < (int) areaSize + 2; i++) {
-        int gridLineIndex = i + -( (int) areaSize + 2) / 2;
+    for (int i = 0; i < (int) areaSize + 4; i++) {
+        int gridLineIndex = i + -( (int) areaSize + 4) / 2;
         
-        for (int j = 0; j < (int) areaSize + 2; j++) {
+        for (int j = 0; j < (int) areaSize + 6; j++) {
             float x = gridLineIndex * 1000.0 * scale + puckPosition.x;
             float y = j * 1000.0 * scale + puckPosition.y;
         
@@ -298,17 +298,22 @@ void Meatbags::drawBlobs() {
         ofFill();
         ofSetColor(255, 0, 0);
         ofDrawEllipse(centroidX, centroidY, 9, 9);
-        
+
         std::stringstream index;
-        index << "index: " << blob.index;
+        index << blob.index;
         std::stringstream x;
-        x << setprecision(3) << "x: " << blob.centroid.x / 1000.0 << endl;
+        x << setprecision(2) << blob.centroid.x / 1000.0;
         std::stringstream y;
-        y << setprecision(3) << "y: " << blob.centroid.y / 1000.0 << endl;
+        y << setprecision(2) << blob.centroid.y / 1000.0;
        
-        ofDrawBitmapString(index.str(), centroidX + 15, centroidY - 20);
-        ofDrawBitmapString(x.str(), centroidX + 15, centroidY - 4);
-        ofDrawBitmapString(y.str(), centroidX + 15, centroidY + 12);
+        ofSetColor(255, 0, 0);
+        string fontString =
+        index.str() + "\n" +
+        "x: " + x.str() + "\n" +
+        "y: " + y.str();
+        
+        font.drawString(fontString, centroidX + 15, centroidY - 10);
+
         
     }
 }
@@ -336,15 +341,22 @@ void Meatbags::draw() {
     drawBlobBounds();
     drawDraggablePoints();
     
-    ofSetColor(ofColor::skyBlue);
+    ofSetColor(ofColor::magenta);
     ofFill();
     ofDrawEllipse(puckPosition.x, puckPosition.y, 10, 10);
+}
+
+void Meatbags::setFont(ofTrueTypeFont globalFont) {
+    font = globalFont;
+    font.setLineHeight(12.0f);
 }
 
 void Meatbags::setCanvasSize(float _width, float _height) {
     width = _width;
     height = _height;
     puckPosition = ofPoint(width / 2.0, 25);
+    
+    setAreaSize(areaSize);
 }
 
 void Meatbags::setAreaSize(float _areaSize) {
