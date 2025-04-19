@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-               BuildableName = "ofx-Hokuyo.app"
-               BlueprintName = "ofx-Hokuyo"
-               ReferencedContainer = "container:ofx-Hokuyo.xcodeproj">
+               BuildableName = "meatbags.app"
+               BlueprintName = "meatbags"
+               ReferencedContainer = "container:meatbags.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -31,9 +31,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofx-Hokuyo.app"
-            BlueprintName = "ofx-Hokuyo"
-            ReferencedContainer = "container:ofx-Hokuyo.xcodeproj">
+            BuildableName = "meatbags.app"
+            BlueprintName = "meatbags"
+            ReferencedContainer = "container:meatbags.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -54,9 +54,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofx-Hokuyo.app"
-            BlueprintName = "ofx-Hokuyo"
-            ReferencedContainer = "container:ofx-Hokuyo.xcodeproj">
+            BuildableName = "meatbags.app"
+            BlueprintName = "meatbags"
+            ReferencedContainer = "container:meatbags.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -71,9 +71,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofx-Hokuyo.app"
-            BlueprintName = "ofx-Hokuyo"
-            ReferencedContainer = "container:ofx-Hokuyo.xcodeproj">
+            BuildableName = "meatbags.app"
+            BlueprintName = "meatbags"
+            ReferencedContainer = "container:meatbags.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
