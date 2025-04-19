@@ -38,6 +38,8 @@ Hokuyo::Hokuyo() {
         polarCoordinates[i] = ofPoint(theta, 0.0);
         intensities[i] = 0;
     }
+    
+    newCoordinatesAvailable = false;
 }
 
 void Hokuyo::setup(string _ipAddress, int _port) {
@@ -244,6 +246,8 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
 
         step += 1;
     }
+    
+    newCoordinatesAvailable = true;
 }
 
 void Hokuyo::parseInfo(vector<string> packet) {

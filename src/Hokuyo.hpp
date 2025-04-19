@@ -47,6 +47,8 @@ public:
     
     vector<ofPoint> polarCoordinates;
     vector<int> intensities;
+    
+    bool newCoordinatesAvailable;
 
 private:
     ofxTCPClient tcpClient;

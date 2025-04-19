@@ -6,7 +6,7 @@
 void ofApp::setup(){
     hokuyo.setup(IP, PORT);
        
-    gui.setup("ofx-Hokuyo");
+    gui.setup("meatbags");
     gui.setDefaultHeight(13);
 
     gui.add(areaSize.set( "area size", 0.5, 0.5, 20.0));
@@ -27,9 +27,9 @@ void ofApp::setup(){
     areaSize.addListener(this, &ofApp::setAreaSize);
     epsilon.addListener(this, &ofApp::setEpsilon);
     minPoints.addListener(this, &ofApp::setMinPoints);
-    
     oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
     oscSenderPort.addListener(this, &ofApp::setOscSenderPort);
+    
     oscSender.setup(oscSenderAddress, oscSenderPort);
 }
 
@@ -37,14 +37,16 @@ void ofApp::setup(){
 void ofApp::update(){
     hokuyo.update();
     
+    if (!hokuyo.newCoordinatesAvailable) return;
+        
     hokuyo.getPolarCoordinates(meatbags.polarCoordinates);
     hokuyo.getIntensities(meatbags.intensities);
-
+        
     meatbags.update();
-    
-    // get blobs to send out via OSC
     meatbags.getBlobs(blobs);
     sendBlobOsc();
+    
+    hokuyo.newCoordinatesAvailable = false;
 }
 
 //--------------------------------------------------------------
