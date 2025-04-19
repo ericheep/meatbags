@@ -23,13 +23,12 @@ It its current state Meatbags expects to be able to read a single Hokuyo UST-10L
 
 ## external code
 
-This project uses the DBSCAN algorithm for clustering the LiDAR measurements received from Hokuyo sensor. A performant C++ implementaion of DBSCAN by Eleobert is used in the project.
+This project uses the DBSCAN algorithm for clustering the LiDAR measurements received from Hokuyo sensor. A performant C++ implementaion of DBSCAN by [Eleobert](https://github.com/Eleobert/dbscan) is used to cluster the streaming LiDAR data.
 
-https://github.com/Eleobert/dbscan
+A C++11 implementation of C++20's std::span is by [tcbrindle](https://github.com/tcbrindle/span
+) also used to enable Eleobert's dbscan implementation.
 
-A C++11 implementation of C++20's std::span is also used to enable Eleobert's dbscan implementation.
-
-https://github.com/tcbrindle/span
+This project uses the very cool font [Hack](https://github.com/source-foundry/Hack).
 
 ## tested sensors
 
@@ -40,5 +39,6 @@ https://github.com/tcbrindle/span
 - add support for reading multiple sensors simultaneously
 - add sensor configuration methods
 
-![meatbags](https://github.com/user-attachments/assets/2ba38f87-3110-476d-bd44-6849f0bbcd93)
+![meatbags](https://github.com/user-attachments/assets/34e793e9-e960-452f-a8a4-a0066824f212)
+
 
