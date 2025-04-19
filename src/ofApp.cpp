@@ -4,10 +4,15 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    hokuyo.setup(IP, PORT);
-       
+    globalFont.setGlobalDpi(72);
+    globalFont.load("Hack-Bold.ttf", 14);
+    meatbags.setFont(globalFont);
+    globalFont.load("Hack-Regular.ttf", 11);
+    hokuyo.setFont(globalFont);
+    
+    ofxGuiSetFont("Hack-Regular.ttf", 11);
     gui.setup("meatbags");
-    gui.setDefaultHeight(13);
+    gui.setDefaultHeight(12);
 
     gui.add(areaSize.set( "area size", 5.0, 0.5, 20.0));
     gui.add(epsilon.set( "cluster epsilon", 100, 1, 500));
@@ -15,15 +20,22 @@ void ofApp::setup(){
     
     gui.add(oscSenderAddress.set( "OSC address", "192.168.0.11"));
     gui.add(oscSenderPort.set( "OSC port", 5432, 4000, 12000));
+    gui.add(oscActive.set("OSC active", false));
     gui.add(normalizeBlobs.set("normalize OSC output", false));
-    gui.add(oscEnabled.set("OSC enabled", false));
+    gui.add(autoReconnectActive.set("auto reconnect", true));
+    gui.add(showSensorInformation.set("show sensor info", true));
     gui.loadFromFile("settings.xml");
 
+    hokuyo.setup(IP, PORT);
+    hokuyo.setRectangle(10, ofGetHeight() - 210, ofGetWidth() / 2.0, 200);
+    hokuyo.setAutoReconnect(autoReconnectActive);
+    
     meatbags.setCanvasSize(ofGetWidth(), ofGetHeight());
     meatbags.setAreaSize(areaSize);
     meatbags.setEpsilon(epsilon);
     meatbags.setMinPoints(minPoints);
 
+    autoReconnectActive.addListener(this, &ofApp::setAutoReconnect);
     areaSize.addListener(this, &ofApp::setAreaSize);
     epsilon.addListener(this, &ofApp::setEpsilon);
     minPoints.addListener(this, &ofApp::setMinPoints);
@@ -53,6 +65,7 @@ void ofApp::update(){
 void ofApp::draw(){
     ofBackground(0);
     meatbags.draw();
+    if (showSensorInformation) hokuyo.draw();
     gui.draw();
     drawFps();
 }
@@ -68,6 +81,15 @@ void ofApp::exit(){
     gui.saveToFile("settings.xml");
     meatbags.saveToFile("meatbags.xml");
     hokuyo.close();
+}
+
+void ofApp::windowResized(int width, int height) {
+    hokuyo.setRectangle(10, height - 190, width / 2.0, 180);
+    meatbags.setCanvasSize(width, height);
+}
+
+void ofApp::setAutoReconnect(bool &autoReconnectActive) {
+    hokuyo.setAutoReconnect(autoReconnectActive);
 }
 
 void ofApp::setAreaSize(float &areaSize) {
@@ -91,7 +113,7 @@ void ofApp::setOscSenderPort(int& oscSenderPort) {
 }
 
 void ofApp::sendBlobOsc() {
-    if (!oscEnabled) return;
+    if (!oscActive) return;
         
     for (auto& blob : blobs) {
         ofxOscMessage msg;

@@ -16,9 +16,11 @@ public:
     void update() override;
     void draw() override;
     void exit() override;
+    void windowResized(int width, int height) override;
+
     void drawFps();
     
-    
+    void setAutoReconnect(bool &autoReconnectActive);
     void setAreaSize(float &areaSize);
     void setEpsilon(float &epsilon);
     void setMinPoints(int &minPoints);
@@ -32,6 +34,7 @@ public:
     // blob tracking software
     Meatbags meatbags;
     vector <Blob> blobs;
+    ofTrueTypeFont globalFont;
     
     ofxPanel gui;
     ofParameter<float> areaSize;
@@ -41,7 +44,9 @@ public:
     ofParameter<string> oscSenderAddress;
     ofParameter<int> oscSenderPort;
     ofParameter<bool> normalizeBlobs;
-    ofParameter<bool> oscEnabled;
+    ofParameter<bool> oscActive;
+    ofParameter<bool> autoReconnectActive;
+    ofParameter<bool> showSensorInformation;
 
     ofxOscSender oscSender;
 };
