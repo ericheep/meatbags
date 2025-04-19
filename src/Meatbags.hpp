@@ -66,7 +66,8 @@ private:
     
     // dbscan params
     float epsilon;
-    int minPoints, blobCounter;
+    int minPoints;
+    int numberFilteredCoordinates;
     
     ofPoint puckPosition;
     

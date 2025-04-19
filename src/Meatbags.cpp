@@ -8,27 +8,27 @@ Meatbags::Meatbags() {
     polarCoordinates.resize(1024);
     cartesianCoordinates.resize(1024);
     intensities.resize(1024);
+    filteredCoordinates.resize(1024);
+    filteredIntensities.resize(1024);
+    draggablePoints.resize(4);
     
     epsilon = 100.0;
     minPoints = 5;
-    blobCounter = 0;
-    
     mouseBoxSize = 8;
     mouseBoxHalfSize = mouseBoxSize * 0.5;
     pixelsPerUnit = 0;
-    
     selectedDraggablePointIndex = 0;
-    draggablePoints.resize(4);
-    
-    ofAddListener(ofEvents().mouseMoved, this, &Meatbags::onMouseMoved);
-    ofAddListener(ofEvents().mousePressed, this, &Meatbags::onMousePressed);
-    ofAddListener(ofEvents().mouseDragged, this, &Meatbags::onMouseDragged);
-    ofAddListener(ofEvents().mouseReleased, this, &Meatbags::onMouseReleased);
+    numberFilteredCoordinates = 0;
     
     boundsX1 = -2.5;
     boundsX2 = 2.5;
     boundsY1 = 0;
     boundsY2 = 5;
+    
+    ofAddListener(ofEvents().mouseMoved, this, &Meatbags::onMouseMoved);
+    ofAddListener(ofEvents().mousePressed, this, &Meatbags::onMousePressed);
+    ofAddListener(ofEvents().mouseDragged, this, &Meatbags::onMouseDragged);
+    ofAddListener(ofEvents().mouseReleased, this, &Meatbags::onMouseReleased);
     
     loadFile("meatbags.xml");
 }
@@ -52,9 +52,8 @@ void Meatbags::polarToCartesian() {
     }
 }
 
-void Meatbags::filterCoordinates() {
-    filteredCoordinates.clear();
-    
+void Meatbags::filterCoordinates() {    
+    int filteredIndex = 0;
     for (int i = 0; i < cartesianCoordinates.size(); i++) {
         float x = cartesianCoordinates[i].x;
         float y = cartesianCoordinates[i].y;
@@ -65,11 +64,14 @@ void Meatbags::filterCoordinates() {
                 && y > boundsY1 * 1000
                 && y < boundsY2 * 1000)
             {
-                filteredCoordinates.push_back(ofPoint(x, y));
-                filteredIntensities.push_back(intensities[i]);
+                filteredCoordinates[filteredIndex].set(x, y);
+                filteredIntensities[filteredIndex] = intensities[i];
+                filteredIndex++;
             }
         }
     }
+    
+    numberFilteredCoordinates = filteredIndex;
 }
 
 float Meatbags::pointDistance(ofPoint a, ofPoint b) {
@@ -78,7 +80,7 @@ float Meatbags::pointDistance(ofPoint a, ofPoint b) {
 
 void Meatbags::clusterBlobs() {
     vector<struct point2> points;
-    for (int i = 0; i < filteredCoordinates.size(); i++) {
+    for (int i = 0; i < numberFilteredCoordinates; i++) {
         struct point2 point;
         point.x = filteredCoordinates[i].x;
         point.y = filteredCoordinates[i].y;
