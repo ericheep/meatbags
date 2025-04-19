@@ -1,4 +1,4 @@
-# ofx-Hokuyo
+# meatbags
 openFrameworks sketch that connects to a Hokuyo UST-LX LIDAR sensor and sends those coordinates out via OSC.
 
 ## installation
@@ -16,10 +16,9 @@ This project uses the DBSCAN algorithm for clustering the LiDAR measurements rec
 https://github.com/Eleobert/dbscan
 
 A C++11 implementation of C++20's std::span is also used to enable Eleobert's dbscan implementation.
+
 https://github.com/tcbrindle/span
 
-## openFrameworks
+[openFrameworks](https://openframeworks.cc/download/)
 
-[openFrameworks package](https://openframeworks.cc/download/)
-
-![meatbags](https://github.com/user-attachments/assets/90e9dc17-1533-4ce9-8158-c45b2e61bcbd)
+![meatbags](https://github.com/user-attachments/assets/573bc162-8214-4989-9b6e-8b0510f38e72)
