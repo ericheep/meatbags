@@ -226,7 +226,7 @@ void Meatbags::drawGrid() {
     float crossHalfLength = scale * 25;
 
     for (int i = 0; i < (int) areaSize + 2; i++) {
-        int gridLineIndex = i + -(areaSize + 2) / 2;
+        int gridLineIndex = i + -( (int) areaSize + 2) / 2;
         
         for (int j = 0; j < (int) areaSize + 2; j++) {
             float x = gridLineIndex * 1000.0 * scale + puckPosition.x;
