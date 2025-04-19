@@ -14,8 +14,11 @@
 class Hokuyo {
 public:
     Hokuyo();
-    void setup(string ip, int port);
+    
     void update();
+    void draw();
+    
+    void setup(string ip, int port);
     void connect();
     void reconnect();
     void activate();
@@ -24,6 +27,10 @@ public:
     void callDistancesAndIntensities();
     void close();
     void send(string msg);
+    
+    void setFont(ofTrueTypeFont globalFont);
+    void setRectangle(float x, float y, float width, float height);
+    void setAutoReconnect(bool autoReconnectActive);
     
     void getPolarCoordinates(vector<ofPoint>& polarCoordinates);
     void getIntensities(vector<int>& intensities);
@@ -52,6 +59,7 @@ public:
 
 private:
     ofxTCPClient tcpClient;
+    
     string msgTx, msgRx;
     
     string ipAddress;
@@ -62,17 +70,22 @@ private:
     float pollingTimer, pollingInterval;
     float reconnectionTimer, reconnectionTimeout;
     float statusTimer, statusInterval;
+    float lastFrameTime;
     
-    bool isConnected;
+    bool isConnected, autoReconnectActive;
     bool callIntensitiesActive;
     
     int startStep, endStep, clusterCount;
     
     int timeStamp;
+    
+    ofTrueTypeFont font;
     string model, laserState, motorSpeed;
     string measurementMode, bitRate, sensorDiagnostic;
+    string connectionStatus;
     
     string status, lastStatus;
+    float x, y, width, height;
 };
 
 #endif /* Hokuyo_hpp */

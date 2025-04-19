@@ -14,6 +14,8 @@ Hokuyo::Hokuyo() {
     pollingInterval = 1.0 / 25;
     pollingTimer = 0;
     
+    lastFrameTime = 0;
+    
     isConnected = false;
     laserActive = true;
     
@@ -25,6 +27,7 @@ Hokuyo::Hokuyo() {
     
     status = "";
     lastStatus = status;
+    connectionStatus = "DISCONNECTED";
     
     // containers
     polarCoordinates.resize(1024);
@@ -34,12 +37,22 @@ Hokuyo::Hokuyo() {
     
     for (int i = 0; i < 1024; i++) {
         float theta = ((float) i / polarCoordinates.size()) * TWO_PI - HALF_PI;
-
+        
         polarCoordinates[i] = ofPoint(theta, 0.0);
         intensities[i] = 0;
     }
     
     newCoordinatesAvailable = false;
+    autoReconnectActive = true;
+    
+    x = 0;
+    y = 0;
+    width = 0;
+    height = 0;
+}
+
+void Hokuyo::setAutoReconnect(bool _autoReconnectActive) {
+    autoReconnectActive = _autoReconnectActive;
 }
 
 void Hokuyo::setup(string _ipAddress, int _port) {
@@ -50,8 +63,9 @@ void Hokuyo::setup(string _ipAddress, int _port) {
 }
 
 void Hokuyo::connect() {
-    ofxTCPSettings settings(ipAddress, port);
-    tcpClient.setup(settings);
+    ofxTCPSettings tcpSettings(ipAddress, port);
+
+    tcpClient.setup(tcpSettings);
     tcpClient.setMessageDelimiter("\012\012");
 }
 
@@ -95,8 +109,8 @@ void Hokuyo::callDistancesAndIntensities() {
 }
 
 void Hokuyo::checkStatus() {
-    statusTimer += ofGetLastFrameTime();
-
+    statusTimer += lastFrameTime;
+    
     if (statusTimer > statusInterval){
         callStatus();
         statusTimer = 0.0;
@@ -112,8 +126,12 @@ void Hokuyo::checkStatus() {
 }
 
 void Hokuyo::update() {
+    lastFrameTime = ofGetLastFrameTime();
+    
     if(tcpClient.isConnected()) {
         if (!isConnected) {
+            connectionStatus = "CONNECTED";
+
             status = "Connected at " + tcpClient.getIP() + " " + to_string(tcpClient.getPort());
             isConnected = true;
             callStatus();
@@ -127,7 +145,7 @@ void Hokuyo::update() {
         checkStatus();
         
         if (laserState == "ON") {
-            pollingTimer += ofGetLastFrameTime();
+            pollingTimer += lastFrameTime;
             if (pollingTimer > pollingInterval) {
                 if (callIntensitiesActive) {
                     callDistancesAndIntensities();
@@ -139,11 +157,13 @@ void Hokuyo::update() {
         }
     } else {
         if (isConnected) {
+            connectionStatus = "DISCONNECTED";
+
             status = "Disconnected";
             isConnected = false;
         }
         
-        reconnect();
+        if (autoReconnectActive) reconnect();
     }
     
     if (status != lastStatus) {
@@ -152,7 +172,44 @@ void Hokuyo::update() {
     }
 }
 
-string Hokuyo::checkSum(string str, int fromEnd) {  
+void Hokuyo::setRectangle(float _x, float _y, float _width, float _height) {
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
+}
+
+void Hokuyo::setFont(ofTrueTypeFont globalFont) {
+    font = globalFont;
+    font.setLineHeight(14.0f);
+}
+
+void Hokuyo::draw() {
+    ofFill();
+    ofSetColor(0, 0, 0, 185);
+    ofDrawRectangle(x, y, width, height);
+    
+    float offset = 10;
+    
+    ofSetColor(ofColor::grey);
+    string sensorInfoString =
+    "model: " + model + "\n" +
+    "laser state: " + laserState + "\n" +
+    "start step: " + to_string(startStep) + "\n" +
+    "end step: " + to_string(endStep) + "\n" +
+    "measurement mode: " + measurementMode + "\n" +
+    "bitrate: " + bitRate + "\n" +
+    "timestamp: " + to_string(timeStamp) + "\n" +
+    "sensor diagnostic: " + sensorDiagnostic + "\n" +
+    "IP Address: " + tcpClient.getIP() + "\n" +
+    "port: " + to_string(port) + "\n" +
+    "connection status: " + connectionStatus + "\n" +
+    "status: " + status;
+        
+    font.drawString(sensorInfoString, x + offset, y + offset + 10);
+}
+
+string Hokuyo::checkSum(string str, int fromEnd) {
     string msg = str.substr(0, str.size() - fromEnd);
     int sum = str.back();
     
@@ -193,13 +250,13 @@ void Hokuyo::parseDistances(vector<string> packet) {
     
     string status = checkSum(packet[1], 1);
     int timeStamp = char2int6bitDecode(checkSum(packet[2], 1));
-        
+    
     string concatenatedData = "";
     for (int i = 3; i < packet.size(); i++) {
         string encodedData = checkSum(packet[i], 1);
         concatenatedData += encodedData;
     }
-
+    
     if (concatenatedData.size() % 6 != 0) return;
     if (concatenatedData.size() / 6 != (endStep - startStep) + 1) return;
     
@@ -223,13 +280,13 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
     
     string status = checkSum(packet[1], 1);
     int timeStamp = char2int6bitDecode(checkSum(packet[2], 1));
-        
+    
     string concatenatedData = "";
     for (int i = 3; i < packet.size(); i++) {
         string encodedData = checkSum(packet[i], 1);
         concatenatedData += encodedData;
     }
-
+    
     if (concatenatedData.size() % 6 != 0) return;
     if (concatenatedData.size() / 6 != (endStep - startStep) + 1) return;
     
@@ -237,13 +294,13 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
     for (int i = 0; i < concatenatedData.size(); i+=6) {
         string distanceChars = concatenatedData.substr(i, 3);
         string intensityChars = concatenatedData.substr(i + 3, 3);
-
+        
         int distance = char2int6bitDecode(distanceChars);
         int intensity = char2int6bitDecode(intensityChars);
         
         polarCoordinates[step].y = distance;
         intensities[step] = intensity;
-
+        
         step += 1;
     }
     
@@ -256,14 +313,14 @@ void Hokuyo::parseInfo(vector<string> packet) {
         
         if (checkedLine.size() > 5) {
             string name = checkedLine.substr(0, 4);
-            string status = checkedLine.substr(5);
+            string info = checkedLine.substr(5);
             
-            if (name == "MODL") model = status;
-            if (name == "LASR") laserState = status;
-            if (name == "MESM") measurementMode = status;
-            if (name == "SBPS") bitRate = status;
-            if (name == "TIME") timeStamp = char2int6bitDecode(status);
-            if (name == "STAT") sensorDiagnostic = status;
+            if (name == "MODL") model = info;
+            if (name == "LASR") laserState = info;
+            if (name == "MESM") measurementMode = info;
+            if (name == "SBPS") bitRate = info;
+            if (name == "TIME") timeStamp = char2int6bitDecode(info);
+            if (name == "STAT") sensorDiagnostic = info;
         }
     }
 }
@@ -302,9 +359,10 @@ int Hokuyo::char2int6bitDecode(string str) {
 }
 
 void Hokuyo::reconnect() {
-    reconnectionTimer += ofGetLastFrameTime();
-
+    reconnectionTimer += lastFrameTime;
+    
     if (reconnectionTimer > reconnectionTimeout){
+        status = "Attempting to reconnect";
         connect();
         reconnectionTimer = 0;
     }
@@ -317,10 +375,10 @@ void Hokuyo::close() {
 vector<string> Hokuyo::splitStringByNewline(const string& str) {
     auto result = std::vector<std::string>{};
     auto ss = std::stringstream{str};
-
+    
     for (std::string line; std::getline(ss, line, '\n');)
         result.push_back(line);
-
+    
     return result;
 }
 
