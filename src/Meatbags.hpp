@@ -58,10 +58,11 @@ public:
     vector<int> intensities;
     vector<int> filteredIntensities;
 
+    float boundsX1, boundsX2, boundsY1, boundsY2;
 private:
     float width, height;
     float areaSize, pixelsPerUnit;
-    float boundsX1, boundsX2, boundsY1, boundsY2, scale;
+    float scale;
     float scaleWidth, scaleHeight;
     
     // dbscan params

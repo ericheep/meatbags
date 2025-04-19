@@ -103,8 +103,8 @@ void ofApp::sendBlobOsc() {
         float y = blob.centroid.y * 0.001;
         
         if (normalizeBlobs) {
-            // x = ofMap(x, boundsX1, boundsX2, 0.0, 1.0);
-            // y = ofMap(y, boundsY1, boundsY2, 0.0, 1.0);
+            x = ofMap(x, meatbags.boundsX1, meatbags.boundsX2, 0.0, 1.0);
+            y = ofMap(y, meatbags.boundsY1, meatbags.boundsY2, 0.0, 1.0);
         }
         
         msg.addFloatArg(x);
