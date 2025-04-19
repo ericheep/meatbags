@@ -1,5 +1,5 @@
 # meatbags
-openFrameworks LiDAR blob detection
+[openFrameworks](https://openframeworks.cc/download/) LiDAR blob detection
 
 This project implements a Hokuyo UST-LX LIDAR protocol and clusters that data to be used a blob detection for creative applications.
 
@@ -20,8 +20,6 @@ https://github.com/Eleobert/dbscan
 A C++11 implementation of C++20's std::span is also used to enable Eleobert's dbscan implementation.
 
 https://github.com/tcbrindle/span
-
-[openFrameworks](https://openframeworks.cc/download/)
 
 # todo
 
