@@ -1,5 +1,7 @@
 # meatbags
-openFrameworks sketch that connects to a Hokuyo UST-LX LIDAR sensor and sends those coordinates out via OSC.
+openFrameworks LiDAR blob detection
+
+This project implements a Hokuyo UST-LX LIDAR protocol and clusters that data to be used a blob detection for creative applications.
 
 ## installation
 
@@ -20,5 +22,9 @@ A C++11 implementation of C++20's std::span is also used to enable Eleobert's db
 https://github.com/tcbrindle/span
 
 [openFrameworks](https://openframeworks.cc/download/)
+
+# todo
+
+- add support for reading multiple sensors simultaneously
 
 ![meatbags](https://github.com/user-attachments/assets/573bc162-8214-4989-9b6e-8b0510f38e72)
