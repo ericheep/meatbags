@@ -25,6 +25,11 @@ Meatbags::Meatbags() {
     ofAddListener(ofEvents().mouseDragged, this, &Meatbags::onMouseDragged);
     ofAddListener(ofEvents().mouseReleased, this, &Meatbags::onMouseReleased);
     
+    boundsX1 = -2.5;
+    boundsX2 = 2.5;
+    boundsY1 = 0;
+    boundsY2 = 5;
+    
     loadFile("meatbags.xml");
 }
 
