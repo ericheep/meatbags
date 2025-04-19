@@ -59,10 +59,10 @@ void Meatbags::filterCoordinates() {
         float y = cartesianCoordinates[i].y;
         
         if (x != 0 && y != 0) {
-            if (x < boundsX2 * 1000
-                && x > boundsX1 * 1000
-                && y > boundsY1 * 1000
-                && y < boundsY2 * 1000)
+            if (x < boundsX2 * 1000 &&
+                x > boundsX1 * 1000 &&
+                y > boundsY1 * 1000 &&
+                y < boundsY2 * 1000)
             {
                 filteredCoordinates[filteredIndex].set(x, y);
                 filteredIntensities[filteredIndex] = intensities[i];
@@ -72,10 +72,6 @@ void Meatbags::filterCoordinates() {
     }
     
     numberFilteredCoordinates = filteredIndex;
-}
-
-float Meatbags::pointDistance(ofPoint a, ofPoint b) {
-    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
 
 void Meatbags::clusterBlobs() {
@@ -129,8 +125,9 @@ void Meatbags::clusterBlobs() {
 
 float Meatbags::compareBlobs(Blob newBlob, Blob oldBlob) {
     float epsilon = 1;
-    float distance = pointDistance(newBlob.centroid, oldBlob.centroid);
-    return 1.0 / (distance + epsilon);
+    float squareDistance = newBlob.centroid.squareDistance(oldBlob.centroid);
+
+    return 1.0 / (squareDistance + epsilon);
 }
 
 void Meatbags::matchBlobs() {

@@ -12,7 +12,7 @@ Blob::Blob(vector<ofPoint> coordinates, vector<int> intensities) {
     calculateCentroid(coordinates);
     calculateBounds(coordinates);
     calculateIntensity(intensities);
-    distanceFromSensor = sqrt(pow(centroid.x, 2) + pow(centroid.y, 2));
+    distanceFromSensor = centroid.length();
 
     matched = false;
 }
