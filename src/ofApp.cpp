@@ -9,7 +9,7 @@ void ofApp::setup(){
     gui.setup("meatbags");
     gui.setDefaultHeight(13);
 
-    gui.add(areaSize.set( "area size", 0.5, 0.5, 20.0));
+    gui.add(areaSize.set( "area size", 5.0, 0.5, 20.0));
     gui.add(epsilon.set( "cluster epsilon", 100, 1, 500));
     gui.add(minPoints.set( "cluster min points", 10, 1, 50));
     
