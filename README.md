@@ -1,9 +1,13 @@
 # meatbags
-[openFrameworks](https://openframeworks.cc/download/) LiDAR blob detection
+[openFrameworks](https://openframeworks.cc/download/) Hokuyo LiDAR blob detection
 
-This project implements a Hokuyo UST-LX LIDAR protocol and clusters that data to be used a blob detection for creative applications.
+This project implements the Hokuyo UST-LX LIDAR protocol and clusters data to be used as blob detection for creative applications.
 
 ## installation
+
+You can download a built binary from the releases sidebar (Mac OS only) or you can compile the software using the openFrameworks architecture.
+
+If compiling from source code, I recommend using the [projectGenerator](https://openframeworks.cc/learning/01_basics/create_a_new_project/) software to import the project into your IDE of choice.
 
 This project was developed with openFrameowrks v0.12.0, it uses the following openFrameworks addons; all included in the main package.
 
@@ -21,7 +25,11 @@ A C++11 implementation of C++20's std::span is also used to enable Eleobert's db
 
 https://github.com/tcbrindle/span
 
-# todo
+## tested sensors
+
+- Hokuyo UST-10LX
+
+## todo
 
 - add support for reading multiple sensors simultaneously
 
