@@ -11,7 +11,7 @@
 class Blob {
 public:
     Blob();
-    Blob(vector<ofPoint> coordinates, vector<int> intensities, float blobPersistence);
+    Blob(vector<ofPoint> coordinates, vector<int> intensities, float blobPersistence, int numberPoints);
     void updateLifetime(float secondsLived);
     void setMatched(bool matched);
     bool isMatched();
@@ -22,6 +22,7 @@ public:
 
     ofPoint centroid, center;
     ofRectangle bounds;
+    int numberPoints;
     float intensity;
     float distanceFromSensor;
     

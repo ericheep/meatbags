@@ -8,9 +8,10 @@ Blob::Blob() {
     matched = false;
     alive = true;
     lifetime = 0;
+    numberPoints = 0;
 }
 
-Blob::Blob(vector<ofPoint> coordinates, vector<int> intensities, float blobPersistence) {
+Blob::Blob(vector<ofPoint> coordinates, vector<int> intensities, float blobPersistence, int _numberPoints) {
     calculateCentroid(coordinates);
     calculateBounds(coordinates);
     calculateIntensity(intensities);
@@ -20,6 +21,7 @@ Blob::Blob(vector<ofPoint> coordinates, vector<int> intensities, float blobPersi
     matched = false;
     alive = true;
     lifetime = 0;
+    numberPoints = _numberPoints;
 }
 
 void Blob::updateLifetime(float secondsLived) {
@@ -39,6 +41,7 @@ void Blob::become(Blob _blob) {
     intensity = _blob.intensity;
     bounds = _blob.bounds;
     distanceFromSensor = _blob.distanceFromSensor;
+    numberPoints = _blob.numberPoints;
     lifetimeLength = _blob.lifetimeLength;
 }
 

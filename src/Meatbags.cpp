@@ -101,13 +101,15 @@ void Meatbags::clusterBlobs() {
     for(auto& cluster: clusters) {
         vector<ofPoint> coordinates;
         vector<int> intensities;
-        for (int i = 0; i < cluster.size(); i++) {
+        int numberPoints = cluster.size();
+        
+        for (int i = 0; i < numberPoints; i++) {
             int coordinateIndex = cluster[i];
             coordinates.push_back(filteredCoordinates[coordinateIndex]);;
             intensities.push_back(filteredIntensities[coordinateIndex]);
         }
         
-        Blob newBlob = Blob(coordinates, intensities, blobPersistence);
+        Blob newBlob = Blob(coordinates, intensities, blobPersistence, numberPoints);
         newBlob.index = index;
         newBlobs.push_back(newBlob);
         
@@ -328,9 +330,10 @@ void Meatbags::drawBlobs() {
         string fontString =
         index.str() + "\n" +
         "x: " + x.str() + "\n" +
-        "y: " + y.str();
+        "y: " + y.str() + "\n" +
+        "points: " + to_string(blob.numberPoints);
         
-        font.drawString(fontString, centroidX + 15, centroidY - 10);
+        font.drawString(fontString, centroidX + 15, centroidY - 15);
     }
 }
 
