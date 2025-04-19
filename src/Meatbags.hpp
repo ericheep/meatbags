@@ -17,7 +17,15 @@ public:
     Meatbags();
     
     void draw();
+    void drawGrid();
+    void drawDraggablePoints();
+    void drawScanningPoints();
+    void drawBlobs();
+    void drawBlobBounds();
+    
     void update();
+    void updateDraggablePoints();
+    void updateBounds();
     
     void polarToCartesian();
     void filterCoordinates();
@@ -31,16 +39,17 @@ public:
     void getBlobs(vector<Blob> &blob);
 
     int findFreeBlobIndex();
-    
     float compareBlobs(Blob newBlob, Blob oldBlob);
-    
-    void setScale(float scale);
-    void setSize(float width, float height);
-    void setScanningArea(float x1, float x2, float y1, float y2);
-    void setFilterBounds(float x1, float x2, float y1, float y2);
+        
+    void setBlobBounds(float x1, float y1, float x2, float y2);
+    void setAreaSize(float areaSize);
+    void setCanvasSize(float width, float height);
     void setEpsilon(float epsilon);
     void setMinPoints(int minPoints);
     float pointDistance(ofPoint a, ofPoint b);
+    
+    void saveToFile(const string& path);
+    void loadFile(const string& path);
 
     vector<Blob> newBlobs, oldBlobs;
     vector<ofPoint> polarCoordinates;
@@ -51,14 +60,26 @@ public:
 
 private:
     float width, height;
-    float areaX1, areaX2, areaY1, areaY2;
+    float areaSize, pixelsPerUnit;
     float boundsX1, boundsX2, boundsY1, boundsY2, scale;
+    float scaleWidth, scaleHeight;
     
     // dbscan params
     float epsilon;
     int minPoints, blobCounter;
     
     ofPoint puckPosition;
+    
+protected:
+    void onMouseMoved(ofMouseEventArgs & mouseArgs);
+    void onMousePressed(ofMouseEventArgs & mouseArgs);
+    void onMouseDragged(ofMouseEventArgs & mouseArgs);
+    void onMouseReleased(ofMouseEventArgs & mouseArgs);
+    void keyPressed(ofKeyEventArgs & keyArgs);
+    
+    vector <ofPoint> draggablePoints;
+    float mouseBoxSize, mouseBoxHalfSize;
+    int selectedDraggablePointIndex, highlightedDraggablePointIndex;
 };
 
 #endif /* Viz_hpp */

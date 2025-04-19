@@ -28,17 +28,21 @@
 <ofx-Hokuyo>
 	<scale>0.5</scale>
 	<area_x1>-2.5</area_x1>
-	<area_x2>0.1</area_x2>
-	<area_y1>2.075</area_y1>
+	<area_x2>2.5</area_x2>
+	<area_y1>0</area_y1>
 	<area_y2>5</area_y2>
-	<bounds_x1>-1.025</bounds_x1>
-	<bounds_x2>0.7625</bounds_x2>
-	<bounds_y1>0</bounds_y1>
-	<bounds_y2>1.35</bounds_y2>
+	<bounds_x1>-1.9</bounds_x1>
+	<bounds_x2>1.0125</bounds_x2>
+	<bounds_y1>1.625</bounds_y1>
+	<bounds_y2>4.25</bounds_y2>
 	<epsilon>100</epsilon>
 	<min_points>10</min_points>
-	<cluster_epsilon>100</cluster_epsilon>
-	<cluster_min_points>10</cluster_min_points>
+	<cluster_epsilon>113.275</cluster_epsilon>
+	<cluster_min_points>11</cluster_min_points>
 	<OSC_address>192.168.0.11</OSC_address>
 	<OSC_port>5432</OSC_port>
+	<normalize_blobs>1</normalize_blobs>
+	<OSC_enabled>1</OSC_enabled>
+	<area_size>4.4</area_size>
+	<normalize_OSC_output>0</normalize_OSC_output>
 </ofx-Hokuyo>

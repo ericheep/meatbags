@@ -12,10 +12,23 @@ Meatbags::Meatbags() {
     epsilon = 100.0;
     minPoints = 5;
     blobCounter = 0;
+    
+    mouseBoxSize = 8;
+    mouseBoxHalfSize = mouseBoxSize * 0.5;
+    pixelsPerUnit = 0;
+    
+    selectedDraggablePointIndex = 0;
+    draggablePoints.resize(4);
+    
+    ofAddListener(ofEvents().mouseMoved, this, &Meatbags::onMouseMoved);
+    ofAddListener(ofEvents().mousePressed, this, &Meatbags::onMousePressed);
+    ofAddListener(ofEvents().mouseDragged, this, &Meatbags::onMouseDragged);
+    ofAddListener(ofEvents().mouseReleased, this, &Meatbags::onMouseReleased);
+    
+    loadFile("meatbags.xml");
 }
 
 void Meatbags::update() {
-    puckPosition = ofPoint(width / 2.0, 50);
     polarToCartesian();
     filterCoordinates();
     calculateBlobs();
@@ -42,7 +55,11 @@ void Meatbags::filterCoordinates() {
         float y = cartesianCoordinates[i].y;
         
         if (x != 0 && y != 0) {
-            if (x < boundsX2 && x > boundsX1 && y > boundsY1 && y < boundsY2) {
+            if (x < boundsX2 * 1000
+                && x > boundsX1 * 1000
+                && y > boundsY1 * 1000
+                && y < boundsY2 * 1000)
+            {
                 filteredCoordinates.push_back(ofPoint(x, y));
                 filteredIntensities.push_back(intensities[i]);
             }
@@ -197,28 +214,49 @@ void::Meatbags::getBlobs(vector<Blob> &blobs) {
     }
 }
 
-void Meatbags::draw() {
+void Meatbags::drawGrid() {
+    ofSetColor(ofColor::grey);
+    float crossHalfLength = scale * 25;
+
+    for (int i = 0; i < (int) areaSize + 2; i++) {
+        int gridLineIndex = i + -(areaSize + 2) / 2;
+        
+        for (int j = 0; j < (int) areaSize + 2; j++) {
+            float x = gridLineIndex * 1000.0 * scale + puckPosition.x;
+            float y = j * 1000.0 * scale + puckPosition.y;
+        
+            for (int k = 0; k < 3; k++) {
+                float ex = ofMap(k, 0, 3 - 1, x - scale * 333, x + scale * 333);
+                float ey = ofMap(k, 0, 3 - 1, y - scale * 333, y + scale * 333);
+                
+                ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
+                ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);
+            }
+        }
+    }
+}
+
+void Meatbags::drawScanningPoints() {
     ofNoFill();
     ofSetColor(255);
     ofDrawRectangle(0, 0, width, height);
-    
-    float scanningWidth = fabs(areaX2 - areaX1);
-    float scanningHeight = fabs(areaY2 - areaY1);
-    float scaleWidth = width / scanningWidth;
-    float scaleHeight = height / scanningHeight;
     
     for (int i = 0; i < cartesianCoordinates.size(); i++) {
         float x = cartesianCoordinates[i].x;
         float y = cartesianCoordinates[i].y;
         
-        if (x < boundsX2 && x > boundsX1 && y > boundsY1 && y < boundsY2) {
+        if (x < boundsX2 * 1000
+            && x > boundsX1 * 1000
+            && y > boundsY1 * 1000
+            && y < boundsY2 * 1000)
+        {
             ofSetColor(255);
         } else {
             ofSetColor(100);
         }
         
-        x *= scaleWidth;
-        y *= scaleHeight;
+        x *= scale;
+        y *= scale;
         
         float x2 = x + puckPosition.x;
         float y2 = y + puckPosition.y;
@@ -226,77 +264,118 @@ void Meatbags::draw() {
         ofFill();
         ofDrawEllipse(x2, y2, 3, 3);
     }
-    
-    ofDrawEllipse(puckPosition.x, puckPosition.y, 10, 10);
+}
+
+void Meatbags::drawBlobBounds() {
     ofNoFill();
     ofSetColor(ofColor::magenta);
-    float bx = boundsX1 * scaleWidth + puckPosition.x;
-    float by = boundsY1 * scaleHeight + puckPosition.y;
-    float bw = fabs(boundsX2 - boundsX1) * scaleWidth;
-    float bh = fabs(boundsY2 - boundsY1) * scaleHeight;
+    float bx = boundsX1 * 1000 * scale + puckPosition.x;
+    float by = boundsY1 * 1000 * scale + puckPosition.y;
+    float bw = fabs(boundsX2 * 1000 - boundsX1 * 1000) * scale;
+    float bh = fabs(boundsY2 * 1000 - boundsY1 * 1000) * scale;
     ofDrawRectangle(bx, by, bw, bh);
-    
+}
+
+void Meatbags::drawBlobs() {
     for (auto blob : oldBlobs) {
         ofRectangle blobBox = blob.bounds;
-        blobBox.setX(blobBox.getX() * scaleWidth + puckPosition.x);
-        blobBox.setY(blobBox.getY() * scaleHeight + puckPosition.y);
-        blobBox.setWidth(blobBox.getWidth() * scaleWidth);
-        blobBox.setHeight(blobBox.getHeight() * scaleHeight);
+        blobBox.setX(blobBox.getX() * scale + puckPosition.x);
+        blobBox.setY(blobBox.getY() * scale + puckPosition.y);
+        blobBox.setWidth(blobBox.getWidth() * scale);
+        blobBox.setHeight(blobBox.getHeight() * scale);
         
         ofNoFill();
         ofSetColor(0, 0, 255);
         ofDrawRectangle(blobBox);
         
-        float centroidX = blob.centroid.x * scaleWidth + puckPosition.x;
-        float centroidY = blob.centroid.y * scaleHeight + puckPosition.y;
+        float centroidX = blob.centroid.x * scale + puckPosition.x;
+        float centroidY = blob.centroid.y * scale + puckPosition.y;
         
         ofFill();
         ofSetColor(255, 0, 0);
         ofDrawEllipse(centroidX, centroidY, 9, 9);
         
-        std::stringstream indexStrm;
-        indexStrm << "index: " << blob.index;
-        ofDrawBitmapString(indexStrm.str(), centroidX + 15, centroidY - 20);
-        
-        std::stringstream centroidStrm;
-        centroidStrm << setprecision(3) << "x: " << blob.centroid.x / 1000.0;
-        centroidStrm << setprecision(3) << " y: " << blob.centroid.y / 1000.0;
-        ofDrawBitmapString(centroidStrm.str(), centroidX + 15, centroidY - 4);
-                
-        std::stringstream distanceStrm;
-        distanceStrm << setprecision(3) << "distance: " << blob.distanceFromSensor << "m";
-        ofDrawBitmapString(distanceStrm.str(), centroidX + 15, centroidY + 11);
-        
-        std::stringstream intensityStrm;
-        intensityStrm << setprecision(5) << "intensity: " << blob.intensity;
-        ofDrawBitmapString(intensityStrm.str(), centroidX + 15, centroidY + 26);
+        std::stringstream index;
+        index << "index: " << blob.index;
+        std::stringstream x;
+        x << setprecision(3) << "x: " << blob.centroid.x / 1000.0 << endl;
+        std::stringstream y;
+        y << setprecision(3) << "y: " << blob.centroid.y / 1000.0 << endl;
+       
+        ofDrawBitmapString(index.str(), centroidX + 15, centroidY - 20);
+        ofDrawBitmapString(x.str(), centroidX + 15, centroidY - 4);
+        ofDrawBitmapString(y.str(), centroidX + 15, centroidY + 12);
         
     }
 }
 
-void Meatbags::setSize(float _width, float _height) {
+void Meatbags::drawDraggablePoints() {
+    for (int i = 0; i < 4; i++) {
+        float x1 = draggablePoints[i].x - mouseBoxHalfSize;
+        float y1 = draggablePoints[i].y - mouseBoxHalfSize;
+        float x2 = mouseBoxSize;
+        float y2 = mouseBoxSize;
+        
+        ofNoFill();
+        
+        if (highlightedDraggablePointIndex == i) ofFill();
+        
+        ofSetColor(ofColor::magenta);
+        ofDrawRectangle(x1, y1, x2, y2);
+    }
+}
+
+void Meatbags::draw() {
+    drawGrid();
+    drawScanningPoints();
+    drawBlobs();
+    drawBlobBounds();
+    drawDraggablePoints();
+    
+    ofSetColor(ofColor::skyBlue);
+    ofFill();
+    ofDrawEllipse(puckPosition.x, puckPosition.y, 10, 10);
+}
+
+void Meatbags::setCanvasSize(float _width, float _height) {
     width = _width;
     height = _height;
+    puckPosition = ofPoint(width / 2.0, 25);
 }
 
-void Meatbags::setScale(float _scale) {
-    scale = _scale;
+void Meatbags::setAreaSize(float _areaSize) {
+    areaSize = _areaSize;
+    scale = width / (areaSize * 1000);
+    
+    updateDraggablePoints();
 }
 
-void Meatbags::setScanningArea(float _areaX1, float _areaX2, float _areaY1, float _areaY2) {
-    // meters to millimeers
-    areaX1 = _areaX1 * 1000;
-    areaX2 = _areaX2 * 1000;
-    areaY1 = _areaY1 * 1000;
-    areaY2 = _areaY2 * 1000;
+void Meatbags::updateDraggablePoints() {
+    float bx = boundsX1 * 1000.0 * scale + puckPosition.x;
+    float by = boundsY1 * 1000.0 * scale + puckPosition.y;
+    float bw = fabs(boundsX2 - boundsX1) * 1000.0 * scale;
+    float bh = fabs(boundsY2 - boundsY1) * 1000.0 * scale;
+    
+    draggablePoints[0] = ofPoint(bx, by + bh / 2.0);
+    draggablePoints[1] = ofPoint(bx + bw / 2.0, by);
+    draggablePoints[2] = ofPoint(bx + bw, by + bh / 2.0);
+    draggablePoints[3] = ofPoint(bx + bw / 2.0, by + bh);
 }
 
-void Meatbags::setFilterBounds(float _boundsX1, float _boundsX2, float _boundsY1, float _boundsY2) {
-    // meters to millimeers
-    boundsX1 = _boundsX1 * 1000;
-    boundsX2 = _boundsX2 * 1000;
-    boundsY1 = _boundsY1 * 1000;
-    boundsY2 = _boundsY2 * 1000;
+void Meatbags::setBlobBounds(float _boundsX1, float _boundsX2, float _boundsY1, float _boundsY2) {
+    boundsX1 = _boundsX1;
+    boundsX2 = _boundsX2;
+    boundsY1 = _boundsY1;
+    boundsY2 = _boundsY2;
+    
+    updateDraggablePoints();
+}
+
+void Meatbags::updateBounds() {
+    boundsX1 = (draggablePoints[0].x - puckPosition.x) / scale * 0.001;
+    boundsY1 = (draggablePoints[1].y - puckPosition.y) / scale * 0.001;
+    boundsX2 = (draggablePoints[2].x - puckPosition.x) / scale * 0.001;
+    boundsY2 = (draggablePoints[3].y - puckPosition.y) / scale * 0.001;
 }
 
 void Meatbags::setEpsilon(float _epsilon) {
@@ -306,7 +385,77 @@ void Meatbags::setEpsilon(float _epsilon) {
 void Meatbags::setMinPoints(int _minPoints) {
     minPoints = _minPoints;
 }
-// Comparator function
-bool comp(int a, int b) {
-    return a > b;
+
+//----------------------------------------------------- interaction.
+void Meatbags::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+
+    for(int i = 0; i < 4; i++) {
+        ofPoint & draggablePoint = draggablePoints[i];
+        if(mousePoint.distance(draggablePoint) <= mouseBoxHalfSize) {
+            highlightedDraggablePointIndex = i;
+            return;
+        }
+    }
+    
+    highlightedDraggablePointIndex = -1;
+}
+
+void Meatbags::onMousePressed(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+
+    for(int i = 0; i < 4; i++) {
+        ofPoint & draggablePoint = draggablePoints[i];
+        if(mousePoint.distance(draggablePoint) <= mouseBoxHalfSize) {
+            draggablePoint.set(mousePoint);
+            selectedDraggablePointIndex = i;
+            return;
+        }
+    }
+    
+    selectedDraggablePointIndex = -1;
+}
+
+void Meatbags::onMouseDragged(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+    
+    if (selectedDraggablePointIndex >= 0) {
+        draggablePoints[selectedDraggablePointIndex].set(mousePoint);
+        updateBounds();
+        updateDraggablePoints();
+    }
+}
+
+void Meatbags::onMouseReleased(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+    
+    if (selectedDraggablePointIndex >= 0) {
+        draggablePoints[selectedDraggablePointIndex].set(mousePoint);
+        updateBounds();
+        updateDraggablePoints();
+    }
+}
+
+void Meatbags::saveToFile(const string& path) {
+    ofXml xml;
+    xml.appendChild("meatbags");
+    
+    ofXml bounds = xml.getChild("meatbags").appendChild("bounds");
+    bounds.setAttribute("x1", ofToString(boundsX1));
+    bounds.setAttribute("x2", ofToString(boundsX2));
+    bounds.setAttribute("y1", ofToString(boundsY1));
+    bounds.setAttribute("y2", ofToString(boundsY2));
+
+    xml.save(path);
+}
+
+void Meatbags::loadFile(const string& path) {
+    ofXml xml;
+    if (!xml.load(path)) return;
+
+    auto bounds = xml.getChild("meatbags").getChild("bounds");
+    boundsX1 = bounds.getAttribute("x1").getFloatValue();
+    boundsX2 = bounds.getAttribute("x2").getFloatValue();
+    boundsY1 = bounds.getAttribute("y1").getFloatValue();
+    boundsY2 = bounds.getAttribute("y2").getFloatValue();
 }
