@@ -10,7 +10,7 @@ Software: Meatbags
 
 License: Apache 2.0
 
-Licensor: dkfjsal (Eric Heep)
+Licensor: Eric Heep
 
 ### Apache License
 
