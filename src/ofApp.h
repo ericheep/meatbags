@@ -18,6 +18,10 @@ public:
     void exit() override;
     void drawFps();
     
+    
+    void setAreaSize(float &areaSize);
+    void setEpsilon(float &epsilon);
+    void setMinPoints(int &minPoints);
     void setOscSenderAddress(string &oscSenderAddress);
     void setOscSenderPort(int &oscSenderAddress);
     

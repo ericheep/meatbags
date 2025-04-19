@@ -22,11 +22,15 @@ void ofApp::setup(){
     meatbags.setCanvasSize(ofGetWidth(), ofGetHeight());
     meatbags.setAreaSize(areaSize);
     meatbags.setEpsilon(epsilon);
+    meatbags.setMinPoints(minPoints);
+
+    areaSize.addListener(this, &ofApp::setAreaSize);
+    epsilon.addListener(this, &ofApp::setEpsilon);
+    minPoints.addListener(this, &ofApp::setMinPoints);
     
     oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
     oscSenderPort.addListener(this, &ofApp::setOscSenderPort);
     oscSender.setup(oscSenderAddress, oscSenderPort);
-    
 }
 
 //--------------------------------------------------------------
@@ -35,10 +39,7 @@ void ofApp::update(){
     
     hokuyo.getPolarCoordinates(meatbags.polarCoordinates);
     hokuyo.getIntensities(meatbags.intensities);
-    meatbags.setAreaSize(areaSize);
-    
-    meatbags.setEpsilon(epsilon);
-    meatbags.setMinPoints(minPoints);
+
     meatbags.update();
     
     // get blobs to send out via OSC
@@ -65,6 +66,18 @@ void ofApp::exit(){
     gui.saveToFile("settings.xml");
     meatbags.saveToFile("meatbags.xml");
     hokuyo.close();
+}
+
+void ofApp::setAreaSize(float &areaSize) {
+    meatbags.setAreaSize(areaSize);
+}
+
+void ofApp::setEpsilon(float &epsilon) {
+    meatbags.setEpsilon(epsilon);
+}
+
+void ofApp::setMinPoints(int &minPoints) {
+    meatbags.setMinPoints(minPoints);
 }
 
 void ofApp::setOscSenderAddress(string& oscSenderAddress) {
