@@ -40,5 +40,6 @@ https://github.com/tcbrindle/span
 - add support for reading multiple sensors simultaneously
 - add sensor configuration methods
 
-![meatbags](https://github.com/user-attachments/assets/2ba38f87-3110-476d-bd44-6849f0bbcd93)
+![meatbags](https://github.com/user-attachments/assets/34e793e9-e960-452f-a8a4-a0066824f212)
+
 
