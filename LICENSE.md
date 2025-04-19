@@ -1,4 +1,4 @@
-## “Commons Clause” License Condition v1.0
+### “Commons Clause” License Condition v1.0
 
 The Software is provided to you by the Licensor under the License, as defined below, subject to the following condition.
 
@@ -12,9 +12,10 @@ License: Apache 2.0
 
 Licensor: dkfjsal (Eric Heep)
 
-## Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+### Apache License
+
+Version 2.0, January 2004
+http://www.apache.org/licenses/
 
    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
@@ -191,14 +192,14 @@ Licensor: dkfjsal (Eric Heep)
 
    APPENDIX: How to apply the Apache License to your work.
 
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
+  To apply the Apache License to your work, attach the following
+  boilerplate notice, with the fields enclosed by brackets "[]"
+  replaced with your own identifying information. (Don't include
+  the brackets!)  The text should be enclosed in the appropriate
+  comment syntax for the file format. We also recommend that a
+  file or class name and description of purpose be included on the
+  same "printed page" as the copyright notice for easier
+  identification within third-party archives.
 
    Copyright 2025 Eric Heep
 
@@ -206,7 +207,7 @@ Licensor: dkfjsal (Eric Heep)
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
