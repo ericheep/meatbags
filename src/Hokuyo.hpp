@@ -11,7 +11,7 @@
 #include "ofxNetwork.h"
 #include "sstream"
 
-class Hokuyo {
+class Hokuyo : public ofThread {
 public:
     Hokuyo();
     

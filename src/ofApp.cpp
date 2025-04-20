@@ -14,20 +14,29 @@ void ofApp::setup(){
     gui.setup("meatbags");
     gui.setDefaultHeight(12);
     
-    gui.add(sensorRotation.set( "sensor rotation (rad)", 0.0, 0.0, 6.2831853072));
-    gui.add(areaSize.set( "area size (m)", 5.0, 0.5, 20.0));
-    gui.add(mirrorX.set("mirror x", false));
-    gui.add(epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
-    gui.add(minPoints.set( "cluster min points", 10, 1, 50));
-    gui.add(blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
+    meatbagsSettings.setName("general settings");
+    meatbagsSettings.add(areaSize.set( "area size (m)", 5.0, 0.5, 20.0));
+    meatbagsSettings.add(mirrorX.set("mirror x", false));
+    meatbagsSettings.add(epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
+    meatbagsSettings.add(minPoints.set( "cluster min points", 10, 1, 50));
+    meatbagsSettings.add(blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
+    gui.add(meatbagsSettings);
     
-    gui.add(oscSenderAddress.set( "OSC address", "192.168.0.11"));
-    gui.add(oscSenderPort.set( "OSC port", 5432, 4000, 12000));
-    gui.add(oscActive.set("OSC active", false));
-    gui.add(normalizeBlobs.set("normalize OSC output", false));
-    gui.add(autoReconnectActive.set("auto reconnect", true));
-    gui.add(showSensorInformation.set("show sensor info", true));
+    oscSettings.setName("OSC settings");
+    oscSettings.add(oscSenderAddress.set( "OSC address", "192.168.0.11"));
+    oscSettings.add(oscSenderPort.set( "OSC port", 5432, 4000, 12000));
+    oscSettings.add(oscActive.set("OSC active", false));
+    oscSettings.add(normalizeBlobs.set("normalize OSC output", false));
+    gui.add(oscSettings);
+    
+    sensorSettings.setName("sensor settings");
+    sensorSettings.add(sensorRotation.set( "sensor rotation (rad)", 0, -PI, PI));
+    sensorSettings.add(autoReconnectActive.set("auto reconnect", true));
+    sensorSettings.add(showSensorInformation.set("show sensor info", true));
+    gui.add(sensorSettings);
+    
     gui.loadFromFile("settings.xml");
+    gui.maximize();
 
     hokuyo.setup(IP, PORT);
     hokuyo.setSensorRotation(sensorRotation);
@@ -42,6 +51,7 @@ void ofApp::setup(){
     meatbags.setMinPoints(minPoints);
     
     sensorRotation.addListener(this, &ofApp::setSensorRotation);
+    sensorMotorSpeed.addListener(this, &ofApp::setSensorMotorSpeed);
     blobPersistence.addListener(this, &ofApp::setBlobPersistence);
     autoReconnectActive.addListener(this, &ofApp::setAutoReconnect);
     areaSize.addListener(this, &ofApp::setAreaSize);
@@ -100,6 +110,10 @@ void ofApp::windowResized(int width, int height) {
 
 void ofApp::setAutoReconnect(bool &autoReconnectActive) {
     hokuyo.setAutoReconnect(autoReconnectActive);
+}
+
+void ofApp::setSensorMotorSpeed(int &sensorMotorSpeed) {
+    hokuyo.sendSetMotorSpeedCommand(sensorMotorSpeed);
 }
 
 void ofApp::setMirrorX(bool &mirrorX) {

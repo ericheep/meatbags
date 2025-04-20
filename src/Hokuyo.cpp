@@ -36,8 +36,11 @@ Hokuyo::Hokuyo() {
     
     callIntensitiesActive = true;
     
+    // -45 degrees offset
+    float thetaOffset = -HALF_PI * 0.5;
+
     for (int i = 0; i < angularResolution; i++) {
-        float theta = ((float) i / polarCoordinates.size()) * TWO_PI;
+        float theta = ((float) i / angularResolution) * TWO_PI + thetaOffset;
         
         polarCoordinates[i] = ofPoint(theta, 0.0);
         intensities[i] = 0;
@@ -54,12 +57,6 @@ Hokuyo::Hokuyo() {
 
 void Hokuyo::setSensorRotation(float _sensorRotation) {
     sensorRotation = _sensorRotation;
-    
-    for (int i = 0; i < 1440; i++) {
-        float theta = ((float) i / polarCoordinates.size()) * TWO_PI;
-        
-        polarCoordinates[i] = ofPoint(theta, 0.0);
-    }
 }
 
 void Hokuyo::setAutoReconnect(bool _autoReconnectActive) {
@@ -78,6 +75,35 @@ void Hokuyo::connect() {
 
     tcpClient.setup(tcpSettings);
     tcpClient.setMessageDelimiter("\012\012");
+}
+
+
+void Hokuyo::sendRebootCommand() {
+    // send command twice to register, per spec
+    send("RB");
+    send("RB");
+}
+
+void Hokuyo::sendResetStatusCommand() {
+    send("RS");
+}
+
+void Hokuyo::sendSetMotorSpeedCommand(int motorSpeed) {
+    motorSpeed = ofClamp(motorSpeed, 0, 99);
+    
+    char motorSpeedChars[3];
+    std::snprintf(motorSpeedChars, 3, "%02d", motorSpeed);
+    string motorSpeedBytes = (string) motorSpeedChars;
+
+    send("CR" + motorSpeedBytes);
+}
+
+void Hokuyo::sendSetIPAddressCommand() {
+    string ip;
+    string nm;
+    string gw;
+
+    send("$IP" + ip + nm + gw);
 }
 
 void Hokuyo::sendStatusInfoCommand() {
@@ -131,7 +157,7 @@ string Hokuyo::formatDistanceMessage(string command) {
 
 void Hokuyo::checkStatus() {
     statusTimer += lastFrameTime;
-    
+
     if (statusTimer > statusInterval){
         sendStatusInfoCommand();
         sendVersionInfoCommand();
@@ -278,6 +304,7 @@ void Hokuyo::parseResponse(string str) {
     if (command == "II") parseStatusInfo(lines);
     if (command == "VV") parseVersionInfo(lines);
     if (command == "PP") parseParameterInfo(lines);
+    if (command == "CR") parseMotorSpeed(lines);
 }
 
 void Hokuyo::parseDistances(vector<string> packet) {
@@ -361,6 +388,15 @@ void Hokuyo::parseStatusInfo(vector<string> packet) {
             if (name == "TIME") timeStamp = char2int6bitDecode(info);
             if (name == "STAT") sensorDiagnostic = info;
         }
+    }
+}
+
+void Hokuyo::parseMotorSpeed(vector<string> packet) {
+    if (packet.size() <= 2) return;
+    
+    for (int i = 1; i < packet.size(); i++) {
+        string checkedLine = checkSum(packet[i], 2);
+        cout << checkedLine << endl;
     }
 }
 

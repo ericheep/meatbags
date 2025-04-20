@@ -21,6 +21,7 @@ public:
     void drawFps();
     
     void setAutoReconnect(bool &autoReconnectActive);
+    void setSensorMotorSpeed(int &sensorMotorSpeed);
     void setSensorRotation(float &sensorRotation);
     void setAreaSize(float &areaSize);
     void setMirrorX(bool &mirrorX);
@@ -38,21 +39,26 @@ public:
     Meatbags meatbags;
     vector <Blob> blobs;
     ofTrueTypeFont globalFont;
-    
+
     ofxPanel gui;
-    ofParameter<float> sensorRotation;
+    ofParameterGroup meatbagsSettings;
     ofParameter<float> areaSize;
     ofParameter<bool> mirrorX;
     ofParameter<float> epsilon;
     ofParameter<int> minPoints;
     ofParameter<float> blobPersistence;
     
+    ofParameterGroup sensorSettings;
+    ofParameter<int> sensorMotorSpeed;
+    ofParameter<float> sensorRotation;
+    ofParameter<bool> autoReconnectActive;
+    ofParameter<bool> showSensorInformation;
+
+    ofParameterGroup oscSettings;
     ofParameter<string> oscSenderAddress;
     ofParameter<int> oscSenderPort;
     ofParameter<bool> normalizeBlobs;
     ofParameter<bool> oscActive;
-    ofParameter<bool> autoReconnectActive;
-    ofParameter<bool> showSensorInformation;
-
+    
     ofxOscSender oscSender;
 };
