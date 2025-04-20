@@ -22,6 +22,10 @@ public:
     void connect();
     void reconnect();
     
+    void sendResetStatusCommand();
+    void sendSetMotorSpeedCommand(int motorSpeed);
+    void sendSetIPAddressCommand();
+    void sendRebootCommand();
     void sendMeasurementModeOnCommand();
     void sendMeasurementModeOffCommand();
     void sendVersionInfoCommand();
