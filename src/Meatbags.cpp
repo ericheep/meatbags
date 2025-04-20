@@ -5,11 +5,11 @@
 #include "Meatbags.hpp"
 
 Meatbags::Meatbags() {
-    polarCoordinates.resize(1024);
-    cartesianCoordinates.resize(1024);
-    intensities.resize(1024);
-    filteredCoordinates.resize(1024);
-    filteredIntensities.resize(1024);
+    polarCoordinates.resize(1440);
+    cartesianCoordinates.resize(1440);
+    intensities.resize(1440);
+    filteredCoordinates.resize(1440);
+    filteredIntensities.resize(1440);
     draggablePoints.resize(4);
     
     blobPersistence = 0.1;

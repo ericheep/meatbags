@@ -20,9 +20,10 @@ Hokuyo::Hokuyo() {
     laserActive = true;
     
     // 180 degrees, front facing range
-    startStep = 255;
-    endStep = 769;
-    
+    startStep = 0;
+    endStep = 1079;
+    angularResolution = 1440;
+    sensorRotation = 0;
     clusterCount = 0;
     
     status = "";
@@ -30,13 +31,13 @@ Hokuyo::Hokuyo() {
     connectionStatus = "DISCONNECTED";
     
     // containers
-    polarCoordinates.resize(1024);
-    intensities.resize(1024);
+    polarCoordinates.resize(angularResolution);
+    intensities.resize(angularResolution);
     
     callIntensitiesActive = true;
     
-    for (int i = 0; i < 1024; i++) {
-        float theta = ((float) i / polarCoordinates.size()) * TWO_PI - HALF_PI;
+    for (int i = 0; i < angularResolution; i++) {
+        float theta = ((float) i / polarCoordinates.size()) * TWO_PI;
         
         polarCoordinates[i] = ofPoint(theta, 0.0);
         intensities[i] = 0;
@@ -49,6 +50,16 @@ Hokuyo::Hokuyo() {
     y = 0;
     width = 0;
     height = 0;
+}
+
+void Hokuyo::setSensorRotation(float _sensorRotation) {
+    sensorRotation = _sensorRotation;
+    
+    for (int i = 0; i < 1440; i++) {
+        float theta = ((float) i / polarCoordinates.size()) * TWO_PI;
+        
+        polarCoordinates[i] = ofPoint(theta, 0.0);
+    }
 }
 
 void Hokuyo::setAutoReconnect(bool _autoReconnectActive) {
@@ -69,20 +80,38 @@ void Hokuyo::connect() {
     tcpClient.setMessageDelimiter("\012\012");
 }
 
-void Hokuyo::callStatus() {
+void Hokuyo::sendStatusInfoCommand() {
     send("II");
+}
+
+void Hokuyo::sendVersionInfoCommand() {
+    send("VV");
+}
+
+void Hokuyo::sendParameterInfoCommand() {
+    send("PP");
+}
+
+void Hokuyo::sendMeasurementModeOnCommand() {
+    send("BM");
+}
+
+void Hokuyo::sendMeasurementModeOffCommand() {
+    send("QT");
+}
+
+void Hokuyo::sendGetDistancesCommand() {
+    string msg = formatDistanceMessage("GD");
+    send(msg);
+}
+
+void Hokuyo::sendGetDistancesAndIntensitiesCommand() {
+    string msg = formatDistanceMessage("GE");
+    send(msg);
 }
 
 void Hokuyo::send(string msg) {
     tcpClient.send(msg + "\012");
-}
-
-void Hokuyo::activate() {
-    send("BM");
-}
-
-void Hokuyo::quiet() {
-    send("QT");
 }
 
 string Hokuyo::formatDistanceMessage(string command) {
@@ -98,30 +127,24 @@ string Hokuyo::formatDistanceMessage(string command) {
     return command + (string)startStepChars + (string)endStepChars + (string)clusterCountChars;
 }
 
-void Hokuyo::callDistances() {
-    string msg = formatDistanceMessage("GD");
-    send(msg);
-}
 
-void Hokuyo::callDistancesAndIntensities() {
-    string msg = formatDistanceMessage("GE");
-    send(msg);
-}
 
 void Hokuyo::checkStatus() {
     statusTimer += lastFrameTime;
     
     if (statusTimer > statusInterval){
-        callStatus();
+        sendStatusInfoCommand();
+        sendVersionInfoCommand();
+        sendParameterInfoCommand();
         statusTimer = 0.0;
     }
     
     if (laserActive && laserState == "OFF") {
-        activate();
+        sendMeasurementModeOnCommand();
     }
     
     if (!laserActive && laserState == "ON") {
-        quiet();
+        sendMeasurementModeOffCommand();
     }
 }
 
@@ -134,7 +157,8 @@ void Hokuyo::update() {
 
             status = "Connected at " + tcpClient.getIP() + " " + to_string(tcpClient.getPort());
             isConnected = true;
-            callStatus();
+            sendStatusInfoCommand();
+            sendVersionInfoCommand();
         }
         
         string response = tcpClient.receive();
@@ -148,9 +172,9 @@ void Hokuyo::update() {
             pollingTimer += lastFrameTime;
             if (pollingTimer > pollingInterval) {
                 if (callIntensitiesActive) {
-                    callDistancesAndIntensities();
+                    sendGetDistancesAndIntensitiesCommand();
                 } else {
-                    callDistances();
+                    sendGetDistancesCommand();
                 }
                 pollingTimer = 0;
             }
@@ -167,7 +191,6 @@ void Hokuyo::update() {
     }
     
     if (status != lastStatus) {
-        cout << status << endl;
         lastStatus = status;
     }
 }
@@ -193,10 +216,14 @@ void Hokuyo::draw() {
     
     ofSetColor(ofColor::grey);
     string sensorInfoString =
+    "version: " + vendorInfo + "\n" +
     "model: " + model + "\n" +
+    "firmware: " +  firmwareVersion + "\n" +
+    "protocol: " + protocolVersion + "\n" +
+    "serial: " + serialNumber + + "\n" +
     "laser state: " + laserState + "\n" +
-    "start step: " + to_string(startStep) + "\n" +
-    "end step: " + to_string(endStep) + "\n" +
+    "polling start step: " + to_string(startStep) + "\n" +
+    "polling end step: " + to_string(endStep) + "\n" +
     "measurement mode: " + measurementMode + "\n" +
     "bitrate: " + bitRate + "\n" +
     "timestamp: " + to_string(timeStamp) + "\n" +
@@ -205,8 +232,18 @@ void Hokuyo::draw() {
     "port: " + to_string(port) + "\n" +
     "connection status: " + connectionStatus + "\n" +
     "status: " + status;
-        
-    font.drawString(sensorInfoString, x + offset, y + offset + 10);
+    
+    string parameterInfoString =
+    "min measurable dist: " + minimumMeasurableDistance + "\n" +
+    "max measurable dist: " + maximumMeasureableDistance + "\n" +
+    "angular resolution: " + angularResolutionInfo + "\n" +
+    "starting step: " + startingStep + "\n" +
+    "ending step: " + endingStep + "\n" +
+    "front direction steps: " + stepNumberOfFrontDirection + "\n" +
+    "scanning speed: " + scanningSpeed;
+    
+    
+    font.drawString(sensorInfoString + "\n" + parameterInfoString, x + offset, y + offset + 10);
 }
 
 string Hokuyo::checkSum(string str, int fromEnd) {
@@ -236,9 +273,11 @@ void Hokuyo::parseResponse(string str) {
     
     if (command == "GD") parseDistances(lines);
     if (command == "GE") parseDistancesAndIntensities(lines);
-    if (command == "II") parseInfo(lines);
     if (command == "BM") parseActivate(lines);
     if (command == "QT") parseQuiet(lines);
+    if (command == "II") parseStatusInfo(lines);
+    if (command == "VV") parseVersionInfo(lines);
+    if (command == "PP") parseParameterInfo(lines);
 }
 
 void Hokuyo::parseDistances(vector<string> packet) {
@@ -307,7 +346,7 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
     newCoordinatesAvailable = true;
 }
 
-void Hokuyo::parseInfo(vector<string> packet) {
+void Hokuyo::parseStatusInfo(vector<string> packet) {
     for (int i = 1; i < packet.size(); i++) {
         string checkedLine = checkSum(packet[i], 2);
         
@@ -321,6 +360,43 @@ void Hokuyo::parseInfo(vector<string> packet) {
             if (name == "SBPS") bitRate = info;
             if (name == "TIME") timeStamp = char2int6bitDecode(info);
             if (name == "STAT") sensorDiagnostic = info;
+        }
+    }
+}
+
+void Hokuyo::parseVersionInfo(vector<string> packet) {
+    for (int i = 1; i < packet.size(); i++) {
+        string checkedLine = checkSum(packet[i], 2);
+        
+        if (checkedLine.size() > 5) {
+            string name = checkedLine.substr(0, 4);
+            string info = checkedLine.substr(5);
+                        
+            if (name == "VEND") vendorInfo = info;
+            if (name == "PROD") productInfo = info;
+            if (name == "FIRM") firmwareVersion = info;
+            if (name == "PROT") protocolVersion = info;
+            if (name == "SERI") serialNumber = info;
+        }
+    }
+}
+
+void Hokuyo::parseParameterInfo(vector<string> packet) {
+    for (int i = 1; i < packet.size(); i++) {
+        string checkedLine = checkSum(packet[i], 2);
+        
+        if (checkedLine.size() > 5) {
+            string name = checkedLine.substr(0, 4);
+            string info = checkedLine.substr(5);
+
+            if (name == "MODL") model = info;
+            if (name == "DMIN") minimumMeasurableDistance = info;
+            if (name == "DMAX") maximumMeasureableDistance = info;
+            if (name == "ARES") angularResolutionInfo = info;
+            if (name == "AMIN") startingStep = info;
+            if (name == "AMAX") endingStep = info;
+            if (name == "AFRT") stepNumberOfFrontDirection = info;
+            if (name == "SCAN") scanningSpeed = info;
         }
     }
 }
@@ -384,7 +460,7 @@ vector<string> Hokuyo::splitStringByNewline(const string& str) {
 
 void Hokuyo::getPolarCoordinates(vector<ofPoint>& _polarCoordinates) {
     for (int i = 0; i < polarCoordinates.size(); i++) {
-        _polarCoordinates[i].x = polarCoordinates[i].x;
+        _polarCoordinates[i].x = polarCoordinates[i].x + sensorRotation;
         _polarCoordinates[i].y = polarCoordinates[i].y;
     }
 }

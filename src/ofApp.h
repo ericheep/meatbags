@@ -21,6 +21,7 @@ public:
     void drawFps();
     
     void setAutoReconnect(bool &autoReconnectActive);
+    void setSensorRotation(float &sensorRotation);
     void setAreaSize(float &areaSize);
     void setMirrorX(bool &mirrorX);
     void setBlobPersistence(float &blobPersistence);
@@ -39,6 +40,7 @@ public:
     ofTrueTypeFont globalFont;
     
     ofxPanel gui;
+    ofParameter<float> sensorRotation;
     ofParameter<float> areaSize;
     ofParameter<bool> mirrorX;
     ofParameter<float> epsilon;

@@ -13,7 +13,8 @@ void ofApp::setup(){
     ofxGuiSetFont("Hack-Regular.ttf", 11);
     gui.setup("meatbags");
     gui.setDefaultHeight(12);
-
+    
+    gui.add(sensorRotation.set( "sensor rotation (rad)", 0.0, 0.0, 6.2831853072));
     gui.add(areaSize.set( "area size (m)", 5.0, 0.5, 20.0));
     gui.add(mirrorX.set("mirror x", false));
     gui.add(epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
@@ -29,7 +30,8 @@ void ofApp::setup(){
     gui.loadFromFile("settings.xml");
 
     hokuyo.setup(IP, PORT);
-    hokuyo.setRectangle(10, ofGetHeight() - 200, ofGetWidth() / 2.0, 190);
+    hokuyo.setSensorRotation(sensorRotation);
+    hokuyo.setRectangle(10, ofGetHeight() - 350, ofGetWidth() / 2.0, 340);
     hokuyo.setAutoReconnect(autoReconnectActive);
     
     meatbags.setMirrorX(mirrorX);
@@ -38,7 +40,8 @@ void ofApp::setup(){
     meatbags.setBlobPersistence(blobPersistence);
     meatbags.setEpsilon(epsilon);
     meatbags.setMinPoints(minPoints);
-
+    
+    sensorRotation.addListener(this, &ofApp::setSensorRotation);
     blobPersistence.addListener(this, &ofApp::setBlobPersistence);
     autoReconnectActive.addListener(this, &ofApp::setAutoReconnect);
     areaSize.addListener(this, &ofApp::setAreaSize);
@@ -91,7 +94,7 @@ void ofApp::exit(){
 }
 
 void ofApp::windowResized(int width, int height) {
-    hokuyo.setRectangle(10, height - 190, width / 2.0, 180);
+    hokuyo.setRectangle(10, height - 350, width / 2.0, 340);
     meatbags.setCanvasSize(width, height);
 }
 
@@ -105,6 +108,10 @@ void ofApp::setMirrorX(bool &mirrorX) {
 
 void ofApp::setAreaSize(float &areaSize) {
     meatbags.setAreaSize(areaSize);
+}
+
+void ofApp::setSensorRotation(float &sensorRotation) {
+    hokuyo.setSensorRotation(sensorRotation);
 }
 
 void ofApp::setBlobPersistence(float &blobPersistence) {
