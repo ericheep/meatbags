@@ -19,6 +19,7 @@ public:
     void update();
     
     void setup(string ip, int port);
+    void threadedFunction() override;
     void connect();
     void reconnect();
     

@@ -5,7 +5,7 @@
 #include "Hokuyo.hpp"
 
 Hokuyo::Hokuyo() {
-    reconnectionTimeout = 2.0;
+    reconnectionTimeout = 5.0;
     reconnectionTimer = 0.0;
     
     statusInterval = 3.0;
@@ -71,11 +71,13 @@ void Hokuyo::setup(string _ipAddress, int _port) {
     connect();
 }
 
-void Hokuyo::connect() {
-    ofxTCPSettings tcpSettings(ipAddress, port);
-
-    tcpClient.setup(tcpSettings);
+void Hokuyo::threadedFunction() {
+    tcpClient.setup(ipAddress, port, false);
     tcpClient.setMessageDelimiter("\012\012");
+}
+
+void Hokuyo::connect() {
+    startThread();
 }
 
 void Hokuyo::sendRebootCommand() {
@@ -193,7 +195,7 @@ void Hokuyo::update() {
             sendStatusInfoCommand();
             sendVersionInfoCommand();
         }
-        
+
         string response = tcpClient.receive();
         if (response.length() > 0){
             parseResponse(response);
