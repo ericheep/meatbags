@@ -51,10 +51,13 @@ Hokuyo::Hokuyo() {
     position = ofPoint(0.0, 0.0);
     
     mirrorAngles = false;
+    
+    font.setGlobalDpi(72);
+    font.load(ofToDataPath("Hack-Regular.ttf"), 11);
 }
 
 void Hokuyo::setSensorRotation(float _sensorRotation) {
-    sensorRotation = _sensorRotation;
+    sensorRotation = _sensorRotation / 360.0 * TWO_PI;
 }
 
 void Hokuyo::setAutoReconnect(bool _autoReconnectActive) {
@@ -159,7 +162,6 @@ string Hokuyo::formatIpv4String(string command) {
     return command;
 }
 
-
 void Hokuyo::checkStatus() {
     statusTimer += lastFrameTime;
 
@@ -236,11 +238,9 @@ void Hokuyo::setPosition(float _x, float _y) {
     position.set(_x * 1000.0, _y * 1000.0);
 }
 
-void Hokuyo::setRectangle(float _x, float _y, float _width, float _height) {
+void Hokuyo::setInfoPosition(float _x, float _y) {
     x = _x;
     y = _y;
-    width = _width;
-    height = _height;
 }
 
 void Hokuyo::setMirrorAngles(bool _mirrorAngles) {
@@ -263,16 +263,7 @@ void Hokuyo::setMirrorAngles(bool _mirrorAngles) {
     }
 }
 
-void Hokuyo::setFont(ofTrueTypeFont globalFont) {
-    font = globalFont;
-    font.setLineHeight(14.0f);
-}
-
 void Hokuyo::draw() {
-    ofFill();
-    ofSetColor(0, 0, 0, 185);
-    ofDrawRectangle(x, y, width, height);
-    
     float offset = 10;
     
     ofSetColor(ofColor::grey);
@@ -303,7 +294,19 @@ void Hokuyo::draw() {
     "front direction steps: " + stepNumberOfFrontDirection + "\n" +
     "scanning speed: " + scanningSpeed;
     
-    font.drawString(sensorInfoString + "\n" + parameterInfoString, x + offset, y + offset + 10);
+    string combinedString = sensorInfoString + "\n" + parameterInfoString;
+    
+    width = 320;
+    height = font.stringHeight(combinedString);
+    
+    float textBoxHeight = height + offset * 2;
+    float textBoxWidth = width + offset * 2;
+    
+    ofFill();
+    ofSetColor(0, 0, 0, 185);
+    ofDrawRectangle(x, y - textBoxHeight, textBoxWidth, height);
+    ofSetColor(ofColor::pink);
+    font.drawString(combinedString, x + offset, y - height + offset);
 }
 
 string Hokuyo::checkSum(string str, int fromEnd) {

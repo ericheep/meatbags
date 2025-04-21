@@ -15,7 +15,7 @@ Bounds::Bounds() {
     y1 = 0.0;
     y2 = 0.0;
     
-    mouseBoxSize = 15;
+    mouseBoxSize = 12;
     mouseBoxHalfSize = mouseBoxSize * 0.5;
     draggablePoints.resize(4);
 }

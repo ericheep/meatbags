@@ -55,7 +55,6 @@ public:
     Meatbags meatbags;
     Bounds bounds;
     Viewer viewer;
-    ofTrueTypeFont globalFont;
     ofxOscSender oscSender;
 
     ofxPanel gui;

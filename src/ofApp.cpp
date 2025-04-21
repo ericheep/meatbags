@@ -4,12 +4,6 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    globalFont.setGlobalDpi(72);
-    globalFont.load(ofToDataPath("Hack-Bold.ttf"), 14);
-    viewer.setBlobFont(globalFont);
-    globalFont.load(ofToDataPath("Hack-Regular.ttf"), 11);
-    hokuyo.setFont(globalFont);
-    
     ofxGuiSetFont(ofToDataPath("Hack-Regular.ttf"), 11);
     gui.setup("meatbags");
     gui.setDefaultHeight(12);
@@ -37,7 +31,7 @@ void ofApp::setup(){
     sensorSettings.add(sensorIPAddress.set("IP address", "192.168.0.10"));
     sensorSettings.add(positionX.set("position x", 0.0, -10.0, 10.0));
     sensorSettings.add(positionY.set("position y", 0.0, 0.0, 20.0));
-    sensorSettings.add(sensorRotation.set( "sensor rotation (rad)", 0, -PI, PI));
+    sensorSettings.add(sensorRotation.set( "sensor rotation (deg)", 0, -180.0, 180.0));
     sensorSettings.add(autoReconnectActive.set("auto reconnect", true));
     sensorSettings.add(showSensorInformation.set("show sensor info", true));
     gui.add(sensorSettings);
@@ -47,7 +41,7 @@ void ofApp::setup(){
 
     hokuyo.setup(IP, PORT);
     hokuyo.setSensorRotation(sensorRotation);
-    hokuyo.setRectangle(10, ofGetHeight() - 350, ofGetWidth() / 2.0, 340);
+    hokuyo.setInfoPosition(10, ofGetHeight() - 10);
     hokuyo.setAutoReconnect(autoReconnectActive);
     hokuyo.setMirrorAngles(mirrorAngles);
     hokuyo.setPosition(positionX, positionY);
@@ -151,7 +145,7 @@ void ofApp::exit(){
 }
 
 void ofApp::windowResized(int width, int height) {
-    hokuyo.setRectangle(10, height - 350, width / 2.0, 340);
+    hokuyo.setInfoPosition(10, height - 10);
     viewer.setCanvasSize(width, height);
     bounds.setCanvasSize(width, height);
 }

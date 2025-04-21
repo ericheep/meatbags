@@ -21,7 +21,6 @@ public:
     void drawSensor(ofPoint position, float rotation, ofColor color);
     void drawBlobs(vector<Blob>& blobs);
 
-    void setBlobFont(ofTrueTypeFont blobFont);
     void setBounds(Bounds& bounds);
     void setCanvasSize(float width, float height);
     void setAreaSize(float areaSize);

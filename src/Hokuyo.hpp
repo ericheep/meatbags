@@ -41,8 +41,7 @@ public:
     void setPosition(float positionX, float positionY);
     void setMirrorAngles(bool mirrorX);
     void setSensorRotation(float sensorRotation);
-    void setFont(ofTrueTypeFont globalFont);
-    void setRectangle(float x, float y, float width, float height);
+    void setInfoPosition(float x, float y);
     void setAutoReconnect(bool autoReconnectActive);
     
     void createCoordinate(int step, float distance);

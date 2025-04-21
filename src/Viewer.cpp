@@ -10,7 +10,10 @@ Viewer::Viewer() {
     scale = 0.0;
     areaSize = 0;
     origin = ofPoint(ofGetWidth() / 2.0, 25);
-    ofSetCircleResolution(5);
+    ofSetCircleResolution(3);
+    
+    blobFont.setGlobalDpi(72);
+    blobFont.load(ofToDataPath("Hack-Bold.ttf"), 14);
 }
 
 void Viewer::setAreaSize(float _areaSize) {
@@ -97,11 +100,6 @@ void Viewer::drawBounds() {
     float bw = fabs((bounds.x2 - bounds.x1) * 1000) * scale;
     float bh = fabs((bounds.y2 - bounds.y1) * 1000) * scale;
     ofDrawRectangle(bx, by, bw, bh);
-}
-
-void Viewer::setBlobFont(ofTrueTypeFont globalFont) {
-    blobFont = globalFont;
-    blobFont.setLineHeight(12.0f);
 }
 
 void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
