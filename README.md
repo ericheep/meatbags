@@ -19,7 +19,7 @@ This project was developed with openFrameowrks v0.12.0, it uses the following op
 
 After opening and closing the application Meatbags will create two XML files that are automatically loaded on startup and saved on exit. These hold the configuration state of the application and allow easy startup for art install scenarios. 
 
-It its current state Meatbags expects to be able to read a single Hokuyo UST-10LX sensor at 192.168.0.10::10940. Future releases will include conifigurable methods to add more sensors and edit their address information.
+It its current state Meatbags expects to be able to read a single Hokuyo UST-10LX sensor. Future releases will include conifigurable methods to add more sensors.
 
 ## external code
 
