@@ -30,8 +30,13 @@ Hokuyo::Hokuyo() {
     lastStatus = status;
     connectionStatus = "DISCONNECTED";
     
+    ipAddress = "192.168.0.10";
+    netmask = "255.255.255.0";
+    gateway = "192.168.0.1";
+    
     // containers
-    polarCoordinates.resize(angularResolution);
+    angles.resize(angularResolution);
+    coordinates.resize(angularResolution);
     intensities.resize(angularResolution);
     
     callIntensitiesActive = true;
@@ -42,7 +47,7 @@ Hokuyo::Hokuyo() {
     for (int i = 0; i < angularResolution; i++) {
         float theta = ((float) i / angularResolution) * TWO_PI + thetaOffset;
         
-        polarCoordinates[i] = ofPoint(theta, 0.0);
+        angles[i] = theta;
         intensities[i] = 0;
     }
     
@@ -53,6 +58,10 @@ Hokuyo::Hokuyo() {
     y = 0;
     width = 0;
     height = 0;
+    
+    position = ofPoint(0.0, 0.0);
+    
+    mirrorX = false;
 }
 
 void Hokuyo::setSensorRotation(float _sensorRotation) {
@@ -99,11 +108,15 @@ void Hokuyo::sendSetMotorSpeedCommand(int motorSpeed) {
 }
 
 void Hokuyo::sendSetIPAddressCommand() {
-    string ip;
-    string nm;
-    string gw;
+    string ipAddress;
+    string netmask;
+    string gateway;
+    
+    string ipAddressBytes = formatIpv4String(ipAddress);
+    string netmaskBytes = formatIpv4String(netmask);
+    string gatewayBytes = formatIpv4String(gateway);
 
-    send("$IP" + ip + nm + gw);
+    send("$IP" + ipAddress + netmask + gateway);
 }
 
 void Hokuyo::sendStatusInfoCommand() {
@@ -153,6 +166,11 @@ string Hokuyo::formatDistanceMessage(string command) {
     return command + (string)startStepChars + (string)endStepChars + (string)clusterCountChars;
 }
 
+string Hokuyo::formatIpv4String(string command) {
+    
+    
+    return command;
+}
 
 
 void Hokuyo::checkStatus() {
@@ -226,6 +244,10 @@ void Hokuyo::setRectangle(float _x, float _y, float _width, float _height) {
     y = _y;
     width = _width;
     height = _height;
+}
+
+void Hokuyo::setMirrorX(bool _mirrorX) {
+    mirrorX = _mirrorX;
 }
 
 void Hokuyo::setFont(ofTrueTypeFont globalFont) {
@@ -331,10 +353,11 @@ void Hokuyo::parseDistances(vector<string> packet) {
         string threeChars = concatenatedData.substr(i, 3);
         int distance = char2int6bitDecode(threeChars);
         
-        polarCoordinates[step].y = distance;
-        
+        createCoordinate(step, distance);
         step += 1;
     }
+    
+    newCoordinatesAvailable = true;
 }
 
 void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
@@ -364,13 +387,24 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
         int distance = char2int6bitDecode(distanceChars);
         int intensity = char2int6bitDecode(intensityChars);
         
-        polarCoordinates[step].y = distance;
+        createCoordinate(step, distance);
         intensities[step] = intensity;
         
         step += 1;
     }
     
     newCoordinatesAvailable = true;
+}
+
+void Hokuyo::createCoordinate(int index, float distance) {
+    float theta = angles[index] + sensorRotation;
+    
+    float x = cos(theta) * distance;
+    float y = sin(theta) * distance;
+    
+    if (mirrorX) x = -x;
+    
+    coordinates[index].set(ofPoint(x, y) + position);
 }
 
 void Hokuyo::parseStatusInfo(vector<string> packet) {
@@ -494,10 +528,9 @@ vector<string> Hokuyo::splitStringByNewline(const string& str) {
     return result;
 }
 
-void Hokuyo::getPolarCoordinates(vector<ofPoint>& _polarCoordinates) {
-    for (int i = 0; i < polarCoordinates.size(); i++) {
-        _polarCoordinates[i].x = polarCoordinates[i].x + sensorRotation;
-        _polarCoordinates[i].y = polarCoordinates[i].y;
+void Hokuyo::getCoordinates(vector<ofPoint>& _coordinates) {
+    for (int i = 0; i < coordinates.size(); i++) {
+        _coordinates[i].set(coordinates[i]);
     }
 }
 

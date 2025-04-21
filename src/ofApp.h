@@ -8,6 +8,7 @@
 #include "Hokuyo.hpp"
 #include "Blob.hpp"
 #include "Meatbags.hpp"
+#include "Viewer.hpp"
 
 class ofApp : public ofBaseApp{
     
@@ -20,6 +21,11 @@ public:
 
     void drawFps();
     
+    void setBoundsX1(float &boundsX1);
+    void setBoundsX2(float &boundsX2);
+    void setBoundsY1(float &boundsY1);
+    void setBoundsY2(float &boundsY2);
+
     void setAutoReconnect(bool &autoReconnectActive);
     void setSensorMotorSpeed(int &sensorMotorSpeed);
     void setSensorRotation(float &sensorRotation);
@@ -34,10 +40,11 @@ public:
     void sendBlobOsc();
 
     Hokuyo hokuyo;
-    
-    // blob tracking software
-    Meatbags meatbags;
     vector <Blob> blobs;
+    Meatbags meatbags;
+    Bounds bounds;
+    Viewer viewer;
+    
     ofTrueTypeFont globalFont;
 
     ofxPanel gui;
@@ -46,6 +53,10 @@ public:
     ofParameter<bool> mirrorX;
     ofParameter<float> epsilon;
     ofParameter<int> minPoints;
+    ofParameter<float> boundsX1;
+    ofParameter<float> boundsX2;
+    ofParameter<float> boundsY1;
+    ofParameter<float> boundsY2;
     ofParameter<float> blobPersistence;
     
     ofParameterGroup sensorSettings;

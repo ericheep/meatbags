@@ -6,7 +6,7 @@
 void ofApp::setup(){
     globalFont.setGlobalDpi(72);
     globalFont.load("Hack-Bold.ttf", 14);
-    meatbags.setFont(globalFont);
+    viewer.setBlobFont(globalFont);
     globalFont.load("Hack-Regular.ttf", 11);
     hokuyo.setFont(globalFont);
     
@@ -20,6 +20,11 @@ void ofApp::setup(){
     meatbagsSettings.add(epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     meatbagsSettings.add(minPoints.set( "cluster min points", 10, 1, 50));
     meatbagsSettings.add(blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
+    meatbagsSettings.add(boundsX1.set("bounds x1", -2.5, 0.0, -10.0));
+    meatbagsSettings.add(boundsX2.set("bounds x2", 2.5, 0.0, 10.0));
+    meatbagsSettings.add(boundsY1.set("bounds y1", 1.0, 0.0, 20.0));
+    meatbagsSettings.add(boundsY2.set("bounds y2", 5.0, 0.0, 20.0));
+
     gui.add(meatbagsSettings);
     
     oscSettings.setName("OSC settings");
@@ -42,13 +47,21 @@ void ofApp::setup(){
     hokuyo.setSensorRotation(sensorRotation);
     hokuyo.setRectangle(10, ofGetHeight() - 350, ofGetWidth() / 2.0, 340);
     hokuyo.setAutoReconnect(autoReconnectActive);
+        
+    bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
     
-    meatbags.setMirrorX(mirrorX);
-    meatbags.setCanvasSize(ofGetWidth(), ofGetHeight());
-    meatbags.setAreaSize(areaSize);
+    viewer.setBounds(bounds);
+    viewer.setCanvasSize(ofGetWidth(), ofGetHeight());
+    viewer.setAreaSize(areaSize);
+    
     meatbags.setBlobPersistence(blobPersistence);
     meatbags.setEpsilon(epsilon);
     meatbags.setMinPoints(minPoints);
+    
+    boundsX1.addListener(this, &ofApp::setBoundsX1);
+    boundsX2.addListener(this, &ofApp::setBoundsX2);
+    boundsY1.addListener(this, &ofApp::setBoundsY1);
+    boundsY2.addListener(this, &ofApp::setBoundsY2);
     
     sensorRotation.addListener(this, &ofApp::setSensorRotation);
     sensorMotorSpeed.addListener(this, &ofApp::setSensorMotorSpeed);
@@ -68,10 +81,12 @@ void ofApp::setup(){
 void ofApp::update(){
     hokuyo.update();
     meatbags.update();
-    
+    bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
+    viewer.setBounds(bounds);
+
     if (!hokuyo.newCoordinatesAvailable) return;
         
-    hokuyo.getPolarCoordinates(meatbags.polarCoordinates);
+    hokuyo.getCoordinates(meatbags.coordinates);
     hokuyo.getIntensities(meatbags.intensities);
         
     meatbags.updateBlobs();
@@ -84,7 +99,12 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofBackground(0);
-    meatbags.draw();
+    
+    viewer.drawGrid();
+    viewer.drawCoordinates(hokuyo.coordinates, ofColor::greenYellow);
+    viewer.drawBlobs(meatbags.oldBlobs);
+    viewer.drawBlobBounds();
+
     if (showSensorInformation) hokuyo.draw();
     gui.draw();
     drawFps();
@@ -99,13 +119,12 @@ void ofApp::drawFps() {
 //--------------------------------------------------------------
 void ofApp::exit(){
     gui.saveToFile("settings.xml");
-    meatbags.saveToFile("meatbags.xml");
     hokuyo.close();
 }
 
 void ofApp::windowResized(int width, int height) {
     hokuyo.setRectangle(10, height - 350, width / 2.0, 340);
-    meatbags.setCanvasSize(width, height);
+    viewer.setCanvasSize(width, height);
 }
 
 void ofApp::setAutoReconnect(bool &autoReconnectActive) {
@@ -117,11 +136,27 @@ void ofApp::setSensorMotorSpeed(int &sensorMotorSpeed) {
 }
 
 void ofApp::setMirrorX(bool &mirrorX) {
-    meatbags.setMirrorX(mirrorX);
+    hokuyo.setMirrorX(mirrorX);
 }
 
 void ofApp::setAreaSize(float &areaSize) {
-    meatbags.setAreaSize(areaSize);
+    viewer.setAreaSize(areaSize);
+}
+
+void ofApp::setBoundsX1(float &x1) {
+    meatbags.setBounds(x1, boundsX2, boundsY1, boundsY2);
+}
+
+void ofApp::setBoundsX2(float &x2) {
+    meatbags.setBounds(boundsX1, x2, boundsY1, boundsY2);
+}
+
+void ofApp::setBoundsY1(float &y1) {
+    meatbags.setBounds(boundsX1, boundsX2, y1, boundsY2);
+}
+
+void ofApp::setBoundsY2(float &y2) {
+    meatbags.setBounds(boundsX1, boundsX2, boundsY1, y2);
 }
 
 void ofApp::setSensorRotation(float &sensorRotation) {
@@ -173,3 +208,4 @@ void ofApp::sendBlobOsc() {
         oscSender.sendMessage(msg);
     }
 }
+

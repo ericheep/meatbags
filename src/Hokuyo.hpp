@@ -15,8 +15,8 @@ class Hokuyo : public ofThread {
 public:
     Hokuyo();
     
-    void update();
     void draw();
+    void update();
     
     void setup(string ip, int port);
     void connect();
@@ -37,12 +37,14 @@ public:
     void close();
     void send(string msg);
     
+    void setMirrorX(bool mirrorX);
     void setSensorRotation(float sensorRotation);
     void setFont(ofTrueTypeFont globalFont);
     void setRectangle(float x, float y, float width, float height);
     void setAutoReconnect(bool autoReconnectActive);
     
-    void getPolarCoordinates(vector<ofPoint>& polarCoordinates);
+    void createCoordinate(int step, float distance);
+    void getCoordinates(vector<ofPoint>& polarCoordinates);
     void getIntensities(vector<int>& intensities);
     
     void parseResponse(string str);
@@ -59,26 +61,28 @@ public:
     
     void checkStatus();
     string formatDistanceMessage(string command);
+    string formatIpv4String(string command);
     
     int char2int6bitDecode(string str);
     
     vector<string> splitStringByNewline(const string& str);
     
-    vector<ofPoint> polarCoordinates;
+    vector<float> angles;
+    vector<ofPoint> coordinates;
+
     vector<int> intensities;
     
     bool newCoordinatesAvailable;
+    bool mirrorX;
+    ofPoint position;
 
 private:
     ofxTCPClient tcpClient;
-    
-    string msgTx, msgRx;
-    
-    string ipAddress;
+        
+    string ipAddress, netmask, gateway;
     int port;
     
     bool laserActive;
-    
     float pollingTimer, pollingInterval;
     float reconnectionTimer, reconnectionTimeout;
     float statusTimer, statusInterval;
