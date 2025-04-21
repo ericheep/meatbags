@@ -20,7 +20,47 @@ Bounds::Bounds() {
     draggablePoints.resize(4);
 }
 
-//----------------------------------------------------- interaction.
+void Bounds::setBounds(float _x1, float _x2, float _y1, float _y2) {
+    x1 = _x1;
+    x2 = _x2;
+    y1 = _y1;
+    y2 = _y2;
+    
+    updateDraggablePoints();
+}
+
+void Bounds::setAreaSize(float _areaSize) {
+    areaSize = _areaSize;
+    scale = width / (areaSize * 1000);
+}
+
+void Bounds::setCanvasSize(float _width, float _height) {
+    width = _width;
+    height = _height;
+    
+    origin = ofPoint(width / 2.0, 25);
+    setAreaSize(areaSize);
+}
+
+void Bounds::updateDraggablePoints() {
+    float bx = x1 * 1000.0 * scale + origin.x;
+    float by = y1 * 1000.0 * scale + origin.y;
+    float bw = fabs(x2 - x1) * 1000.0 * scale;
+    float bh = fabs(y2 - y1) * 1000.0 * scale;
+    
+    draggablePoints[0] = ofPoint(bx, by + bh / 2.0);
+    draggablePoints[1] = ofPoint(bx + bw / 2.0, by);
+    draggablePoints[2] = ofPoint(bx + bw, by + bh / 2.0);
+    draggablePoints[3] = ofPoint(bx + bw / 2.0, by + bh);
+}
+
+void Bounds::updateBounds() {
+    x1 = (draggablePoints[0].x - origin.x) / scale * 0.001;
+    y1 = (draggablePoints[1].y - origin.y) / scale * 0.001;
+    x2 = (draggablePoints[2].x - origin.x) / scale * 0.001;
+    y2 = (draggablePoints[3].y - origin.y) / scale * 0.001;
+}
+
 void Bounds::onMouseMoved(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
 
@@ -68,30 +108,4 @@ void Bounds::onMouseReleased(ofMouseEventArgs& mouseArgs) {
         updateBounds();
         updateDraggablePoints();
     }
-}
-
-void Bounds::setBounds(float _x1, float _x2, float _y1, float _y2) {
-    x1 = _x1;
-    x2 = _x2;
-    y1 = _y1;
-    y2 = _y2;
-}
-
-void Bounds::updateDraggablePoints() {
-    float bx = x1 * 1000.0 * scale + origin.x;
-    float by = y1 * 1000.0 * scale + origin.y;
-    float bw = fabs(x2 - x1) * 1000.0 * scale;
-    float bh = fabs(y2 - y1) * 1000.0 * scale;
-    
-    draggablePoints[0] = ofPoint(bx, by + bh / 2.0);
-    draggablePoints[1] = ofPoint(bx + bw / 2.0, by);
-    draggablePoints[2] = ofPoint(bx + bw, by + bh / 2.0);
-    draggablePoints[3] = ofPoint(bx + bw / 2.0, by + bh);
-}
-
-void Bounds::updateBounds() {
-    x1 = (draggablePoints[0].x - origin.x) / scale * 0.001;
-    y2 = (draggablePoints[1].y - origin.y) / scale * 0.001;
-    x2 = (draggablePoints[2].x - origin.x) / scale * 0.001;
-    y2 = (draggablePoints[3].y - origin.y) / scale * 0.001;
 }

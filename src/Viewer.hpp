@@ -15,13 +15,12 @@ public:
     Viewer();
     
     void drawGrid();
-    void drawDraggablePoints(vector<ofPoint>& draggablePoints);
-    void drawBlobBounds();
+    void drawDraggablePoints();
+    void drawBounds();
     void drawCoordinates(vector<ofPoint>& coordinates, ofColor color);
+    void drawSensor(ofPoint position, float rotation, ofColor color);
     void drawBlobs(vector<Blob>& blobs);
 
-    void drawSensor(ofPoint position, float rotation);
-    
     void setBlobFont(ofTrueTypeFont blobFont);
     void setBounds(Bounds& bounds);
     void setCanvasSize(float width, float height);

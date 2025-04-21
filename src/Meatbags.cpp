@@ -219,6 +219,13 @@ void Meatbags::setBounds(float _boundsX1, float _boundsX2, float _boundsY1, floa
     boundsY2 = _boundsY2;
 }
 
+void Meatbags::setBounds(Bounds bounds) {
+    boundsX1 = bounds.x1;
+    boundsX2 = bounds.x2;
+    boundsY1 = bounds.y1;
+    boundsY2 = bounds.y2;
+}
+
 void Meatbags::setBlobPersistence(float _blobPersistence) {
     blobPersistence = _blobPersistence;
     

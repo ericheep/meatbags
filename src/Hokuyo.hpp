@@ -37,7 +37,9 @@ public:
     void close();
     void send(string msg);
     
-    void setMirrorX(bool mirrorX);
+    void setIPAddress(string ipAddress);
+    void setPosition(float positionX, float positionY);
+    void setMirrorAngles(bool mirrorX);
     void setSensorRotation(float sensorRotation);
     void setFont(ofTrueTypeFont globalFont);
     void setRectangle(float x, float y, float width, float height);
@@ -73,8 +75,10 @@ public:
     vector<int> intensities;
     
     bool newCoordinatesAvailable;
-    bool mirrorX;
+    bool mirrorAngles;
+    
     ofPoint position;
+    float sensorRotation;
 
 private:
     ofxTCPClient tcpClient;
@@ -87,7 +91,6 @@ private:
     float reconnectionTimer, reconnectionTimeout;
     float statusTimer, statusInterval;
     float lastFrameTime;
-    float sensorRotation;
     
     bool isConnected, autoReconnectActive;
     bool callIntensitiesActive;

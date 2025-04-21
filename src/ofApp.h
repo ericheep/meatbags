@@ -21,19 +21,30 @@ public:
 
     void drawFps();
     
+    // hokuyo parameters
+    void setIPAddress(string &ipAddress);
+    void setPositionX(float &x);
+    void setPositionY(float &y);
+    void setAutoReconnect(bool &autoReconnectActive);
+    void setSensorRotation(float &sensorRotation);
+    void setMirrorAngles(bool &mirrorAngles);
+
+    // bounds parameters
+    void updateGuiBounds();
     void setBoundsX1(float &boundsX1);
     void setBoundsX2(float &boundsX2);
     void setBoundsY1(float &boundsY1);
     void setBoundsY2(float &boundsY2);
-
-    void setAutoReconnect(bool &autoReconnectActive);
-    void setSensorMotorSpeed(int &sensorMotorSpeed);
-    void setSensorRotation(float &sensorRotation);
+    
+    // view parameters
     void setAreaSize(float &areaSize);
-    void setMirrorX(bool &mirrorX);
+    
+    // meatbags parameters
     void setBlobPersistence(float &blobPersistence);
     void setEpsilon(float &epsilon);
     void setMinPoints(int &minPoints);
+    
+    // osc parameters
     void setOscSenderAddress(string &oscSenderAddress);
     void setOscSenderPort(int &oscSenderAddress);
     
@@ -44,32 +55,40 @@ public:
     Meatbags meatbags;
     Bounds bounds;
     Viewer viewer;
-    
     ofTrueTypeFont globalFont;
+    ofxOscSender oscSender;
 
     ofxPanel gui;
+    
+    // meatbags parameters
     ofParameterGroup meatbagsSettings;
-    ofParameter<float> areaSize;
-    ofParameter<bool> mirrorX;
     ofParameter<float> epsilon;
     ofParameter<int> minPoints;
+    ofParameter<float> blobPersistence;
+    
+    // viewer parameters
+    ofParameter<float> areaSize;
+    
+    // bounds parameters
     ofParameter<float> boundsX1;
     ofParameter<float> boundsX2;
     ofParameter<float> boundsY1;
     ofParameter<float> boundsY2;
-    ofParameter<float> blobPersistence;
     
+    // hokuyo parameters
     ofParameterGroup sensorSettings;
-    ofParameter<int> sensorMotorSpeed;
-    ofParameter<float> sensorRotation;
+    ofParameter<string> sensorIPAddress;
+    ofParameter<float> positionX;
+    ofParameter<float> positionY;
     ofParameter<bool> autoReconnectActive;
+    ofParameter<bool> mirrorAngles;
+    ofParameter<float> sensorRotation;
     ofParameter<bool> showSensorInformation;
 
+    // osc parameters
     ofParameterGroup oscSettings;
     ofParameter<string> oscSenderAddress;
     ofParameter<int> oscSenderPort;
     ofParameter<bool> normalizeBlobs;
     ofParameter<bool> oscActive;
-    
-    ofxOscSender oscSender;
 };

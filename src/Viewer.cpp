@@ -10,6 +10,7 @@ Viewer::Viewer() {
     scale = 0.0;
     areaSize = 0;
     origin = ofPoint(ofGetWidth() / 2.0, 25);
+    ofSetCircleResolution(5);
 }
 
 void Viewer::setAreaSize(float _areaSize) {
@@ -88,13 +89,13 @@ void Viewer::drawBlobs(vector<Blob>& blobs) {
     }
 }
 
-void Viewer::drawBlobBounds() {
+void Viewer::drawBounds() {
     ofNoFill();
     ofSetColor(ofColor::magenta);
     float bx = bounds.x1 * 1000 * scale + origin.x;
     float by = bounds.y1 * 1000 * scale + origin.y;
-    float bw = fabs(bounds.x2 * 1000 - bounds.x1 * 1000) * scale;
-    float bh = fabs(bounds.y2 * 1000 - bounds.y1 * 1000) * scale;
+    float bw = fabs((bounds.x2 - bounds.x1) * 1000) * scale;
+    float bh = fabs((bounds.y2 - bounds.y1) * 1000) * scale;
     ofDrawRectangle(bx, by, bw, bh);
 }
 
@@ -110,6 +111,8 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
         float x = coordinates[i].x;
         float y = coordinates[i].y;
         
+        if (x == 0 && y == 0) break;
+
         if (x < bounds.x2 * 1000
             && x > bounds.x1 * 1000
             && y > bounds.y1 * 1000
@@ -132,14 +135,29 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
     }
 }
 
-void Viewer::drawSensor(ofPoint position, float rotation) {
+void Viewer::drawSensor(ofPoint position, float rotation, ofColor color) {
+    position *= scale;
+    position += origin;
+    float x = position.x;
+    float y = position.y;
     
+    float size = 16;
+    float halfSize = size * 0.5;
+    
+    ofSetColor(color);
+    ofFill();
+    ofPushMatrix();
+    ofTranslate(x, y);
+    ofRotateRad(rotation);
+    ofDrawLine(0, halfSize, 0, size + halfSize);
+    ofDrawRectangle(-halfSize, -halfSize, size, size);
+    ofPopMatrix();
 }
 
-void Viewer::drawDraggablePoints(vector<ofPoint>& draggablePoints) {
+void Viewer::drawDraggablePoints() {
     for (int i = 0; i < 4; i++) {
-        float x1 = bounds.draggablePoints[i].x - mouseBoxHalfSize;
-        float y1 = bounds.draggablePoints[i].y - mouseBoxHalfSize;
+        float x1 = bounds.draggablePoints[i].x - bounds.mouseBoxHalfSize;
+        float y1 = bounds.draggablePoints[i].y - bounds.mouseBoxHalfSize;
         float x2 = bounds.mouseBoxSize;
         float y2 = bounds.mouseBoxSize;
         

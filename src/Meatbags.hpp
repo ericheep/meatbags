@@ -34,6 +34,7 @@ public:
     int findFreeBlobIndex();
     float compareBlobs(Blob newBlob, Blob oldBlob);
         
+    void setBounds(Bounds bounds);
     void setBounds(float x1, float y1, float x2, float y2);
     void setBlobPersistence(float blobPersistence);
     void setAreaSize(float areaSize);

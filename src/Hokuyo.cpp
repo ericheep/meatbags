@@ -11,7 +11,7 @@ Hokuyo::Hokuyo() {
     statusInterval = 3.0;
     statusTimer = 0.0;
     
-    pollingInterval = 1.0 / 25;
+    pollingInterval = 1.0 / 30;
     pollingTimer = 0;
     
     lastFrameTime = 0;
@@ -40,17 +40,6 @@ Hokuyo::Hokuyo() {
     intensities.resize(angularResolution);
     
     callIntensitiesActive = true;
-    
-    // -45 degrees offset
-    float thetaOffset = -HALF_PI * 0.5;
-
-    for (int i = 0; i < angularResolution; i++) {
-        float theta = ((float) i / angularResolution) * TWO_PI + thetaOffset;
-        
-        angles[i] = theta;
-        intensities[i] = 0;
-    }
-    
     newCoordinatesAvailable = false;
     autoReconnectActive = true;
     
@@ -61,7 +50,7 @@ Hokuyo::Hokuyo() {
     
     position = ofPoint(0.0, 0.0);
     
-    mirrorX = false;
+    mirrorAngles = false;
 }
 
 void Hokuyo::setSensorRotation(float _sensorRotation) {
@@ -85,7 +74,6 @@ void Hokuyo::connect() {
     tcpClient.setup(tcpSettings);
     tcpClient.setMessageDelimiter("\012\012");
 }
-
 
 void Hokuyo::sendRebootCommand() {
     // send command twice to register, per spec
@@ -168,7 +156,6 @@ string Hokuyo::formatDistanceMessage(string command) {
 
 string Hokuyo::formatIpv4String(string command) {
     
-    
     return command;
 }
 
@@ -239,6 +226,16 @@ void Hokuyo::update() {
     }
 }
 
+void Hokuyo::setIPAddress(string _ipAddress) {
+    ipAddress = _ipAddress;
+    tcpClient.close();
+    connect();
+}
+
+void Hokuyo::setPosition(float _x, float _y) {
+    position.set(_x * 1000.0, _y * 1000.0);
+}
+
 void Hokuyo::setRectangle(float _x, float _y, float _width, float _height) {
     x = _x;
     y = _y;
@@ -246,8 +243,24 @@ void Hokuyo::setRectangle(float _x, float _y, float _width, float _height) {
     height = _height;
 }
 
-void Hokuyo::setMirrorX(bool _mirrorX) {
-    mirrorX = _mirrorX;
+void Hokuyo::setMirrorAngles(bool _mirrorAngles) {
+    mirrorAngles = _mirrorAngles;
+
+    // -45 degrees offset
+    float thetaOffset = -HALF_PI * 0.5;
+    
+    for (int i = 0; i < angularResolution; i++) {
+        int index = i;
+        float theta = (float) index / angularResolution * TWO_PI;
+
+        if (mirrorAngles) {
+            index = angularResolution - 1;
+            thetaOffset = -HALF_PI * 0.5 - HALF_PI;
+            theta *= -1.0;
+        }
+        
+        angles[i] = theta + thetaOffset;
+    }
 }
 
 void Hokuyo::setFont(ofTrueTypeFont globalFont) {
@@ -289,7 +302,6 @@ void Hokuyo::draw() {
     "ending step: " + endingStep + "\n" +
     "front direction steps: " + stepNumberOfFrontDirection + "\n" +
     "scanning speed: " + scanningSpeed;
-    
     
     font.drawString(sensorInfoString + "\n" + parameterInfoString, x + offset, y + offset + 10);
 }
@@ -401,9 +413,7 @@ void Hokuyo::createCoordinate(int index, float distance) {
     
     float x = cos(theta) * distance;
     float y = sin(theta) * distance;
-    
-    if (mirrorX) x = -x;
-    
+        
     coordinates[index].set(ofPoint(x, y) + position);
 }
 
@@ -430,7 +440,6 @@ void Hokuyo::parseMotorSpeed(vector<string> packet) {
     
     for (int i = 1; i < packet.size(); i++) {
         string checkedLine = checkSum(packet[i], 2);
-        cout << checkedLine << endl;
     }
 }
 
