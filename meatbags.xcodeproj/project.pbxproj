@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06256BDE2DB5B48500F3E053 /* Viewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06256BDD2DB5B48500F3E053 /* Viewer.cpp */; };
+		06256BE12DB5C02100F3E053 /* Bounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06256BE02DB5C02100F3E053 /* Bounds.cpp */; };
 		"08007623-057B-474B-845D-CCE12508C16D" /* ofxButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "099836EA-1F30-4403-91D7-E1BB2A5E8AFA" /* ofxButton.cpp */; };
 		"0849D174-6CC1-4CEB-9AD1-733EA42FAD17" /* IpEndpointName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "CDCFC5E4-E28E-4A9E-A7A5-33D0EEEEC58A" /* IpEndpointName.cpp */; };
 		"0E94F572-1C03-4518-9C32-D91D8A433398" /* ofxOscReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "BBAFA3C7-5412-4104-A7AB-2A569B612D4A" /* ofxOscReceiver.cpp */; };
@@ -67,6 +69,10 @@
 		"025AE1C2-9481-4598-BC42-2436F96CC602" /* ofxInputField.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxInputField.cpp; path = ../../../addons/ofxGui/src/ofxInputField.cpp; sourceTree = SOURCE_ROOT; };
 		"031ED41B-B300-4DB7-AEBB-1D65577EA4BD" /* OscException.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = OscException.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscException.h; sourceTree = SOURCE_ROOT; };
 		"03B4B8FE-2B0E-4AFD-8B93-B35CFDD98A64" /* ofxTCPManager.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxTCPManager.h; path = ../../../addons/ofxNetwork/src/ofxTCPManager.h; sourceTree = SOURCE_ROOT; };
+		06256BDC2DB5B48500F3E053 /* Viewer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Viewer.hpp; sourceTree = "<group>"; };
+		06256BDD2DB5B48500F3E053 /* Viewer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Viewer.cpp; sourceTree = "<group>"; };
+		06256BDF2DB5C02100F3E053 /* Bounds.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Bounds.hpp; sourceTree = "<group>"; };
+		06256BE02DB5C02100F3E053 /* Bounds.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Bounds.cpp; sourceTree = "<group>"; };
 		"0983E10A-CA9C-47FC-A778-C07DF9759A54" /* ofxGuiGroup.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxGuiGroup.h; path = ../../../addons/ofxGui/src/ofxGuiGroup.h; sourceTree = SOURCE_ROOT; };
 		"099836EA-1F30-4403-91D7-E1BB2A5E8AFA" /* ofxButton.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxButton.cpp; path = ../../../addons/ofxGui/src/ofxButton.cpp; sourceTree = SOURCE_ROOT; };
 		"0DA43762-6A42-4C25-9489-810A8B1E61A8" /* Meatbags.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = Meatbags.cpp; path = src/Meatbags.cpp; sourceTree = SOURCE_ROOT; };
@@ -391,6 +397,10 @@
 				"E7FE343B-16DC-4C6B-9038-B35792665BAD" /* Hokuyo.hpp */,
 				"0DA43762-6A42-4C25-9489-810A8B1E61A8" /* Meatbags.cpp */,
 				"9C4EBDD7-AF56-4E00-97C4-53B69542CF92" /* Meatbags.hpp */,
+				06256BE02DB5C02100F3E053 /* Bounds.cpp */,
+				06256BDF2DB5C02100F3E053 /* Bounds.hpp */,
+				06256BDD2DB5B48500F3E053 /* Viewer.cpp */,
+				06256BDC2DB5B48500F3E053 /* Viewer.hpp */,
 				"7D5852E9-D86D-4E5A-936A-55F9E464B2E1" /* dbscan */,
 				"60ACB765-E327-447C-B7C6-3DAC9F98CE0C" /* span.hpp */,
 				"226284D1-8967-4A37-838E-7E6FD8ED6F70" /* span */,
@@ -490,6 +500,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
+				06256BDE2DB5B48500F3E053 /* Viewer.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
 				"4C8F7D02-1353-45B6-8B67-ACC28FC36B44" /* Blob.cpp in Sources */,
 				"84C49998-D312-4177-ADEF-D327D0D2CC37" /* Hokuyo.cpp in Sources */,
@@ -511,6 +522,7 @@
 				"657EB83F-8AD0-48AF-BB6E-FA0E47B91101" /* ofxTCPServer.cpp in Sources */,
 				"5A865FA8-FDAC-4C84-BA97-931943336F19" /* ofxUDPManager.cpp in Sources */,
 				"0849D174-6CC1-4CEB-9AD1-733EA42FAD17" /* IpEndpointName.cpp in Sources */,
+				06256BE12DB5C02100F3E053 /* Bounds.cpp in Sources */,
 				"EE3FB186-6155-43F4-96D2-EE3051F59DAF" /* NetworkingUtils.cpp in Sources */,
 				"52552D60-4C91-4826-8C69-9318F958AE55" /* UdpSocket.cpp in Sources */,
 				"DBA662CF-A385-4F8F-B3FC-8B50B1E35647" /* OscOutboundPacketStream.cpp in Sources */,
