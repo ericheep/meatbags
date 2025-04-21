@@ -10,25 +10,39 @@
 #include "Meatbags.hpp"
 #include "Viewer.hpp"
 
-class ofApp : public ofBaseApp{
-    
+class SensorParameterFunction {
 public:
+    Hokuyo* hokuyo = NULL;
+    
+    SensorParameterFunction(Hokuyo * _hokuyo) {
+        hokuyo = _hokuyo;
+    }
+    
+    void setIPAddress(string &ipAddress) {
+        hokuyo->setIPAddress(ipAddress);
+    }
+};
+
+class ofApp : public ofBaseApp{
+public:
+    
+    
     void setup() override;
     void update() override;
     void draw() override;
     void exit() override;
     void windowResized(int width, int height) override;
-
+    
     void drawFps();
     
     // hokuyo parameters
-    void setIPAddress(string &ipAddress);
+    // void setIPAddress(string &ipAddress);
     void setPositionX(float &x);
     void setPositionY(float &y);
     void setAutoReconnect(bool &autoReconnectActive);
     void setSensorRotation(float &sensorRotation);
     void setMirrorAngles(bool &mirrorAngles);
-
+    
     // bounds parameters
     void updateGuiBounds();
     void setBoundsX1(float &boundsX1);
@@ -49,14 +63,14 @@ public:
     void setOscSenderPort(int &oscSenderAddress);
     
     void sendBlobOsc();
-
-    Hokuyo hokuyo;
-    vector <Blob> blobs;
+    
+    vector<Hokuyo *> hokuyos;
+    vector<Blob> blobs;
     Meatbags meatbags;
     Bounds bounds;
     Viewer viewer;
     ofxOscSender oscSender;
-
+    
     ofxPanel gui;
     
     // meatbags parameters
@@ -75,15 +89,15 @@ public:
     ofParameter<float> boundsY2;
     
     // hokuyo parameters
-    ofParameterGroup sensorSettings;
-    ofParameter<string> sensorIPAddress;
-    ofParameter<float> positionX;
-    ofParameter<float> positionY;
-    ofParameter<bool> autoReconnectActive;
-    ofParameter<bool> mirrorAngles;
-    ofParameter<float> sensorRotation;
-    ofParameter<bool> showSensorInformation;
-
+    vector<ofParameterGroup> sensorSettings;
+    vector<ofParameter<string>> sensorIPAddresses;
+    vector<ofParameter<float>> positionXs;
+    vector<ofParameter<float>> positionYs;
+    vector<ofParameter<bool>> autoReconnectsActive;
+    vector<ofParameter<bool>> mirrorAngles;
+    vector<ofParameter<float>> sensorRotations;
+    vector<ofParameter<bool>> showSensorInformations;
+    
     // osc parameters
     ofParameterGroup oscSettings;
     ofParameter<string> oscSenderAddress;
