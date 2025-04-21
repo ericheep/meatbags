@@ -1,4 +1,4 @@
-# meatbags
+# [meatbags](https://www.mit.edu/people/dpolicar/writing/prose/text/thinkingMeat.html)
 openFrameworks Hokuyo LiDAR blob detection
 
 This project implements the Hokuyo UST-LX LIDAR protocol and clusters data to be used as blob detection for creative applications.
