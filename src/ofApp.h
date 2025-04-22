@@ -10,19 +10,6 @@
 #include "Meatbags.hpp"
 #include "Viewer.hpp"
 
-class SensorParameterFunction {
-public:
-    Hokuyo* hokuyo = NULL;
-    
-    SensorParameterFunction(Hokuyo * _hokuyo) {
-        hokuyo = _hokuyo;
-    }
-    
-    void setIPAddress(string &ipAddress) {
-        hokuyo->setIPAddress(ipAddress);
-    }
-};
-
 class ofApp : public ofBaseApp{
 public:
     
@@ -36,7 +23,6 @@ public:
     void drawFps();
     
     // hokuyo parameters
-    // void setIPAddress(string &ipAddress);
     void setPositionX(float &x);
     void setPositionY(float &y);
     void setAutoReconnect(bool &autoReconnectActive);
@@ -88,20 +74,13 @@ public:
     ofParameter<float> boundsY1;
     ofParameter<float> boundsY2;
     
-    // hokuyo parameters
-    vector<ofParameterGroup> sensorSettings;
-    vector<ofParameter<string>> sensorIPAddresses;
-    vector<ofParameter<float>> positionXs;
-    vector<ofParameter<float>> positionYs;
-    vector<ofParameter<bool>> autoReconnectsActive;
-    vector<ofParameter<bool>> mirrorAngles;
-    vector<ofParameter<float>> sensorRotations;
-    vector<ofParameter<bool>> showSensorInformations;
-    
     // osc parameters
     ofParameterGroup oscSettings;
     ofParameter<string> oscSenderAddress;
     ofParameter<int> oscSenderPort;
     ofParameter<bool> normalizeBlobs;
     ofParameter<bool> oscActive;
+    
+    vector<ofParameterGroup> sensorSettings;
+    vector<ofColor> sensorColors;
 };
