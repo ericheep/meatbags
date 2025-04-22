@@ -72,7 +72,8 @@ public:
     ofParameter<bool> mirrorAngles;
     ofParameter<float> sensorRotationDeg;
     ofParameter<bool> showSensorInformation;
-
+    ofParameter<ofColor> sensorColor;
+    
     void createCoordinate(int step, float distance);
     vector<float> angles;
     vector<ofPoint> coordinates;

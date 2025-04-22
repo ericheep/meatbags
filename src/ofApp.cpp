@@ -4,10 +4,22 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofxGuiSetFont(ofToDataPath("Hack-Regular.ttf"), 11);
+    ofxGuiSetBorderColor(ofColor::black);
+    ofxGuiSetHeaderColor(ofColor::thistle);
+    ofxGuiSetTextColor(ofColor::black);
+    
+    ofColor barColor = ofColor::snow;
+    barColor.a = 210;
+    ofxGuiSetBackgroundColor(barColor);
+    barColor.a = 255;
+    ofxGuiSetFillColor(barColor);
+    ofxGuiEnableHiResDisplay();
+    ofxGuiSetDefaultWidth(200);
+
     gui.setup("meatbags");
     gui.setDefaultHeight(12);
     
-    meatbagsSettings.setName("general settings");
+    meatbagsSettings.setName("meatbags settings");
     meatbagsSettings.add(areaSize.set( "area size (m)", 5.0, 0.5, 20.0));
     meatbagsSettings.add(epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     meatbagsSettings.add(minPoints.set( "cluster min points", 10, 1, 50));
@@ -31,6 +43,7 @@ void ofApp::setup(){
         ofParameterGroup sensorSetting;
         sensorSettings.push_back(sensorSetting);
         sensorSettings[i].setName("sensor " + to_string(i + 1) + " settings");
+        sensorSettings[i].add(hokuyo->sensorColor.set("color", ofColor::lightSeaGreen));
         sensorSettings[i].add(hokuyo->ipAddress.set("IP address", "192.168.0.10"));
         sensorSettings[i].add(hokuyo->mirrorAngles.set("mirror angles", false));
         sensorSettings[i].add(hokuyo->positionX.set("position x", 0.0, -10.0, 10.0));
@@ -49,14 +62,6 @@ void ofApp::setup(){
     bounds.setCanvasSize(ofGetWidth(), ofGetHeight());
     bounds.setAreaSize(areaSize);
     bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
-    
-    sensorColors = {
-        ofColor::greenYellow,
-        ofColor::aquamarine,
-        ofColor::pink,
-        ofColor::chartreuse,
-        ofColor::orangeRed
-    };
     
     viewer.setSensorColors(sensorColors);
     viewer.setCanvasSize(ofGetWidth(), ofGetHeight());
@@ -107,12 +112,10 @@ void ofApp::draw(){
     viewer.drawBounds();
     viewer.drawDraggablePoints();
     
-    int index = 0;
     for (auto& sensor : sensors.hokuyos) {
-        viewer.drawCoordinates(sensor->coordinates, sensorColors[index]);
-        viewer.drawSensor(sensor->position, sensor->sensorRotationRad, sensorColors[index]);
+        viewer.drawCoordinates(sensor->coordinates, sensor->sensorColor);
+        viewer.drawSensor(sensor->position, sensor->sensorRotationRad, sensor->sensorColor);
         if (sensor->showSensorInformation) sensor->draw();
-        index++;
     }
 
     gui.draw();

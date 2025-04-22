@@ -48,14 +48,14 @@
 </ofx-Hokuyo>
 <meatbags>
 	<general_settings>
-		<area_size__m_>6.3699</area_size__m_>
+		<area_size__m_>9.80682</area_size__m_>
 		<mirror_angles>0</mirror_angles>
 		<cluster_epsilon__mm_>250.5</cluster_epsilon__mm_>
 		<cluster_min_points>18</cluster_min_points>
 		<blob_persistence__s_>1.19388</blob_persistence__s_>
-		<bounds_x1>-1.63494</bounds_x1>
-		<bounds_x2>1.51462</bounds_x2>
-		<bounds_y1>0.360961</bounds_y1>
+		<bounds_x1>-3.11383</bounds_x1>
+		<bounds_x2>2.88627</bounds_x2>
+		<bounds_y1>0.648694</bounds_y1>
 		<bounds_y2>5.24875</bounds_y2>
 	</general_settings>
 	<OSC_settings>
@@ -89,7 +89,9 @@
 		<position_y>0.102041</position_y>
 		<mirror_angles>0</mirror_angles>
 		<sensor_rotation__deg_>-1.83673</sensor_rotation__deg_>
-		<show_sensor_info>1</show_sensor_info>
+		<show_sensor_info>0</show_sensor_info>
+		<UnknownName>75, 255, 165, 255</UnknownName>
+		<color>255, 153, 72, 255</color>
 	</sensor_1_settings>
 	<sensor_2_settings>
 		<IP_address>192.168.0.12</IP_address>
@@ -98,7 +100,9 @@
 		<position_y>0</position_y>
 		<mirror_angles>0</mirror_angles>
 		<sensor_rotation__deg_>0</sensor_rotation__deg_>
-		<show_sensor_info>1</show_sensor_info>
+		<show_sensor_info>0</show_sensor_info>
+		<UnknownName>255, 188, 94, 255</UnknownName>
+		<color>76, 177, 140, 255</color>
 	</sensor_2_settings>
 	<sensor_3_settings>
 		<IP_address>192.168.0.13</IP_address>
@@ -109,4 +113,24 @@
 		<sensor_rotation__deg_>-90</sensor_rotation__deg_>
 		<show_sensor_info>1</show_sensor_info>
 	</sensor_3_settings>
+	<meatbags>
+		<area_size__m_>9.55357</area_size__m_>
+		<cluster_epsilon__mm_>202.128</cluster_epsilon__mm_>
+		<cluster_min_points>19</cluster_min_points>
+		<blob_persistence__s_>0.658163</blob_persistence__s_>
+		<bounds_x1>-2.69076</bounds_x1>
+		<bounds_x2>2.5</bounds_x2>
+		<bounds_y1>1</bounds_y1>
+		<bounds_y2>5</bounds_y2>
+	</meatbags>
+	<meatbags_settings>
+		<area_size__m_>13.3342</area_size__m_>
+		<cluster_epsilon__mm_>100</cluster_epsilon__mm_>
+		<cluster_min_points>10</cluster_min_points>
+		<blob_persistence__s_>0.1</blob_persistence__s_>
+		<bounds_x1>-2.5</bounds_x1>
+		<bounds_x2>2.5</bounds_x2>
+		<bounds_y1>1</bounds_y1>
+		<bounds_y2>5</bounds_y2>
+	</meatbags_settings>
 </meatbags>
