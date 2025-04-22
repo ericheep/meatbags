@@ -23,19 +23,16 @@ public:
     void updateBounds();
     
     void filterCoordinates();
-    void calculateBlobs();
     
     void clusterBlobs();
     void matchBlobs();
     void addBlobs();
-    void removeBlobs();
+    void renewBlobs();
     void getBlobs(vector<Blob> &blob);
 
     int findFreeBlobIndex();
     float compareBlobs(Blob newBlob, Blob oldBlob);
         
-    void setBounds(Bounds bounds);
-    void setBounds(float x1, float y1, float x2, float y2);
     void setBlobPersistence(float blobPersistence);
     void setAreaSize(float areaSize);
     void setMirrorX(bool mirrorX);
@@ -51,9 +48,7 @@ public:
 
     vector<Blob> newBlobs, oldBlobs;
     vector<ofPoint> coordinates;
-    vector<ofPoint> filteredCoordinates;
     vector<int> intensities;
-    vector<int> filteredIntensities;
 
     float boundsX1, boundsX2, boundsY1, boundsY2;
     float width, height;
@@ -63,9 +58,8 @@ public:
     float epsilon;
     int minPoints;
     
-    float lastUpdateTime;
-    float timeBetweenUpdates;
-    int numberFilteredCoordinates;
+    float lastFrameTime;
+    int numberCoordinates;
 };
 
 #endif /* Viz_hpp */

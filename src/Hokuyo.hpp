@@ -22,6 +22,7 @@ public:
     void threadedFunction() override;
     void connect();
     void reconnect();
+    void close();
     
     void sendResetStatusCommand();
     void sendSetMotorSpeedCommand(int motorSpeed);
@@ -34,21 +35,8 @@ public:
     void sendParameterInfoCommand();
     void sendGetDistancesCommand();
     void sendGetDistancesAndIntensitiesCommand();
-    
-    void close();
     void send(string msg);
-    
-    void setIPAddress(string ipAddress);
-    void setPosition(float positionX, float positionY);
-    void setMirrorAngles(bool mirrorX);
-    void setSensorRotation(float sensorRotation);
-    void setInfoPosition(float x, float y);
-    void setAutoReconnect(bool autoReconnectActive);
-    
-    void createCoordinate(int step, float distance);
-    void getCoordinates(vector<ofPoint>& polarCoordinates);
-    void getIntensities(vector<int>& intensities);
-    
+
     void parseResponse(string str);
     void parseStatusInfo(vector<string> packet);
     void parseVersionInfo(vector<string> packet);
@@ -66,24 +54,38 @@ public:
     string formatIpv4String(string command);
     
     int char2int6bitDecode(string str);
-    
     vector<string> splitStringByNewline(const string& str);
     
+    void setInfoPosition(float x, float y);
+
+    // event functions
+    void setIPAddress(string &ipAddress);
+    void setPositionX(float &positionX);
+    void setPositionY(float &positionY);
+    void setMirrorAngles(bool &mirrorX);
+    void setSensorRotation(float &sensorRotationDeg);
+    
+    ofParameter<string> ipAddress;
+    ofParameter<float> positionX;
+    ofParameter<float> positionY;
+    ofParameter<bool> autoReconnectActive;
+    ofParameter<bool> mirrorAngles;
+    ofParameter<float> sensorRotationDeg;
+    ofParameter<bool> showSensorInformation;
+
+    void createCoordinate(int step, float distance);
     vector<float> angles;
     vector<ofPoint> coordinates;
-
     vector<int> intensities;
-    
+    float sensorRotationRad;
     bool newCoordinatesAvailable;
-    bool mirrorAngles;
     
     ofPoint position;
-    float sensorRotation;
 
 private:
     ofxTCPClient tcpClient;
-        
-    string ipAddress, netmask, gateway;
+       
+    string netmask, gateway;
     int port;
     
     bool laserActive;
@@ -92,7 +94,7 @@ private:
     float statusTimer, statusInterval;
     float lastFrameTime;
     
-    bool isConnected, autoReconnectActive;
+    bool isConnected;
     bool callIntensitiesActive;
     
     int startStep, endStep, clusterCount, angularResolution;

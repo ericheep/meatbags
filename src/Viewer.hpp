@@ -24,6 +24,7 @@ public:
     void setBounds(Bounds& bounds);
     void setCanvasSize(float width, float height);
     void setAreaSize(float areaSize);
+    void setSensorColors(vector<ofColor> colors);
     
     Bounds bounds;
     ofPoint origin;
@@ -31,6 +32,7 @@ public:
     float mouseBoxSize, mouseBoxHalfSize;
     
     ofTrueTypeFont blobFont;
+    vector<ofColor> sensorColors;
 };
 
 #endif /* Viewer_hpp */

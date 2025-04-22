@@ -23,14 +23,22 @@ Hokuyo::Hokuyo() {
     startStep = 0;
     endStep = 1079;
     angularResolution = 1440;
-    sensorRotation = 0;
+    sensorRotationDeg = 0;
+    sensorRotationRad = 0;
     clusterCount = 0;
     
     status = "";
     lastStatus = status;
     connectionStatus = "DISCONNECTED";
     
-    ipAddress = "192.168.0.10";
+    port = 10940;
+    autoReconnectActive = true;
+    ipAddress.addListener(this, &Hokuyo::setIPAddress);
+    positionX.addListener(this, &Hokuyo::setPositionX);
+    positionY.addListener(this, &Hokuyo::setPositionY);
+    mirrorAngles.addListener(this, &Hokuyo::setMirrorAngles);
+    sensorRotationDeg.addListener(this, &Hokuyo::setSensorRotation);
+
     netmask = "255.255.255.0";
     gateway = "192.168.0.1";
     
@@ -41,7 +49,6 @@ Hokuyo::Hokuyo() {
     
     callIntensitiesActive = true;
     newCoordinatesAvailable = false;
-    autoReconnectActive = true;
     
     x = 0;
     y = 0;
@@ -56,12 +63,8 @@ Hokuyo::Hokuyo() {
     font.load(ofToDataPath("Hack-Regular.ttf"), 11);
 }
 
-void Hokuyo::setSensorRotation(float _sensorRotation) {
-    sensorRotation = _sensorRotation / 360.0 * TWO_PI;
-}
-
-void Hokuyo::setAutoReconnect(bool _autoReconnectActive) {
-    autoReconnectActive = _autoReconnectActive;
+void Hokuyo::setSensorRotation(float &_sensorRotationDeg) {
+    sensorRotationRad = _sensorRotationDeg / 360.0 * TWO_PI;
 }
 
 void Hokuyo::setup(string _ipAddress, int _port) {
@@ -230,14 +233,18 @@ void Hokuyo::update() {
     }
 }
 
-void Hokuyo::setIPAddress(string _ipAddress) {
-    ipAddress = _ipAddress;
+// event listeners
+void Hokuyo::setIPAddress(string &ipAddress) {
     tcpClient.close();
     connect();
 }
 
-void Hokuyo::setPosition(float _x, float _y) {
-    position.set(_x * 1000.0, _y * 1000.0);
+void Hokuyo::setPositionX(float &positionX) {
+    position.x = positionX * 1000.0;
+}
+
+void Hokuyo::setPositionY(float &positionY) {
+    position.y = positionY * 1000.0;
 }
 
 void Hokuyo::setInfoPosition(float _x, float _y) {
@@ -245,7 +252,7 @@ void Hokuyo::setInfoPosition(float _x, float _y) {
     y = _y;
 }
 
-void Hokuyo::setMirrorAngles(bool _mirrorAngles) {
+void Hokuyo::setMirrorAngles(bool &_mirrorAngles) {
     mirrorAngles = _mirrorAngles;
 
     // -45 degrees offset
@@ -414,11 +421,11 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
 }
 
 void Hokuyo::createCoordinate(int index, float distance) {
-    float theta = angles[index] + sensorRotation;
+    float theta = angles[index] + sensorRotationRad;
     
     float x = cos(theta) * distance;
     float y = sin(theta) * distance;
-        
+
     coordinates[index].set(ofPoint(x, y) + position);
 }
 
@@ -540,16 +547,4 @@ vector<string> Hokuyo::splitStringByNewline(const string& str) {
         result.push_back(line);
     
     return result;
-}
-
-void Hokuyo::getCoordinates(vector<ofPoint>& _coordinates) {
-    for (int i = 0; i < coordinates.size(); i++) {
-        _coordinates[i].set(coordinates[i]);
-    }
-}
-
-void Hokuyo::getIntensities(vector<int>& _intensities) {
-    for (int i = 0; i < intensities.size(); i++) {
-        _intensities[i] = intensities[i];
-    }
 }

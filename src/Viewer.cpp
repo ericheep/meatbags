@@ -16,6 +16,11 @@ Viewer::Viewer() {
     blobFont.load(ofToDataPath("Hack-Bold.ttf"), 14);
 }
 
+void Viewer::setSensorColors(vector<ofColor> _sensorColors) {
+    sensorColors = _sensorColors;
+}
+
+
 void Viewer::setAreaSize(float _areaSize) {
     areaSize = _areaSize;
     scale = width / (areaSize * 1000);
@@ -103,11 +108,11 @@ void Viewer::drawBounds() {
 }
 
 void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
-    for (int i = 0; i < coordinates.size(); i++) {
+    for (auto& coordinate : coordinates) {
         ofColor pointColor;
 
-        float x = coordinates[i].x;
-        float y = coordinates[i].y;
+        float x = coordinate.x;
+        float y = coordinate.y;
         
         if (x == 0 && y == 0) break;
 

@@ -5,18 +5,15 @@
 #include "Meatbags.hpp"
 
 Meatbags::Meatbags() {
-    coordinates.resize(1440);
-    intensities.resize(1440);
-    filteredCoordinates.resize(1440);
-    filteredIntensities.resize(1440);
+    coordinates.resize(4320);
+    intensities.resize(4320);
     
     blobPersistence = 0.1;
     epsilon = 100.0;
     minPoints = 5;
    
-    numberFilteredCoordinates = 0;
-    lastUpdateTime = 0;
-    timeBetweenUpdates = 0;
+    numberCoordinates = 0;
+    lastFrameTime = 0;
     
     boundsX1 = -2.5;
     boundsX2 = 2.5;
@@ -25,45 +22,32 @@ Meatbags::Meatbags() {
 }
 
 void Meatbags::update() {
-    timeBetweenUpdates += ofGetLastFrameTime();
+    lastFrameTime = ofGetLastFrameTime();
+    
+    for (auto& oldBlob : oldBlobs) {
+        oldBlob.updateLifetime(lastFrameTime);
+    }
+    
+    oldBlobs.erase(std::remove_if(oldBlobs.begin(), oldBlobs.end(), [](Blob blob) {
+        return !blob.isAlive();
+    }), oldBlobs.end());
 }
 
 void Meatbags::updateBlobs() {
-    lastUpdateTime = timeBetweenUpdates;
-    timeBetweenUpdates = 0;
+    if (numberCoordinates == 0) return;
     
-    filterCoordinates();
-    calculateBlobs();
-}
-
-void Meatbags::filterCoordinates() {    
-    int filteredIndex = 0;
-    for (int i = 0; i < coordinates.size(); i++) {
-        float x = coordinates[i].x;
-        float y = coordinates[i].y;
-        
-        if (x != 0 && y != 0) {
-            if (x < boundsX2 * 1000 &&
-                x > boundsX1 * 1000 &&
-                y > boundsY1 * 1000 &&
-                y < boundsY2 * 1000)
-            {
-                filteredCoordinates[filteredIndex].set(x, y);
-                filteredIntensities[filteredIndex] = intensities[i];
-                filteredIndex++;
-            }
-        }
-    }
-    
-    numberFilteredCoordinates = filteredIndex;
+    clusterBlobs();
+    matchBlobs();
+    renewBlobs();
+    addBlobs();
 }
 
 void Meatbags::clusterBlobs() {
     vector<struct point2> points;
-    for (int i = 0; i < numberFilteredCoordinates; i++) {
+    for (int i = 0; i < numberCoordinates; i++) {
         struct point2 point;
-        point.x = filteredCoordinates[i].x;
-        point.y = filteredCoordinates[i].y;
+        point.x = coordinates[i].x;
+        point.y = coordinates[i].y;
         points.push_back(point);
     }
     
@@ -73,17 +57,21 @@ void Meatbags::clusterBlobs() {
     newBlobs.clear();
     int index = 0;
     for(auto& cluster: clusters) {
-        vector<ofPoint> coordinates;
-        vector<int> intensities;
+        vector<ofPoint> clusterCoordinates;
+        vector<int> clusterIntensities;
         int numberPoints = cluster.size();
         
         for (int i = 0; i < numberPoints; i++) {
             int coordinateIndex = cluster[i];
-            coordinates.push_back(filteredCoordinates[coordinateIndex]);;
-            intensities.push_back(filteredIntensities[coordinateIndex]);
+            clusterCoordinates.push_back(coordinates[coordinateIndex]);
+            clusterIntensities.push_back(intensities[coordinateIndex]);
         }
         
-        Blob newBlob = Blob(coordinates, intensities, blobPersistence, numberPoints);
+        Blob newBlob = Blob(clusterCoordinates,
+                            clusterIntensities,
+                            blobPersistence,
+                            numberPoints);
+        
         newBlob.index = index;
         newBlobs.push_back(newBlob);
         
@@ -149,18 +137,12 @@ void Meatbags::matchBlobs() {
     }
 }
 
-void Meatbags::removeBlobs() {
+void Meatbags::renewBlobs() {
     for (auto& oldBlob : oldBlobs) {
         if (oldBlob.isMatched()) {
             oldBlob.lifetime = 0;
-        } else {
-            oldBlob.updateLifetime(lastUpdateTime);
         }
     }
-    
-    oldBlobs.erase(std::remove_if(oldBlobs.begin(), oldBlobs.end(), [](Blob blob) {
-        return !blob.isAlive();
-    }), oldBlobs.end());
 }
 
 int Meatbags::findFreeBlobIndex() {
@@ -196,34 +178,11 @@ void Meatbags::addBlobs() {
     }
 }
 
-void Meatbags::calculateBlobs() {
-    if (filteredCoordinates.size() == 0) return;
-    
-    clusterBlobs();
-    matchBlobs();
-    removeBlobs();
-    addBlobs();
-}
-
 void::Meatbags::getBlobs(vector<Blob> &blobs) {
     blobs.clear();
     for (auto& oldBlob : oldBlobs) {
         blobs.push_back(oldBlob);
     }
-}
-
-void Meatbags::setBounds(float _boundsX1, float _boundsX2, float _boundsY1, float _boundsY2) {
-    boundsX1 = _boundsX1;
-    boundsX2 = _boundsX2;
-    boundsY1 = _boundsY1;
-    boundsY2 = _boundsY2;
-}
-
-void Meatbags::setBounds(Bounds bounds) {
-    boundsX1 = bounds.x1;
-    boundsX2 = bounds.x2;
-    boundsY1 = bounds.y1;
-    boundsY2 = bounds.y2;
 }
 
 void Meatbags::setBlobPersistence(float _blobPersistence) {

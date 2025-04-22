@@ -9,26 +9,27 @@
 #include "Blob.hpp"
 #include "Meatbags.hpp"
 #include "Viewer.hpp"
+#include "Sensors.hpp"
 
 class ofApp : public ofBaseApp{
-    
 public:
+    
+    
     void setup() override;
     void update() override;
     void draw() override;
     void exit() override;
     void windowResized(int width, int height) override;
-
+    
     void drawFps();
     
     // hokuyo parameters
-    void setIPAddress(string &ipAddress);
     void setPositionX(float &x);
     void setPositionY(float &y);
     void setAutoReconnect(bool &autoReconnectActive);
     void setSensorRotation(float &sensorRotation);
     void setMirrorAngles(bool &mirrorAngles);
-
+    
     // bounds parameters
     void updateGuiBounds();
     void setBoundsX1(float &boundsX1);
@@ -49,14 +50,14 @@ public:
     void setOscSenderPort(int &oscSenderAddress);
     
     void sendBlobOsc();
-
-    Hokuyo hokuyo;
-    vector <Blob> blobs;
+    
+    Sensors sensors;
+    vector<Blob> blobs;
     Meatbags meatbags;
     Bounds bounds;
     Viewer viewer;
     ofxOscSender oscSender;
-
+    
     ofxPanel gui;
     
     // meatbags parameters
@@ -74,20 +75,13 @@ public:
     ofParameter<float> boundsY1;
     ofParameter<float> boundsY2;
     
-    // hokuyo parameters
-    ofParameterGroup sensorSettings;
-    ofParameter<string> sensorIPAddress;
-    ofParameter<float> positionX;
-    ofParameter<float> positionY;
-    ofParameter<bool> autoReconnectActive;
-    ofParameter<bool> mirrorAngles;
-    ofParameter<float> sensorRotation;
-    ofParameter<bool> showSensorInformation;
-
     // osc parameters
     ofParameterGroup oscSettings;
     ofParameter<string> oscSenderAddress;
     ofParameter<int> oscSenderPort;
     ofParameter<bool> normalizeBlobs;
     ofParameter<bool> oscActive;
+    
+    vector<ofParameterGroup> sensorSettings;
+    vector<ofColor> sensorColors;
 };

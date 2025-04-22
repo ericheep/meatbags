@@ -1,6 +1,5 @@
 #include "ofApp.h"
-#define PORT 10940
-#define IP "192.168.0.10"
+#define NUM_HOKUYOS 2
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -10,7 +9,6 @@ void ofApp::setup(){
     
     meatbagsSettings.setName("general settings");
     meatbagsSettings.add(areaSize.set( "area size (m)", 5.0, 0.5, 20.0));
-    meatbagsSettings.add(mirrorAngles.set("mirror angles", false));
     meatbagsSettings.add(epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     meatbagsSettings.add(minPoints.set( "cluster min points", 10, 1, 50));
     meatbagsSettings.add(blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
@@ -27,29 +25,40 @@ void ofApp::setup(){
     oscSettings.add(normalizeBlobs.set("normalize OSC output", false));
     gui.add(oscSettings);
     
-    sensorSettings.setName("sensor settings");
-    sensorSettings.add(sensorIPAddress.set("IP address", "192.168.0.10"));
-    sensorSettings.add(positionX.set("position x", 0.0, -10.0, 10.0));
-    sensorSettings.add(positionY.set("position y", 0.0, 0.0, 20.0));
-    sensorSettings.add(sensorRotation.set( "sensor rotation (deg)", 0, -180.0, 180.0));
-    sensorSettings.add(autoReconnectActive.set("auto reconnect", true));
-    sensorSettings.add(showSensorInformation.set("show sensor info", true));
-    gui.add(sensorSettings);
+    for (int i = 0; i < NUM_HOKUYOS; i++) {
+        Hokuyo* hokuyo = new Hokuyo();
+        
+        ofParameterGroup sensorSetting;
+        sensorSettings.push_back(sensorSetting);
+        sensorSettings[i].setName("sensor " + to_string(i + 1) + " settings");
+        sensorSettings[i].add(hokuyo->ipAddress.set("IP address", "192.168.0.10"));
+        sensorSettings[i].add(hokuyo->mirrorAngles.set("mirror angles", false));
+        sensorSettings[i].add(hokuyo->positionX.set("position x", 0.0, -10.0, 10.0));
+        sensorSettings[i].add(hokuyo->positionY.set("position y", 0.0, 0.0, 20.0));
+        sensorSettings[i].add(hokuyo->autoReconnectActive.set("auto reconnect", true));
+        sensorSettings[i].add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
+        sensorSettings[i].add(hokuyo->showSensorInformation.set("show sensor info", true));
+                
+        sensors.addSensor(hokuyo);
+        gui.add(sensorSettings[i]);
+    }
     
     gui.loadFromFile("settings.xml");
     gui.maximize();
-
-    hokuyo.setup(IP, PORT);
-    hokuyo.setSensorRotation(sensorRotation);
-    hokuyo.setInfoPosition(10, ofGetHeight() - 10);
-    hokuyo.setAutoReconnect(autoReconnectActive);
-    hokuyo.setMirrorAngles(mirrorAngles);
-    hokuyo.setPosition(positionX, positionY);
-        
+    
     bounds.setCanvasSize(ofGetWidth(), ofGetHeight());
     bounds.setAreaSize(areaSize);
     bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
     
+    sensorColors = {
+        ofColor::greenYellow,
+        ofColor::aquamarine,
+        ofColor::pink,
+        ofColor::chartreuse,
+        ofColor::orangeRed
+    };
+    
+    viewer.setSensorColors(sensorColors);
     viewer.setCanvasSize(ofGetWidth(), ofGetHeight());
     viewer.setAreaSize(areaSize);
     viewer.setBounds(bounds);
@@ -57,45 +66,57 @@ void ofApp::setup(){
     meatbags.setEpsilon(epsilon);
     meatbags.setMinPoints(minPoints);
     meatbags.setBlobPersistence(blobPersistence);
-    meatbags.setBounds(bounds);
     
-    sensorIPAddress.addListener(this, &ofApp::setIPAddress);
-    positionX.addListener(this, &ofApp::setPositionX);
-    positionY.addListener(this, &ofApp::setPositionY);
+    areaSize.addListener(this, &ofApp::setAreaSize);
     boundsX1.addListener(this, &ofApp::setBoundsX1);
     boundsX2.addListener(this, &ofApp::setBoundsX2);
     boundsY1.addListener(this, &ofApp::setBoundsY1);
     boundsY2.addListener(this, &ofApp::setBoundsY2);
-    sensorRotation.addListener(this, &ofApp::setSensorRotation);
-    blobPersistence.addListener(this, &ofApp::setBlobPersistence);
-    autoReconnectActive.addListener(this, &ofApp::setAutoReconnect);
-    areaSize.addListener(this, &ofApp::setAreaSize);
-    mirrorAngles.addListener(this, &ofApp::setMirrorAngles);
+    
     epsilon.addListener(this, &ofApp::setEpsilon);
     minPoints.addListener(this, &ofApp::setMinPoints);
+    
     oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
     oscSenderPort.addListener(this, &ofApp::setOscSenderPort);
-    
     oscSender.setup(oscSenderAddress, oscSenderPort);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    hokuyo.update();
-    meatbags.update();
+    sensors.setBounds(bounds);
     viewer.setBounds(bounds);
-    meatbags.setBounds(bounds);
+    sensors.update();
+    meatbags.update();
     updateGuiBounds();
-    
-    if (!hokuyo.newCoordinatesAvailable) return;
-    hokuyo.newCoordinatesAvailable = false;
 
-    hokuyo.getCoordinates(meatbags.coordinates);
-    hokuyo.getIntensities(meatbags.intensities);
-        
+    if (!sensors.areNewCoordinatesAvailable()) return;
+    sensors.getCoordinatesAndIntensities(meatbags.coordinates, meatbags.intensities, meatbags.numberCoordinates);
+    
     meatbags.updateBlobs();
     meatbags.getBlobs(blobs);
+    
     sendBlobOsc();
+}
+
+//--------------------------------------------------------------
+void ofApp::draw(){
+    ofBackground(0);
+    
+    viewer.drawGrid();
+    viewer.drawBlobs(meatbags.oldBlobs);
+    viewer.drawBounds();
+    viewer.drawDraggablePoints();
+    
+    int index = 0;
+    for (auto& sensor : sensors.hokuyos) {
+        viewer.drawCoordinates(sensor->coordinates, sensorColors[index]);
+        viewer.drawSensor(sensor->position, sensor->sensorRotationRad, sensorColors[index]);
+        if (sensor->showSensorInformation) sensor->draw();
+        index++;
+    }
+
+    gui.draw();
+    drawFps();
 }
 
 void ofApp::updateGuiBounds() {
@@ -116,22 +137,6 @@ void ofApp::updateGuiBounds() {
     }
 }
 
-//--------------------------------------------------------------
-void ofApp::draw(){
-    ofBackground(0);
-    
-    viewer.drawGrid();
-    viewer.drawCoordinates(hokuyo.coordinates, ofColor::greenYellow);
-    viewer.drawBlobs(meatbags.oldBlobs);
-    viewer.drawBounds();
-    viewer.drawDraggablePoints();
-    viewer.drawSensor(hokuyo.position, hokuyo.sensorRotation, ofColor::greenYellow);
-
-    if (showSensorInformation) hokuyo.draw();
-    gui.draw();
-    drawFps();
-}
-
 void ofApp::drawFps() {
     std::stringstream strm;
     strm << setprecision(3) << "fps: " << ofGetFrameRate();
@@ -141,39 +146,23 @@ void ofApp::drawFps() {
 //--------------------------------------------------------------
 void ofApp::exit(){
     gui.saveToFile("settings.xml");
-    hokuyo.close();
+    for (auto& sensor : sensors.hokuyos) {
+        sensor->close();
+    }
 }
 
 void ofApp::windowResized(int width, int height) {
-    hokuyo.setInfoPosition(10, height - 10);
+    for (auto& sensor : sensors.hokuyos) {
+        sensor->setInfoPosition(10, height - 10);
+    }
     viewer.setCanvasSize(width, height);
     bounds.setCanvasSize(width, height);
-}
-
-void ofApp::setAutoReconnect(bool &autoReconnectActive) {
-    hokuyo.setAutoReconnect(autoReconnectActive);
-}
-
-void ofApp::setMirrorAngles(bool &mirrorAngles) {
-    hokuyo.setMirrorAngles(mirrorAngles);
 }
 
 void ofApp::setAreaSize(float &areaSize) {
     viewer.setAreaSize(areaSize);
     bounds.setAreaSize(areaSize);
     bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
-}
-
-void ofApp::setIPAddress(string &ipAddress) {
-    hokuyo.setIPAddress(ipAddress);
-}
-
-void ofApp::setPositionX(float &x) {
-    hokuyo.setPosition(x, positionY);
-}
-
-void ofApp::setPositionY(float &y) {
-    hokuyo.setPosition(positionX, y);
 }
 
 void ofApp::setBoundsX1(float &x1) {
@@ -190,10 +179,6 @@ void ofApp::setBoundsY1(float &y1) {
 
 void ofApp::setBoundsY2(float &y2) {
     bounds.setBounds(boundsX1, boundsX2, boundsY1, y2);
-}
-
-void ofApp::setSensorRotation(float &sensorRotation) {
-    hokuyo.setSensorRotation(sensorRotation);
 }
 
 void ofApp::setBlobPersistence(float &blobPersistence) {
@@ -218,7 +203,7 @@ void ofApp::setOscSenderPort(int& oscSenderPort) {
 
 void ofApp::sendBlobOsc() {
     if (!oscActive) return;
-        
+    
     for (auto& blob : blobs) {
         ofxOscMessage msg;
         msg.setAddress("/blobs");
@@ -241,4 +226,3 @@ void ofApp::sendBlobOsc() {
         oscSender.sendMessage(msg);
     }
 }
-
