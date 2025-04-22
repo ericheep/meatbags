@@ -53,9 +53,9 @@
 		<cluster_epsilon__mm_>250.5</cluster_epsilon__mm_>
 		<cluster_min_points>18</cluster_min_points>
 		<blob_persistence__s_>1.19388</blob_persistence__s_>
-		<bounds_x1>-1.16074</bounds_x1>
-		<bounds_x2>1.12245</bounds_x2>
-		<bounds_y1>0.546372</bounds_y1>
+		<bounds_x1>-1.63494</bounds_x1>
+		<bounds_x2>1.51462</bounds_x2>
+		<bounds_y1>0.360961</bounds_y1>
 		<bounds_y2>5.24875</bounds_y2>
 	</general_settings>
 	<OSC_settings>

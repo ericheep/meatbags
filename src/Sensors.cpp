@@ -31,7 +31,10 @@ void Sensors::setBounds(Bounds& _bounds) {
 bool Sensors::areNewCoordinatesAvailable() {
     bool newCoordinatesAvalable = false;
     for (auto& hokuyo : hokuyos) {
-        if (hokuyo->newCoordinatesAvailable) newCoordinatesAvalable = true;
+        if (hokuyo->newCoordinatesAvailable) {
+            newCoordinatesAvalable = true;
+            hokuyo->newCoordinatesAvailable = false;
+        }
     }
     return newCoordinatesAvalable;
 }
