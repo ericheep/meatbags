@@ -160,6 +160,10 @@ void ofApp::windowResized(int width, int height) {
     bounds.setCanvasSize(width, height);
 }
 
+void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
+    areaSize += scrollY * 0.2;
+}
+
 void ofApp::setAreaSize(float &areaSize) {
     viewer.setAreaSize(areaSize);
     bounds.setAreaSize(areaSize);

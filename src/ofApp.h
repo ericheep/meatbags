@@ -20,7 +20,8 @@ public:
     void draw() override;
     void exit() override;
     void windowResized(int width, int height) override;
-    
+    void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
+
     void drawFps();
     
     // hokuyo parameters
