@@ -137,6 +137,22 @@ void Meatbags::matchBlobs() {
     }
 }
 
+void Meatbags::addBlobs() {
+    for (auto& newBlob : newBlobs) {
+        if (!newBlob.isMatched()) {
+            Blob blob;
+            
+            int freeIndex = findFreeBlobIndex();
+            
+            blob.index = freeIndex;
+            blob.setMatched(true);
+            blob.become(newBlob);
+            
+            oldBlobs.push_back(blob);
+        }
+    }
+}
+
 void Meatbags::renewBlobs() {
     for (auto& oldBlob : oldBlobs) {
         if (oldBlob.isMatched()) {
@@ -160,22 +176,6 @@ int Meatbags::findFreeBlobIndex() {
     }
     
     return freeIndex;
-}
-
-void Meatbags::addBlobs() {
-    for (auto& newBlob : newBlobs) {
-        if (!newBlob.isMatched()) {
-            Blob blob;
-            
-            int freeIndex = findFreeBlobIndex();
-            
-            blob.index = freeIndex;
-            blob.setMatched(true);
-            blob.become(newBlob);
-            
-            oldBlobs.push_back(blob);
-        }
-    }
 }
 
 void::Meatbags::getBlobs(vector<Blob> &blobs) {
