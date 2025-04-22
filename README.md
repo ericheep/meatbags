@@ -1,7 +1,7 @@
 # [meatbags](https://www.mit.edu/people/dpolicar/writing/prose/text/thinkingMeat.html)
-openFrameworks Hokuyo LiDAR blob detection
+openFrameworks Hokuyo 2D LiDAR blob detection
 
-This project implements the Hokuyo UST-LX LIDAR protocol and clusters data to be used as blob detection for creative applications.
+This project implements the Hokuyo UST-LX LiDAR protocol and clusters data to be used as blob detection for creative applications.
 
 ## installation
 
@@ -19,7 +19,7 @@ This project was developed with openFrameowrks v0.12.0, it uses the following op
 
 After opening and closing the application Meatbags will create two XML files that are automatically loaded on startup and saved on exit. These hold the configuration state of the application and allow easy startup for art install scenarios. 
 
-It its current state Meatbags expects to be able to read a single Hokuyo UST-10LX sensor. Future releases will include conifigurable methods to add more sensors.
+It its current state Meatbags can read multiple Hokuyo UST-XXLX sensors.
 
 ## external code
 
@@ -36,8 +36,9 @@ This project uses the very cool font [Hack](https://github.com/source-foundry/Ha
 
 ## todo
 
-- add support for reading multiple sensors simultaneously
-- add sensor configuration methods
+- add method to dynamically add/remove sensors
+- add video mute
+- add sensor notifications
 
 ![meatbags](https://github.com/user-attachments/assets/34e793e9-e960-452f-a8a4-a0066824f212)
 
