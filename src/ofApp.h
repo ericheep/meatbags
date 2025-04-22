@@ -9,6 +9,7 @@
 #include "Blob.hpp"
 #include "Meatbags.hpp"
 #include "Viewer.hpp"
+#include "Sensors.hpp"
 
 class ofApp : public ofBaseApp{
 public:
@@ -50,7 +51,7 @@ public:
     
     void sendBlobOsc();
     
-    vector<Hokuyo *> hokuyos;
+    Sensors sensors;
     vector<Blob> blobs;
     Meatbags meatbags;
     Bounds bounds;

@@ -234,7 +234,6 @@ void Hokuyo::update() {
 }
 
 // event listeners
-
 void Hokuyo::setIPAddress(string &ipAddress) {
     tcpClient.close();
     connect();
@@ -426,7 +425,7 @@ void Hokuyo::createCoordinate(int index, float distance) {
     
     float x = cos(theta) * distance;
     float y = sin(theta) * distance;
-        
+
     coordinates[index].set(ofPoint(x, y) + position);
 }
 
@@ -548,20 +547,4 @@ vector<string> Hokuyo::splitStringByNewline(const string& str) {
         result.push_back(line);
     
     return result;
-}
-
-void Hokuyo::setBounds(Bounds &_bounds) {
-    bounds = _bounds;
-}
-
-void Hokuyo::getCoordinates(vector<ofPoint>& _coordinates) {
-    for (int i = 0; i < coordinates.size(); i++) {
-        _coordinates[i].set(coordinates[i]);
-    }
-}
-
-void Hokuyo::getIntensities(vector<int>& _intensities) {
-    for (int i = 0; i < intensities.size(); i++) {
-        _intensities[i] = intensities[i];
-    }
 }

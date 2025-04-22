@@ -48,15 +48,15 @@
 </ofx-Hokuyo>
 <meatbags>
 	<general_settings>
-		<area_size__m_>5.77296</area_size__m_>
+		<area_size__m_>6.3699</area_size__m_>
 		<mirror_angles>0</mirror_angles>
-		<cluster_epsilon__mm_>100</cluster_epsilon__mm_>
-		<cluster_min_points>11</cluster_min_points>
-		<blob_persistence__s_>0.1</blob_persistence__s_>
-		<bounds_x1>-1.10328</bounds_x1>
-		<bounds_x2>1.0263</bounds_x2>
-		<bounds_y1>1.08403</bounds_y1>
-		<bounds_y2>3.47019</bounds_y2>
+		<cluster_epsilon__mm_>250.5</cluster_epsilon__mm_>
+		<cluster_min_points>18</cluster_min_points>
+		<blob_persistence__s_>1.19388</blob_persistence__s_>
+		<bounds_x1>-1.16074</bounds_x1>
+		<bounds_x2>1.12245</bounds_x2>
+		<bounds_y1>0.546372</bounds_y1>
+		<bounds_y2>5.24875</bounds_y2>
 	</general_settings>
 	<OSC_settings>
 		<OSC_address>192.168.0.11</OSC_address>
@@ -73,4 +73,40 @@
 		<show_sensor_info>0</show_sensor_info>
 		<sensor_rotation__deg_>0</sensor_rotation__deg_>
 	</sensor_settings>
+	<sensor_0_settings>
+		<IP_address>192.168.0.10</IP_address>
+		<auto_reconnect>1</auto_reconnect>
+		<position_x>-3.87755</position_x>
+		<position_y>0</position_y>
+		<mirror_angles>0</mirror_angles>
+		<sensor_rotation__deg_>0</sensor_rotation__deg_>
+		<show_sensor_info>1</show_sensor_info>
+	</sensor_0_settings>
+	<sensor_1_settings>
+		<IP_address>192.168.0.10</IP_address>
+		<auto_reconnect>1</auto_reconnect>
+		<position_x>-0.102041</position_x>
+		<position_y>0.102041</position_y>
+		<mirror_angles>0</mirror_angles>
+		<sensor_rotation__deg_>-1.83673</sensor_rotation__deg_>
+		<show_sensor_info>1</show_sensor_info>
+	</sensor_1_settings>
+	<sensor_2_settings>
+		<IP_address>192.168.0.12</IP_address>
+		<auto_reconnect>0</auto_reconnect>
+		<position_x>0.714285</position_x>
+		<position_y>0</position_y>
+		<mirror_angles>0</mirror_angles>
+		<sensor_rotation__deg_>0</sensor_rotation__deg_>
+		<show_sensor_info>1</show_sensor_info>
+	</sensor_2_settings>
+	<sensor_3_settings>
+		<IP_address>192.168.0.13</IP_address>
+		<auto_reconnect>0</auto_reconnect>
+		<position_x>1.12245</position_x>
+		<position_y>3.87755</position_y>
+		<mirror_angles>0</mirror_angles>
+		<sensor_rotation__deg_>-90</sensor_rotation__deg_>
+		<show_sensor_info>1</show_sensor_info>
+	</sensor_3_settings>
 </meatbags>

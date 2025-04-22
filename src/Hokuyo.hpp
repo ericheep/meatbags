@@ -9,7 +9,6 @@
 
 #include "ofMain.h"
 #include "ofxNetwork.h"
-#include "Bounds.hpp"
 #include "sstream"
 
 class Hokuyo : public ofThread {
@@ -23,6 +22,7 @@ public:
     void threadedFunction() override;
     void connect();
     void reconnect();
+    void close();
     
     void sendResetStatusCommand();
     void sendSetMotorSpeedCommand(int motorSpeed);
@@ -35,16 +35,8 @@ public:
     void sendParameterInfoCommand();
     void sendGetDistancesCommand();
     void sendGetDistancesAndIntensitiesCommand();
-    
-    void close();
     void send(string msg);
-    
-    void setInfoPosition(float x, float y);
 
-    void createCoordinate(int step, float distance);
-    void getCoordinates(vector<ofPoint>& polarCoordinates);
-    void getIntensities(vector<int>& intensities);
-    
     void parseResponse(string str);
     void parseStatusInfo(vector<string> packet);
     void parseVersionInfo(vector<string> packet);
@@ -62,11 +54,10 @@ public:
     string formatIpv4String(string command);
     
     int char2int6bitDecode(string str);
-    
     vector<string> splitStringByNewline(const string& str);
     
-    void setBounds(Bounds &bounds);
-    
+    void setInfoPosition(float x, float y);
+
     // event functions
     void setIPAddress(string &ipAddress);
     void setPositionX(float &positionX);
@@ -82,6 +73,7 @@ public:
     ofParameter<float> sensorRotationDeg;
     ofParameter<bool> showSensorInformation;
 
+    void createCoordinate(int step, float distance);
     vector<float> angles;
     vector<ofPoint> coordinates;
     vector<int> intensities;
@@ -120,8 +112,6 @@ private:
     
     string status, lastStatus;
     float x, y, width, height;
-    
-    Bounds bounds;
 };
 
 #endif /* Hokuyo_hpp */

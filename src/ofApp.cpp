@@ -1,5 +1,5 @@
 #include "ofApp.h"
-#define NUM_HOKUYOS 1
+#define NUM_HOKUYOS 2
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -25,14 +25,6 @@ void ofApp::setup(){
     oscSettings.add(normalizeBlobs.set("normalize OSC output", false));
     gui.add(oscSettings);
     
-    sensorColors = {
-        ofColor::greenYellow,
-        ofColor::aquamarine,
-        ofColor::pink,
-        ofColor::chartreuse,
-        ofColor::orangeRed
-    };
-    
     for (int i = 0; i < NUM_HOKUYOS; i++) {
         Hokuyo* hokuyo = new Hokuyo();
         
@@ -47,7 +39,7 @@ void ofApp::setup(){
         sensorSettings[i].add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
         sensorSettings[i].add(hokuyo->showSensorInformation.set("show sensor info", true));
                 
-        hokuyos.push_back(hokuyo);
+        sensors.addSensor(hokuyo);
         gui.add(sensorSettings[i]);
     }
     
@@ -58,6 +50,15 @@ void ofApp::setup(){
     bounds.setAreaSize(areaSize);
     bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
     
+    sensorColors = {
+        ofColor::greenYellow,
+        ofColor::aquamarine,
+        ofColor::pink,
+        ofColor::chartreuse,
+        ofColor::orangeRed
+    };
+    
+    viewer.setSensorColors(sensorColors);
     viewer.setCanvasSize(ofGetWidth(), ofGetHeight());
     viewer.setAreaSize(areaSize);
     viewer.setBounds(bounds);
@@ -65,7 +66,6 @@ void ofApp::setup(){
     meatbags.setEpsilon(epsilon);
     meatbags.setMinPoints(minPoints);
     meatbags.setBlobPersistence(blobPersistence);
-    meatbags.setBounds(bounds);
     
     areaSize.addListener(this, &ofApp::setAreaSize);
     boundsX1.addListener(this, &ofApp::setBoundsX1);
@@ -83,28 +83,40 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    for (auto& hokuyo : hokuyos) {
-        hokuyo->setBounds(bounds);
-        hokuyo->update();
-    }
-    
-    meatbags.update();
+    sensors.setBounds(bounds);
     viewer.setBounds(bounds);
-    meatbags.setBounds(bounds);
+    sensors.update();
+    meatbags.update();
     updateGuiBounds();
-    
-    int index = 0;
-    for (auto& hokuyo : hokuyos) {
-        if (!hokuyo->newCoordinatesAvailable) return;
-        hokuyo->newCoordinatesAvailable = false;
-        
-        hokuyo->getCoordinates(meatbags.coordinates);
-        hokuyo->getIntensities(meatbags.intensities);
-    }
+
+    if (!sensors.areNewCoordinatesAvailable()) return;
+    sensors.getCoordinatesAndIntensities(meatbags.coordinates, meatbags.intensities, meatbags.numberCoordinates);
     
     meatbags.updateBlobs();
     meatbags.getBlobs(blobs);
+    
     sendBlobOsc();
+}
+
+//--------------------------------------------------------------
+void ofApp::draw(){
+    ofBackground(0);
+    
+    viewer.drawGrid();
+    viewer.drawBlobs(meatbags.oldBlobs);
+    viewer.drawBounds();
+    viewer.drawDraggablePoints();
+    
+    int index = 0;
+    for (auto& sensor : sensors.hokuyos) {
+        viewer.drawCoordinates(sensor->coordinates, sensorColors[index]);
+        viewer.drawSensor(sensor->position, sensor->sensorRotationRad, sensorColors[index]);
+        if (sensor->showSensorInformation) sensor->draw();
+        index++;
+    }
+
+    gui.draw();
+    drawFps();
 }
 
 void ofApp::updateGuiBounds() {
@@ -125,25 +137,6 @@ void ofApp::updateGuiBounds() {
     }
 }
 
-//--------------------------------------------------------------
-void ofApp::draw(){
-    ofBackground(0);
-    
-    viewer.drawGrid();
-    viewer.drawBlobs(meatbags.oldBlobs);
-    viewer.drawBounds();
-    viewer.drawDraggablePoints();
-    
-    for (auto& hokuyo : hokuyos) {
-        viewer.drawCoordinates(hokuyo->coordinates, ofColor::greenYellow);
-        viewer.drawSensor(hokuyo->position, hokuyo->sensorRotationRad, ofColor::greenYellow);
-        if (hokuyo->showSensorInformation) hokuyo->draw();
-    }
-    
-    gui.draw();
-    drawFps();
-}
-
 void ofApp::drawFps() {
     std::stringstream strm;
     strm << setprecision(3) << "fps: " << ofGetFrameRate();
@@ -153,14 +146,14 @@ void ofApp::drawFps() {
 //--------------------------------------------------------------
 void ofApp::exit(){
     gui.saveToFile("settings.xml");
-    for (auto& hokuyo : hokuyos) {
-        hokuyo->close();
+    for (auto& sensor : sensors.hokuyos) {
+        sensor->close();
     }
 }
 
 void ofApp::windowResized(int width, int height) {
-    for (auto& hokuyo : hokuyos) {
-        hokuyo->setInfoPosition(10, height - 10);
+    for (auto& sensor : sensors.hokuyos) {
+        sensor->setInfoPosition(10, height - 10);
     }
     viewer.setCanvasSize(width, height);
     bounds.setCanvasSize(width, height);
