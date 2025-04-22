@@ -71,7 +71,7 @@ void ofApp::setup(){
     meatbags.setEpsilon(epsilon);
     meatbags.setMinPoints(minPoints);
     meatbags.setBlobPersistence(blobPersistence);
-    
+
     areaSize.addListener(this, &ofApp::setAreaSize);
     boundsX1.addListener(this, &ofApp::setBoundsX1);
     boundsX2.addListener(this, &ofApp::setBoundsX2);
@@ -80,6 +80,7 @@ void ofApp::setup(){
     
     epsilon.addListener(this, &ofApp::setEpsilon);
     minPoints.addListener(this, &ofApp::setMinPoints);
+    blobPersistence.addListener(this, &ofApp::setBlobPersistence);
     
     oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
     oscSenderPort.addListener(this, &ofApp::setOscSenderPort);
