@@ -95,7 +95,7 @@ void ofApp::update(){
     meatbags.updateBlobs();
     meatbags.getBlobs(blobs);
     
-    sendBlobOsc();
+    if (oscActive) sendBlobOsc();
 }
 
 //--------------------------------------------------------------
@@ -200,8 +200,6 @@ void ofApp::setOscSenderPort(int& oscSenderPort) {
 }
 
 void ofApp::sendBlobOsc() {
-    if (!oscActive) return;
-    
     for (auto& blob : blobs) {
         ofxOscMessage msg;
         msg.setAddress("/blobs");
