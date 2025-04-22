@@ -18,6 +18,12 @@ void Sensors::addSensor(Hokuyo* hokuyo) {
     hokuyos.push_back(hokuyo);
 }
 
+void Sensors::closeSensors() {
+    for (auto& hokuyo : hokuyos) {
+        hokuyo->close();
+    }
+}
+
 void Sensors::setBounds(Bounds& _bounds) {
     bounds = _bounds;
 }

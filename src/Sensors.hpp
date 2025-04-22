@@ -14,7 +14,10 @@ public:
     Sensors();
     
     void update();
+    
     void addSensor(Hokuyo* hokuyo);
+    void closeSensors();
+
     void setBounds(Bounds& bounds);
     void getCoordinatesAndIntensities(vector<ofPoint> &coordinates, vector <int> &intensities, int &numberCoordinates);
     bool areNewCoordinatesAvailable();

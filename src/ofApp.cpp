@@ -146,9 +146,7 @@ void ofApp::drawFps() {
 //--------------------------------------------------------------
 void ofApp::exit(){
     gui.saveToFile("settings.xml");
-    for (auto& sensor : sensors.hokuyos) {
-        sensor->close();
-    }
+    sensors.closeSensors();
 }
 
 void ofApp::windowResized(int width, int height) {
