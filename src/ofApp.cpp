@@ -162,7 +162,8 @@ void ofApp::windowResized(int width, int height) {
 }
 
 void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
-    areaSize += scrollY * 0.2;
+    areaSize -= scrollY * 0.15;
+    areaSize = ofClamp(areaSize, areaSize.getMin(), areaSize.getMax());
 }
 
 void ofApp::setAreaSize(float &areaSize) {
