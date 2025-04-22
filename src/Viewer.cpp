@@ -39,6 +39,15 @@ void Viewer::setBounds(Bounds& _bounds) {
 }
 
 void Viewer::drawGrid() {
+    
+    ofFill();
+    ofSetCircleResolution(23);
+    ofColor originColor = ofColor::darkSalmon;
+    originColor.a = 110;
+    ofSetColor(originColor);
+    ofDrawCircle(origin, 6);
+
+    
     ofSetColor(ofColor::grey);
     float crossHalfLength = scale * 25;
 
