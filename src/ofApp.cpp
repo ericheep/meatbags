@@ -51,8 +51,9 @@ void ofApp::setup(){
         sensorSettings[i].add(hokuyo->autoReconnectActive.set("auto reconnect", true));
         sensorSettings[i].add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
         sensorSettings[i].add(hokuyo->showSensorInformation.set("show sensor info", true));
-                
+        hokuyo->setInfoPosition(10, ofGetHeight() - 10);
         sensors.addSensor(hokuyo);
+        
         gui.add(sensorSettings[i]);
     }
     
@@ -158,6 +159,7 @@ void ofApp::windowResized(int width, int height) {
         sensor->setInfoPosition(10, height - 10);
     }
     viewer.setCanvasSize(width, height);
+    viewer.setAreaSize(areaSize);
     bounds.setCanvasSize(width, height);
 }
 
