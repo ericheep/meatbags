@@ -67,13 +67,6 @@ void Hokuyo::setSensorRotation(float &_sensorRotationDeg) {
     sensorRotationRad = _sensorRotationDeg / 360.0 * TWO_PI;
 }
 
-void Hokuyo::setup(string _ipAddress, int _port) {
-    ipAddress = _ipAddress;
-    port = _port;
-    
-    connect();
-}
-
 void Hokuyo::threadedFunction() {
     tcpClient.setup(ipAddress, port, false);
     tcpClient.setMessageDelimiter("\012\012");
@@ -530,8 +523,8 @@ void Hokuyo::reconnect() {
     
     if (reconnectionTimer > reconnectionTimeout){
         status = "Attempting to reconnect";
-        connect();
         reconnectionTimer = 0;
+        connect();
     }
 }
 
