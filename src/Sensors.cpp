@@ -5,13 +5,50 @@
 #include "Sensors.hpp"
 
 Sensors::Sensors() {
-    
+
 }
 
 void Sensors::update() {
     for (auto& hokuyo : hokuyos) {
         hokuyo->update();
     }
+}
+
+void Sensors::applyCoherentPointDrift() {
+    //cpd::Matrix fixed = cpd::Matrix::Random(1440, 2);
+    //cpd::Matrix moving = cpd::Matrix::Random(1440, 2);
+    //cpd::RigidResult result = cpd::rigid(fixed, moving);
+
+    // superposer.SetNumPoints(1440);
+    // pointSetRegistration();
+}
+
+void Sensors::applySuperpose3d() {
+    double **target;
+    double **source;
+    
+    Alloc2D(1440, 2, &target);
+    Alloc2D(1440, 2, &source);
+    
+    for (int i = 0; i < 1440; i++) {
+        target[i][0] = hokuyos[0]->coordinates[i].x;
+        target[i][1] = hokuyos[0]->coordinates[i].y;
+        
+        source[i][0] = hokuyos[1]->coordinates[i].x;
+        source[i][1] = hokuyos[1]->coordinates[i].y;
+    }
+    
+    double rmsd;
+    bool allowRescale = false;
+    rmsd = superposer.Superpose(target, source, allowRescale);
+    
+    cout << superposer.T[0] << " " << superposer.T[1] << " " << superposer.T[2] << endl;
+    cout << superposer.R[0][0] << " " << superposer.R[0][1] << " " << superposer.R[0][2] << endl;
+    cout << superposer.R[1][0] << " " << superposer.R[1][1] << " " << superposer.R[1][2] << endl;
+    cout << superposer.R[2][0] << " " << superposer.R[2][1] << " " << superposer.R[2][2] << endl;
+
+    Dealloc2D(&target);
+    Dealloc2D(&source);
 }
 
 void Sensors::addSensor(Hokuyo* hokuyo) {

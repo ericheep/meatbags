@@ -8,13 +8,12 @@
 #include "Hokuyo.hpp"
 #include "Blob.hpp"
 #include "Meatbags.hpp"
+#include "MouseUI.hpp"
 #include "Viewer.hpp"
 #include "Sensors.hpp"
 
 class ofApp : public ofBaseApp{
 public:
-    
-    
     void setup() override;
     void update() override;
     void draw() override;
@@ -56,6 +55,7 @@ public:
     vector<Blob> blobs;
     Meatbags meatbags;
     Bounds bounds;
+    MouseUI mouseUI;
     Viewer viewer;
     ofxOscSender oscSender;
     

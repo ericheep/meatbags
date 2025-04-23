@@ -44,7 +44,7 @@ void ofApp::setup(){
         sensorSettings.push_back(sensorSetting);
         sensorSettings[i].setName("sensor " + to_string(i + 1) + " settings");
         sensorSettings[i].add(hokuyo->sensorColor.set("color", ofColor::lightSeaGreen));
-        sensorSettings[i].add(hokuyo->ipAddress.set("IP address", "192.168.0.10"));
+        sensorSettings[i].add(hokuyo->ipAddress.set("IP address", "0.0.0.0"));
         sensorSettings[i].add(hokuyo->mirrorAngles.set("mirror angles", false));
         sensorSettings[i].add(hokuyo->positionX.set("position x", 0.0, -10.0, 10.0));
         sensorSettings[i].add(hokuyo->positionY.set("position y", 0.0, 0.0, 20.0));
@@ -90,6 +90,8 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    mouseUI.update();
+    mouseUI.setBounds(bounds);
     sensors.setBounds(bounds);
     viewer.setBounds(bounds);
     sensors.update();

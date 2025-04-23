@@ -5,7 +5,7 @@
 
 #include <type_traits>
 #include <vector>
-#include "span.hpp"
+#include "tcb/span.hpp"
 
 // And this is the "dataset to kd-tree" adaptor class:
 

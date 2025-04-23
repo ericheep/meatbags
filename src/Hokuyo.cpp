@@ -335,7 +335,7 @@ void Hokuyo::parseResponse(string str) {
     
     string header = lines[0];
     string command = header.substr(0, 2);
-    
+            
     if (command == "GD") parseDistances(lines);
     if (command == "GE") parseDistancesAndIntensities(lines);
     if (command == "BM") parseActivate(lines);
@@ -494,7 +494,9 @@ void Hokuyo::parseActivate(vector<string> packet) {
         } else if (checkedLine == "01") {
             status = "Unable to control due to laser malfunction";
         } else if (checkedLine == "02") {
+            laserState = "ON";
             status = "Laser is already on.";
+        
         }
     }
 }
