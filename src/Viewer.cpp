@@ -183,6 +183,18 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
     ofPushMatrix();
     ofTranslate(point.x, point.y);
     ofRotateRad(hokuyo->sensorRotationRad);
+    
+    if (hokuyo->isConnected) {
+        float time = fmod(ofGetElapsedTimef(), 1.0);
+        for (int i = 0; i < 3; i++) {
+            float t = 1.0 / 3.0 * i;
+            float s = ofMap(fmod((time + t), 1.0), 0.0, 1.0, 0, size);
+            ofRectangle r;
+            r.setFromCenter(0, 0, s, s);
+            ofDrawRectangle(r);
+        }
+    }
+    
     ofDrawLine(0, halfSize, 0, size + halfSize);
     ofDrawRectangle(-halfSize, -halfSize, size, size);
     ofPopMatrix();
