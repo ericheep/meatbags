@@ -15,43 +15,55 @@ void ofApp::setup(){
     ofxGuiEnableHiResDisplay();
     ofxGuiSetDefaultWidth(200);
 
-    gui.setup("meatbags");
-    gui.setDefaultHeight(12);
+    boundsGui.setup("bounds");
+    boundsGui.setDefaultHeight(12);
+    boundsGui.setPosition(ofVec3f(ofGetWidth() - 210, 12));
+    boundsGui.add(boundsX1.set("bounds x1", -2.5, -10.0, 0.0));
+    boundsGui.add(boundsX2.set("bounds x2", 2.5, 0.0, 10.0));
+    boundsGui.add(boundsY1.set("bounds y1", 1.0, 0.0, 20.0));
+    boundsGui.add(boundsY2.set("bounds y2", 5.0, 0.0, 20.0));
     
-    meatbagsSettings.setName("meatbags settings");
+    meatbagsGui.setup("general settings");
+    meatbagsGui.setDefaultHeight(12);
+    
+    meatbagsSettings.setName("meatbags");
     meatbagsSettings.add(areaSize.set( "area size (m)", 5.0, 0.5, 20.0));
     meatbagsSettings.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     meatbagsSettings.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
     meatbagsSettings.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
-    meatbagsSettings.add(boundsX1.set("bounds x1", -2.5, -10.0, 0.0));
-    meatbagsSettings.add(boundsX2.set("bounds x2", 2.5, 0.0, 10.0));
-    meatbagsSettings.add(boundsY1.set("bounds y1", 1.0, 0.0, 20.0));
-    meatbagsSettings.add(boundsY2.set("bounds y2", 5.0, 0.0, 20.0));
-    gui.add(meatbagsSettings);
+  
+    meatbagsGui.add(meatbagsSettings);
     
-    oscSettings.setName("OSC settings");
+    oscSettings.setName("OSC");
     oscSettings.add(oscSenderAddress.set( "OSC address", "192.168.0.11"));
     oscSettings.add(oscSenderPort.set( "OSC port", 5432, 4000, 12000));
     oscSettings.add(oscActive.set("OSC active", false));
     oscSettings.add(normalizeBlobs.set("normalize OSC output", false));
-    gui.add(oscSettings);
+    meatbagsGui.add(oscSettings);
     
-    sensorsSettings.setName("sensor settings");
+    sensorsSettings.setName("sensors");
     sensorsSettings.add(numberSensors.set("number sensors", 1, 1, 5));
-    gui.add(sensorsSettings);
+    meatbagsGui.add(sensorsSettings);
  
-    
-    gui.loadFromFile("settings.xml");
-    gui.maximize();
+    meatbagsGui.loadFromFile("generalSettings.json");
+    meatbagsGui.maximize();
     
     space.width = ofGetWidth();
     space.height = ofGetHeight();
     space.areaSize = areaSize;
     space.origin = ofPoint(ofGetWidth() / 2.0, 50);
     setSpace();
-
+    
+    boundsGui.loadFromFile("boundsSettings.json");
     bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
-
+    
+    int n = numberSensors;
+    setNumberSensors(n);
+    for (int i = 0; i < sensorGuis.size(); i++) {
+        string filename = "sensor" + to_string(i + 1) + "Settings.json";
+        sensorGuis[i]->loadFromFile(filename);
+    }
+    
     numberSensors.addListener(this, &ofApp::setNumberSensors);
     
     areaSize.addListener(this, &ofApp::setAreaSize);
@@ -89,52 +101,58 @@ void ofApp::draw(){
     viewer.drawBlobs(meatbags.oldBlobs);
     viewer.drawBounds(bounds);
     viewer.drawSensors(sensors);
+    
+    meatbagsGui.draw();
+    boundsGui.draw();
+    for (int i = sensorGuis.size() - 1; i >= 0; i--) {
+        sensorGuis[i]->draw();
+    }
 
-    gui.draw();
     drawFps();
 }
 
 void ofApp::setNumberSensors(int & numberSensors) {
-    cout << numberSensors << " " << sensors.hokuyos.size() << endl;
     if (numberSensors > sensors.hokuyos.size()) {
         while (sensors.hokuyos.size() < numberSensors) {
             addSensor();
-            cout << "!" << endl;
         }
     }
     if (numberSensors < sensors.hokuyos.size()) {
         while (sensors.hokuyos.size() > numberSensors) {
             removeSensor();
-            cout << "!!" << endl;
         }
     }
 }
 
 void ofApp::addSensor() {
-    int index = sensors.hokuyos.size() + 1;
+    int onesIndex = sensors.hokuyos.size() + 1;
+    int currentIndex = sensors.hokuyos.size();
+
+    ofColor randomColor = ofColor::fromHsb(ofRandom(0, 255),  255.0, 255.0);
     
     Hokuyo* hokuyo = new Hokuyo();
-    
-    ofParameterGroup sensorSetting;
-    sensorSetting.setName("sensor " + to_string(index) + " settings");
-    sensorSetting.add(hokuyo->sensorColor.set("color", ofColor::lightSeaGreen));
-    sensorSetting.add(hokuyo->ipAddress.set("IP address", "0.0.0.0"));
-    sensorSetting.add(hokuyo->mirrorAngles.set("mirror angles", false));
-    sensorSetting.add(hokuyo->positionX.set("position x", 0.0, -10.0, 10.0));
-    sensorSetting.add(hokuyo->positionY.set("position y", 0.0, 0.0, 20.0));
-    sensorSetting.add(hokuyo->autoReconnectActive.set("auto reconnect", true));
-    sensorSetting.add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
-    sensorSetting.add(hokuyo->showSensorInformation.set("show sensor info", true));
+    ofxPanel * sensorGui =  NULL;
+    sensorGui = new ofxPanel();
+    sensorGui->setDefaultWidth(200 - 14);
+    sensorGui->setup("sensor " + to_string(onesIndex) + " settings");
+    sensorGui->add(hokuyo->sensorColor.set("color", randomColor));
+    sensorGui->add(hokuyo->ipAddress.set("IP address", "0.0.0.0"));
+    sensorGui->add(hokuyo->autoReconnectActive.set("auto reconnect", true));
+    sensorGui->add(hokuyo->positionX.set("position x", currentIndex * 1.0, -10.0, 10.0));
+    sensorGui->add(hokuyo->positionY.set("position y", 0.0, 0.0, 20.0));
+    sensorGui->add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
+    sensorGui->add(hokuyo->mirrorAngles.set("mirror angles", false));
+    sensorGui->add(hokuyo->showSensorInformation.set("show sensor info", false));
     hokuyo->setInfoPosition(10, ofGetHeight() - 10);
     sensors.addSensor(hokuyo);
-    gui.add(sensorSetting);
-    sensorSettings.push_back(sensorSetting);
+    sensorGuis.push_back(sensorGui);
+    float y = currentIndex * 123;
+    sensorGuis[currentIndex]->setPosition(ofVec3f(14, 190 + y));
 }
 
 void ofApp::removeSensor() {
     int index = sensors.hokuyos.size() - 1;
-    sensorSettings[index].clear();
-    sensorSettings.pop_back();
+    sensorGuis.pop_back();
     sensors.removeSensor();
 }
 
@@ -164,7 +182,12 @@ void ofApp::drawFps() {
 
 //--------------------------------------------------------------
 void ofApp::exit(){
-    gui.saveToFile("settings.xml");
+    meatbagsGui.saveToFile("generalSettings.json");
+    boundsGui.saveToFile("boundsSettings.json");
+    for (int i = 0; i < sensorGuis.size(); i++) {
+        string filename = "sensor" + to_string(i + 1) + "Settings.json";
+        sensorGuis[i]->saveToFile(filename);
+    }
     sensors.closeSensors();
 }
 

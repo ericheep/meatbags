@@ -1,0 +1,12 @@
+{
+    "sensor_1_settings": {
+        "IP_address": "192.168.0.11",
+        "auto_reconnect": "1",
+        "color": "0, 255, 234, 255",
+        "mirror_angles": "0",
+        "position_x": "1.98514",
+        "position_y": "0.645916",
+        "sensor_rotation__deg_": "56.2289",
+        "show_sensor_info": "0"
+    }
+}

@@ -60,7 +60,10 @@ public:
     Viewer viewer;
     ofxOscSender oscSender;
     
-    ofxPanel gui;
+    ofxPanel meatbagsGui;
+    ofxPanel boundsGui;
+    vector<ofxPanel*> sensorGuis;
+    
     ofPoint origin;
     
     // meatbags parameters

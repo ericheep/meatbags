@@ -1,0 +1,19 @@
+{
+    "general_settings": {
+        "OSC": {
+            "OSC_active": "0",
+            "OSC_address": "192.168.0.11",
+            "OSC_port": "5432",
+            "normalize_OSC_output": "0"
+        },
+        "meatbags": {
+            "area_size__m_": "11.8828",
+            "blob_persistence__s_": "0.1",
+            "cluster_epsilon__mm_": "202.128",
+            "cluster_min_points": "68"
+        },
+        "sensors": {
+            "number_sensors": "2"
+        }
+    }
+}
