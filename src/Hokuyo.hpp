@@ -8,7 +8,9 @@
 #include <stdio.h>
 
 #include "ofMain.h"
+#include "ofxGui.h"
 #include "ofxNetwork.h"
+
 #include "sstream"
 
 class Hokuyo : public ofThread {
@@ -63,6 +65,7 @@ public:
     void setPositionY(float &positionY);
     void setMirrorAngles(bool &mirrorX);
     void setSensorRotation(float &sensorRotationDeg);
+    void alignSensor();
     
     ofParameter<string> ipAddress;
     ofParameter<float> positionX;
@@ -72,6 +75,7 @@ public:
     ofParameter<float> sensorRotationDeg;
     ofParameter<bool> showSensorInformation;
     ofParameter<ofColor> sensorColor;
+    ofxButton alignSensorButton;
     
     void createCoordinate(int step, float distance);
     vector<float> angles;
@@ -80,8 +84,11 @@ public:
     float sensorRotationRad;
     bool newCoordinatesAvailable;
     
-    ofPoint position;
-
+    ofPoint position, mousePosition;
+    float mouseBoxSize, mouseBoxHalfSize;
+    bool isMouseOver, isMouseClicked;
+    bool isConnected, alignRequested;
+    string model;
 private:
     ofxTCPClient tcpClient;
        
@@ -94,7 +101,6 @@ private:
     float statusTimer, statusInterval;
     float lastFrameTime;
     
-    bool isConnected;
     bool callIntensitiesActive;
     
     int startStep, endStep, clusterCount, angularResolution;
@@ -102,7 +108,7 @@ private:
     int timeStamp;
     
     ofTrueTypeFont font;
-    string model, laserState, motorSpeed;
+    string laserState, motorSpeed;
     string measurementMode, bitRate, sensorDiagnostic;
     string connectionStatus;
     string vendorInfo, productInfo, firmwareVersion, protocolVersion, serialNumber;

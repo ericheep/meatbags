@@ -38,6 +38,7 @@ Hokuyo::Hokuyo() {
     positionY.addListener(this, &Hokuyo::setPositionY);
     mirrorAngles.addListener(this, &Hokuyo::setMirrorAngles);
     sensorRotationDeg.addListener(this, &Hokuyo::setSensorRotation);
+    alignSensorButton.addListener(this, &Hokuyo::alignSensor);
 
     netmask = "255.255.255.0";
     gateway = "192.168.0.1";
@@ -55,12 +56,22 @@ Hokuyo::Hokuyo() {
     width = 0;
     height = 0;
     
+    mouseBoxSize = 15;
+    mouseBoxHalfSize = mouseBoxSize * 0.5;
+    
     position = ofPoint(0.0, 0.0);
     
     mirrorAngles = false;
+    isMouseOver = false;
+    isMouseClicked = false;
+    alignRequested = false;
     
     font.setGlobalDpi(72);
     font.load(ofToDataPath("Hack-Regular.ttf"), 11);
+}
+
+void Hokuyo::alignSensor() {
+    alignRequested = true;
 }
 
 void Hokuyo::setSensorRotation(float &_sensorRotationDeg) {
