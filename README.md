@@ -17,9 +17,7 @@ This project was developed with openFrameowrks v0.12.0, it uses the following op
 
 ## use
 
-After opening and closing the application Meatbags will create two XML files that are automatically loaded on startup and saved on exit. These hold the configuration state of the application and allow easy startup for art install scenarios. 
-
-It its current state Meatbags can read multiple Hokuyo UST-XXLX sensors.
+After opening and closing the application Meatbags will create a batch of JSON files that are automatically loaded on startup and saved on exit. These hold the configuration state of the application and allow easy startup for art install scenarios. 
 
 ## external code
 
