@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofAppNoWindow.h"
 #include "ofxNetwork.h"
 #include "ofxGui.h"
 #include "ofxOsc.h"
