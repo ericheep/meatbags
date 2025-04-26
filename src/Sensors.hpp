@@ -23,6 +23,7 @@ public:
     void update();
     
     void addSensor(Hokuyo* hokuyo);
+    void removeSensor();
     void alignSensor(Hokuyo* hokuyo);
     void closeSensors();
 

@@ -8,10 +8,6 @@ Meatbags::Meatbags() {
     coordinates.resize(4320);
     intensities.resize(4320);
     
-    blobPersistence = 0.1;
-    epsilon = 100.0;
-    minPoints = 5;
-   
     numberCoordinates = 0;
     lastFrameTime = 0;
     
@@ -19,6 +15,8 @@ Meatbags::Meatbags() {
     boundsX2 = 2.5;
     boundsY1 = 0;
     boundsY2 = 5;
+    
+    blobPersistence.addListener(this, &Meatbags::setBlobPersistence);
 }
 
 void Meatbags::update() {
@@ -185,18 +183,10 @@ void::Meatbags::getBlobs(vector<Blob> &blobs) {
     }
 }
 
-void Meatbags::setBlobPersistence(float _blobPersistence) {
+void Meatbags::setBlobPersistence(float & _blobPersistence) {
     blobPersistence = _blobPersistence;
     
     for (auto& oldBlob : oldBlobs) {
         oldBlob.lifetimeLength = blobPersistence;
     }
-}
-
-void Meatbags::setEpsilon(float _epsilon) {
-    epsilon = _epsilon;
-}
-
-void Meatbags::setMinPoints(int _minPoints) {
-    minPoints = _minPoints;
 }

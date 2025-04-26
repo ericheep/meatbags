@@ -86,6 +86,10 @@ void Sensors::addSensor(Hokuyo* hokuyo) {
     hokuyos.push_back(hokuyo);
 }
 
+void Sensors::removeSensor() {
+    hokuyos.pop_back();
+}
+
 void Sensors::closeSensors() {
     for (auto& hokuyo : hokuyos) {
         hokuyo->close();

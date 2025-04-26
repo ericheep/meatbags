@@ -32,31 +32,24 @@ public:
 
     int findFreeBlobIndex();
     float compareBlobs(Blob newBlob, Blob oldBlob);
-        
-    void setBlobPersistence(float blobPersistence);
-    void setAreaSize(float areaSize);
+    
     void setMirrorX(bool mirrorX);
-    void setCanvasSize(float width, float height);
-    void setEpsilon(float epsilon);
-    void setMinPoints(int minPoints);
     float pointDistance(ofPoint a, ofPoint b);
     
-    void saveToFile(const string& path);
-    void loadFile(const string& path);
-    
+    void setSpace(Space & space);
+
     void setFont(ofTrueTypeFont globalFont);
+    void setBlobPersistence(float & blobPersistence);
 
     vector<Blob> newBlobs, oldBlobs;
     vector<ofPoint> coordinates;
     vector<int> intensities;
 
     float boundsX1, boundsX2, boundsY1, boundsY2;
-    float width, height;
-    float blobPersistence;
     
-    // dbscan params
-    float epsilon;
-    int minPoints;
+    ofParameter<float> blobPersistence;
+    ofParameter<float> epsilon;
+    ofParameter<int> minPoints;
     
     float lastFrameTime;
     int numberCoordinates;
