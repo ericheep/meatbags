@@ -86,7 +86,8 @@ public:
     
     ofPoint position, mousePosition;
     float mouseBoxSize, mouseBoxHalfSize;
-    bool isMouseOver, isMouseClicked;
+    float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
+    bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
     bool isConnected, alignRequested;
     string model;
 private:

@@ -31,7 +31,7 @@ void ofApp::setup(){
     meatbagsSettings.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     meatbagsSettings.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
     meatbagsSettings.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
-  
+    meatbagsSettings.add(headlessMode.set("headless mode (h)", false));
     meatbagsGui.add(meatbagsSettings);
     
     oscSettings.setName("OSC");
@@ -96,6 +96,8 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofBackground(0);
+    
+    if (headlessMode) return;
     
     viewer.drawGrid();
     viewer.drawBlobs(meatbags.oldBlobs);
@@ -266,5 +268,11 @@ void ofApp::sendBlobOsc() {
         msg.addFloatArg(blob.distanceFromSensor);
         
         oscSender.sendMessage(msg);
+    }
+}
+
+void ofApp::keyPressed(int key) {
+    if (key == 104) {
+        headlessMode = !headlessMode;
     }
 }

@@ -31,7 +31,6 @@ public:
     Sensors sensor;
     Bounds bounds;
     float scale;
-    float mouseBoxSize, mouseBoxHalfSize;
     
     ofTrueTypeFont blobFont, sensorFont;
     vector<ofColor> sensorColors;

@@ -151,11 +151,25 @@ void Sensors::onMouseMoved(ofMouseEventArgs& mouseArgs) {
     
     for(int i = 0; i < hokuyos.size(); i++) {
         ofPoint screenPoint = convertCoordinateToScreenPoint(hokuyos[i]->position);
-        
-        if(mousePoint.distance(screenPoint) <= hokuyos[i]->mouseBoxHalfSize) {
+        float distance = mousePoint.distance(screenPoint);
+
+        if(distance <= hokuyos[i]->mouseBoxHalfSize) {
             hokuyos[i]->isMouseOver = true;
         } else {
             hokuyos[i]->isMouseOver = false;
+        }
+        hokuyos[i]->isMouseOverNose = true;
+
+        float noseX = cos(hokuyos[i]->sensorRotationRad - HALF_PI);
+        float noseY = sin(hokuyos[i]->sensorRotationRad - HALF_PI);
+        
+        ofPoint offsetPoint = ofPoint(noseX, noseY) * hokuyos[i]->mouseNoseBoxRadius;
+        ofPoint nosePoint = screenPoint - offsetPoint;
+
+        if (mousePoint.distance(nosePoint) < hokuyos[i]->mouseNoseBoxHalfSize) {
+            hokuyos[i]->isMouseOverNose = true;
+        } else {
+            hokuyos[i]->isMouseOverNose = false;
         }
     }
 }
@@ -169,6 +183,12 @@ void Sensors::onMousePressed(ofMouseEventArgs& mouseArgs) {
         } else {
             hokuyos[i]->isMouseClicked = false;
         }
+        
+        if (hokuyos[i]->isMouseOverNose) {
+            hokuyos[i]->isMouseOverNoseClicked = true;
+        } else {
+            hokuyos[i]->isMouseOverNoseClicked = false;
+        }
     }
 }
 
@@ -180,6 +200,12 @@ void Sensors::onMouseDragged(ofMouseEventArgs& mouseArgs) {
             ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
             hokuyos[i]->positionX = coordinate.x;
             hokuyos[i]->positionY = coordinate.y;
+        }
+        
+        if (hokuyos[i]->isMouseOverNoseClicked) {
+            ofPoint screenPoint = convertCoordinateToScreenPoint(hokuyos[i]->position);
+            float angle = atan2(screenPoint.y - mousePoint.y, screenPoint.x - mousePoint.x);
+            hokuyos[i]->sensorRotationDeg = (angle + HALF_PI) * 180.0 / PI;
         }
     }
 }

@@ -58,6 +58,9 @@ Hokuyo::Hokuyo() {
     
     mouseBoxSize = 15;
     mouseBoxHalfSize = mouseBoxSize * 0.5;
+    mouseNoseBoxSize = 12;
+    mouseNoseBoxHalfSize = mouseNoseBoxSize * 0.5;
+    mouseNoseBoxRadius = mouseBoxSize + mouseBoxHalfSize;
     
     position = ofPoint(0.0, 0.0);
     

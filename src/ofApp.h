@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofAppNoWindow.h"
 #include "ofxNetwork.h"
 #include "ofxGui.h"
 #include "ofxOsc.h"
@@ -20,6 +21,7 @@ public:
     void exit() override;
     void windowResized(int width, int height) override;
     void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
+    void keyPressed(int key) override;
 
     void drawFps();
     
@@ -52,6 +54,7 @@ public:
     
     void sendBlobOsc();
     
+    
     Sensors sensors;
     vector<Blob> blobs;
     Meatbags meatbags;
@@ -71,6 +74,7 @@ public:
     ofParameter<float> epsilon;
     ofParameter<int> minPoints;
     ofParameter<float> blobPersistence;
+    ofParameter<bool> headlessMode;
     
     // viewer parameters
     ofParameter<float> areaSize;

@@ -173,16 +173,20 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
     
     float size = hokuyo->mouseBoxSize;
     float halfSize = hokuyo->mouseBoxHalfSize;
-    
+    float noseRadius = hokuyo->mouseNoseBoxRadius;
+    float noseSize = hokuyo->mouseNoseBoxSize;
+
     ofSetColor(hokuyo->sensorColor);
     if (hokuyo->isMouseOver) {
         ofFill();
     } else {
         ofNoFill();
     }
+    
     ofPushMatrix();
     ofTranslate(point.x, point.y);
     ofRotateRad(hokuyo->sensorRotationRad);
+    ofDrawRectangle(-halfSize, -halfSize, size, size);
     
     if (hokuyo->isConnected) {
         float time = fmod(ofGetElapsedTimef(), 1.0);
@@ -195,8 +199,17 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
         }
     }
     
+    if (hokuyo->isMouseOverNose) {
+        ofFill();
+    } else {
+        ofNoFill();
+    }
+        
+    ofRectangle nose;
+    nose.setFromCenter(0, noseRadius, noseSize / 2.0, noseSize / 2.0);
+    ofDrawRectangle(nose);
     ofDrawLine(0, halfSize, 0, size + halfSize);
-    ofDrawRectangle(-halfSize, -halfSize, size, size);
+
     ofPopMatrix();
 }
 

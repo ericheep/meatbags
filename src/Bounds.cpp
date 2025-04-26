@@ -10,6 +10,7 @@ Bounds::Bounds() {
     y1 = 0.0;
     y2 = 0.0;
     
+    selectedDraggablePointIndex = -1;
     highlightedDraggablePointIndex = -1;
     mouseBoxSize = 12;
     mouseBoxHalfSize = mouseBoxSize * 0.5;
