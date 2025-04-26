@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "ofMain.h"
+#include "Space.h"
 
 class Bounds {
 public:
@@ -17,15 +18,17 @@ public:
     void setBounds(float x1, float x2, float y1, float y2);
     void setAreaSize(float areaSize);
     void setCanvasSize(float width, float height);
+    void setOrigin(ofPoint origin);
+    void setSpace(Space & space);
     
     float x1, x2, y1, y2;
     float mouseBoxHalfSize, mouseBoxSize;
-    float scale, width, height, areaSize;
+    float scale;
     
-    ofPoint origin;
+    Space space;
     vector <ofPoint> draggablePoints;
     int selectedDraggablePointIndex, highlightedDraggablePointIndex;
-
+    
 protected:
     void onMouseMoved(ofMouseEventArgs & mouseArgs);
     void onMousePressed(ofMouseEventArgs & mouseArgs);

@@ -7,7 +7,9 @@
 
 #include "Blob.hpp"
 #include "Bounds.hpp"
+#include "Sensors.hpp"
 #include "ofMain.h"
+#include "Space.h"
 #include <stdio.h>
 
 class Viewer {
@@ -15,23 +17,23 @@ public:
     Viewer();
     
     void drawGrid();
-    void drawDraggablePoints();
-    void drawBounds();
+    void drawDraggablePoints(Bounds& bounds);
+    void drawBounds(Bounds& bounds);
+    void drawSensors(Sensors& sensors);
+    void drawConnections(Sensors& sensors);
     void drawCoordinates(vector<ofPoint>& coordinates, ofColor color);
-    void drawSensor(ofPoint position, float rotation, ofColor color);
+    void drawSensor(Hokuyo* hokuyo);
     void drawBlobs(vector<Blob>& blobs);
-
-    void setBounds(Bounds& bounds);
-    void setCanvasSize(float width, float height);
-    void setAreaSize(float areaSize);
-    void setSensorColors(vector<ofColor> colors);
     
+    void setSpace(Space & space);
+    
+    Space space;
+    Sensors sensor;
     Bounds bounds;
-    ofPoint origin;
-    float areaSize, scale, width, height;
+    float scale;
     float mouseBoxSize, mouseBoxHalfSize;
     
-    ofTrueTypeFont blobFont;
+    ofTrueTypeFont blobFont, sensorFont;
     vector<ofColor> sensorColors;
 };
 

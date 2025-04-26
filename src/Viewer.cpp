@@ -5,58 +5,40 @@
 #include "Viewer.hpp"
 
 Viewer::Viewer() {
-    width = 0;
-    height = 0;
     scale = 0.0;
-    areaSize = 0;
-    origin = ofPoint(ofGetWidth() / 2.0, 25);
     ofSetCircleResolution(3);
     
     blobFont.setGlobalDpi(72);
     blobFont.load(ofToDataPath("Hack-Bold.ttf"), 14);
-}
-
-void Viewer::setSensorColors(vector<ofColor> _sensorColors) {
-    sensorColors = _sensorColors;
-}
-
-
-void Viewer::setAreaSize(float _areaSize) {
-    areaSize = _areaSize;
-    scale = width / (areaSize * 1000);
-}
-
-void Viewer::setCanvasSize(float _width, float _height) {
-    width = _width;
-    height = _height;
     
-    origin = ofPoint(width / 2.0, 25);
-    setAreaSize(areaSize);
+    sensorFont.load(ofToDataPath("Hack-Bold.ttf"), 12);
+
+    
 }
 
-void Viewer::setBounds(Bounds& _bounds) {
-    bounds = _bounds;
+void Viewer::setSpace(Space & _space) {
+    space = _space;
+    scale = space.width / (space.areaSize * 1000);
+
 }
 
 void Viewer::drawGrid() {
-    
     ofFill();
     ofSetCircleResolution(23);
     ofColor originColor = ofColor::darkSalmon;
     originColor.a = 110;
     ofSetColor(originColor);
-    ofDrawCircle(origin, 6);
-
+    ofDrawCircle(space.origin, 6);
     
     ofSetColor(ofColor::grey);
     float crossHalfLength = scale * 25;
 
-    for (int i = 0; i < (int) areaSize + 4; i++) {
-        int gridLineIndex = i + -( (int) areaSize + 4) / 2;
+    for (int i = 0; i < (int) space.areaSize + 4; i++) {
+        int gridLineIndex = i + -( (int) space.areaSize + 4) / 2;
         
-        for (int j = 0; j < (int) areaSize + 6; j++) {
-            float x = gridLineIndex * 1000.0 * scale + origin.x;
-            float y = j * 1000.0 * scale + origin.y;
+        for (int j = 0; j < (int) space.areaSize + 6; j++) {
+            float x = gridLineIndex * 1000.0 * scale + space.origin.x;
+            float y = j * 1000.0 * scale + space.origin.y;
         
             for (int k = 0; k < 3; k++) {
                 float ex = ofMap(k, 0, 3 - 1, x - scale * 333, x + scale * 333);
@@ -72,8 +54,8 @@ void Viewer::drawGrid() {
 void Viewer::drawBlobs(vector<Blob>& blobs) {
     for (auto blob : blobs) {
         ofRectangle blobBox = blob.bounds;
-        blobBox.setX(blobBox.getX() * scale + origin.x);
-        blobBox.setY(blobBox.getY() * scale + origin.y);
+        blobBox.setX(blobBox.getX() * scale + space.origin.x);
+        blobBox.setY(blobBox.getY() * scale + space.origin.y);
         blobBox.setWidth(blobBox.getWidth() * scale);
         blobBox.setHeight(blobBox.getHeight() * scale);
         
@@ -81,8 +63,8 @@ void Viewer::drawBlobs(vector<Blob>& blobs) {
         ofSetColor(0, 0, 255);
         ofDrawRectangle(blobBox);
         
-        float centroidX = blob.centroid.x * scale + origin.x;
-        float centroidY = blob.centroid.y * scale + origin.y;
+        float centroidX = blob.centroid.x * scale + space.origin.x;
+        float centroidY = blob.centroid.y * scale + space.origin.y;
         
         ofFill();
         ofSetColor(255, 0, 0);
@@ -106,14 +88,16 @@ void Viewer::drawBlobs(vector<Blob>& blobs) {
     }
 }
 
-void Viewer::drawBounds() {
+void Viewer::drawBounds(Bounds& bounds) {
     ofNoFill();
     ofSetColor(ofColor::magenta);
-    float bx = bounds.x1 * 1000 * scale + origin.x;
-    float by = bounds.y1 * 1000 * scale + origin.y;
+    float bx = bounds.x1 * 1000 * scale + space.origin.x;
+    float by = bounds.y1 * 1000 * scale + space.origin.y;
     float bw = fabs((bounds.x2 - bounds.x1) * 1000) * scale;
     float bh = fabs((bounds.y2 - bounds.y1) * 1000) * scale;
     ofDrawRectangle(bx, by, bw, bh);
+    
+    drawDraggablePoints(bounds);
 }
 
 void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
@@ -138,8 +122,8 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
         x *= scale;
         y *= scale;
         
-        float x2 = x + origin.x;
-        float y2 = y + origin.y;
+        float x2 = x + space.origin.x;
+        float y2 = y + space.origin.y;
         
         ofFill();
         ofSetColor(pointColor);
@@ -147,26 +131,64 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
     }
 }
 
-void Viewer::drawSensor(ofPoint position, float rotation, ofColor color) {
-    position *= scale;
-    position += origin;
-    float x = position.x;
-    float y = position.y;
+void Viewer::drawSensors(Sensors& sensors) {
+    for (auto& sensor : sensors.hokuyos) {
+        drawCoordinates(sensor->coordinates, sensor->sensorColor);
+        drawSensor(sensor);
+        if (sensor->showSensorInformation) sensor->draw();
+    }
     
-    float size = 16;
-    float halfSize = size * 0.5;
+    drawConnections(sensors);
+}
+
+void Viewer::drawConnections(Sensors& sensors) {
+    int numberSensors = sensors.hokuyos.size();
     
-    ofSetColor(color);
-    ofFill();
+    float connectionsBoxHeight = numberSensors * 20;
+    float y = space.height - connectionsBoxHeight + 5;
+    float x = 10;
+    
+    for (int i = 0; i < numberSensors; i++) {
+        bool connected = sensors.hokuyos[i]->isConnected;
+        string model = sensors.hokuyos[i]->model;
+
+        ofFill();
+        if (connected) {
+            ofSetColor(0, 255, 0, 130);
+        } else {
+            ofSetColor(255, 0, 0, 130);
+        }
+        string sensorString = "Sensor " + to_string(i + 1) + ": " + model;
+        ofDrawRectangle(x, y + i * 20 - 8, 7, 7);
+        ofSetColor(sensors.hokuyos[i]->sensorColor);
+        sensorFont.drawString(sensorString, x + 15, y + i * 20);
+    }
+}
+
+void Viewer::drawSensor(Hokuyo* hokuyo) {
+    ofPoint point = ofPoint(hokuyo->position.x, hokuyo->position.y);
+    
+    point *= scale;
+    point += space.origin;
+    
+    float size = hokuyo->mouseBoxSize;
+    float halfSize = hokuyo->mouseBoxHalfSize;
+    
+    ofSetColor(hokuyo->sensorColor);
+    if (hokuyo->isMouseOver) {
+        ofFill();
+    } else {
+        ofNoFill();
+    }
     ofPushMatrix();
-    ofTranslate(x, y);
-    ofRotateRad(rotation);
+    ofTranslate(point.x, point.y);
+    ofRotateRad(hokuyo->sensorRotationRad);
     ofDrawLine(0, halfSize, 0, size + halfSize);
     ofDrawRectangle(-halfSize, -halfSize, size, size);
     ofPopMatrix();
 }
 
-void Viewer::drawDraggablePoints() {
+void Viewer::drawDraggablePoints(Bounds& bounds) {
     for (int i = 0; i < 4; i++) {
         float x1 = bounds.draggablePoints[i].x - bounds.mouseBoxHalfSize;
         float y1 = bounds.draggablePoints[i].y - bounds.mouseBoxHalfSize;
