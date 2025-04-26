@@ -88,7 +88,8 @@ void Viewer::drawBlobs(vector<Blob>& blobs) {
     }
 }
 
-void Viewer::drawBounds(Bounds& bounds) {
+void Viewer::drawBounds(Bounds& _bounds) {
+    bounds = _bounds;
     ofNoFill();
     ofSetColor(ofColor::magenta);
     float bx = bounds.x1 * 1000 * scale + space.origin.x;
@@ -116,7 +117,7 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
         {
             pointColor.set(color.r, color.g, color.b, 255);
         } else {
-            pointColor.set(color.r, color.g, color.b, 100);
+            pointColor.set(color.r, color.g, color.b, 90);
         }
         
         x *= scale;
