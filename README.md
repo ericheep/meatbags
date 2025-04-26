@@ -37,9 +37,7 @@ This project uses the very cool font [Hack](https://github.com/source-foundry/Ha
 
 ## todo
 
-- add method to dynamically add/remove sensors
 - add video mute
-- add sensor notifications
 
 ![meatbags](https://github.com/user-attachments/assets/34e793e9-e960-452f-a8a4-a0066824f212)
 
