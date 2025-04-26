@@ -6,6 +6,8 @@ void ofApp::setup(){
     ofxGuiSetBorderColor(ofColor::black);
     ofxGuiSetHeaderColor(ofColor::thistle);
     ofxGuiSetTextColor(ofColor::black);
+    ofSetFrameRate(60);
+    
     
     ofColor barColor = ofColor::snow;
     barColor.a = 210;
@@ -149,7 +151,7 @@ void ofApp::addSensor() {
     sensors.addSensor(hokuyo);
     sensorGuis.push_back(sensorGui);
     float y = currentIndex * 123;
-    sensorGuis[currentIndex]->setPosition(ofVec3f(14, 190 + y));
+    sensorGuis[currentIndex]->setPosition(ofVec3f(14, 210 + y));
 }
 
 void ofApp::removeSensor() {

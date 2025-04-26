@@ -11,10 +11,10 @@
             "blob_persistence__s_": "0.19898",
             "cluster_epsilon__mm_": "385.434",
             "cluster_min_points": "39",
-            "headless_mode__h_": "1"
+            "headless_mode__h_": "0"
         },
         "sensors": {
-            "number_sensors": "3"
+            "number_sensors": "2"
         }
     }
 }
