@@ -5,22 +5,58 @@
 #include "Sensors.hpp"
 
 Sensors::Sensors() {
-
+    movingCoordinates.resize(1440);
+    fixedCoordinates.resize(1440);
+    rigid.normalize(false);
+    
+    ofAddListener(ofEvents().mouseMoved, this, &Sensors::onMouseMoved);
+    ofAddListener(ofEvents().mousePressed, this, &Sensors::onMousePressed);
+    ofAddListener(ofEvents().mouseDragged, this, &Sensors::onMouseDragged);
+    ofAddListener(ofEvents().mouseReleased, this, &Sensors::onMouseReleased);
 }
 
 void Sensors::update() {
     for (auto& hokuyo : hokuyos) {
         hokuyo->update();
+        
+        if (hokuyo->alignRequested) {
+            applyCoherentPointDrift();
+            hokuyo->alignRequested = false;
+        }
     }
+    
+}
+
+void Sensors::setSpace(Space & _space) {
+    space = _space;
+    scale = space.width / (space.areaSize * 1000);
 }
 
 void Sensors::applyCoherentPointDrift() {
-    //cpd::Matrix fixed = cpd::Matrix::Random(1440, 2);
-    //cpd::Matrix moving = cpd::Matrix::Random(1440, 2);
-    //cpd::RigidResult result = cpd::rigid(fixed, moving);
+    cpd::Matrix fixed(1440, 2);
+    cpd::Matrix moving(1440, 2);
+    
+    for (int i = 0; i < 1440; i++) {
+        fixed(i, 0) = (double) hokuyos[0]->coordinates[i].x;
+        fixed(i, 1) = (double) hokuyos[0]->coordinates[i].y;
+        moving(i, 0) = (double) hokuyos[1]->coordinates[i].x;
+        moving(i, 1) = (double) hokuyos[1]->coordinates[i].y;
+    }
 
-    // superposer.SetNumPoints(1440);
-    // pointSetRegistration();
+    cpd::RigidResult result = rigid.run(fixed, moving);
+    
+    if (result.translation.size() == 2) {
+        float x = result.translation(0);
+        float y = result.translation(1);
+        cout << "! " << x << " " << y << endl;
+
+        float addx = hokuyos[1]->position.x + x;
+        float addy = hokuyos[1]->position.y + y;
+        cout << "add " << addx << " " << addy << endl;
+
+        hokuyos[1]->positionX = addx * 0.001;
+        hokuyos[1]->positionY = addy * 0.001;
+    }
 }
 
 void Sensors::applySuperpose3d() {
@@ -41,11 +77,6 @@ void Sensors::applySuperpose3d() {
     double rmsd;
     bool allowRescale = false;
     rmsd = superposer.Superpose(target, source, allowRescale);
-    
-    cout << superposer.T[0] << " " << superposer.T[1] << " " << superposer.T[2] << endl;
-    cout << superposer.R[0][0] << " " << superposer.R[0][1] << " " << superposer.R[0][2] << endl;
-    cout << superposer.R[1][0] << " " << superposer.R[1][1] << " " << superposer.R[1][2] << endl;
-    cout << superposer.R[2][0] << " " << superposer.R[2][1] << " " << superposer.R[2][2] << endl;
 
     Dealloc2D(&target);
     Dealloc2D(&source);
@@ -85,8 +116,6 @@ void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector 
             float y = coordinate.y;
             
             if (coordinate.x != 0 && coordinate.x != 0) {
-                
-
                 if (x < bounds.x2 * 1000 &&
                     x > bounds.x1 * 1000 &&
                     y > bounds.y1 * 1000 &&
@@ -103,4 +132,60 @@ void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector 
     }
 
     numberCoordinates = counter;
+}
+
+ofPoint Sensors::convertCoordinateToScreenPoint(ofPoint coordinate) {
+    return coordinate * scale + space.origin;
+}
+
+ofPoint Sensors::convertScreenPointToCoordinate(ofPoint screenPoint) {
+    return (screenPoint - space.origin) / scale * 0.001;
+}
+
+void Sensors::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+    
+    for(int i = 0; i < hokuyos.size(); i++) {
+        ofPoint screenPoint = convertCoordinateToScreenPoint(hokuyos[i]->position);
+        
+        if(mousePoint.distance(screenPoint) <= hokuyos[i]->mouseBoxHalfSize) {
+            hokuyos[i]->isMouseOver = true;
+        } else {
+            hokuyos[i]->isMouseOver = false;
+        }
+    }
+}
+
+void Sensors::onMousePressed(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+
+    for(int i = 0; i < hokuyos.size(); i++) {
+        if (hokuyos[i]->isMouseOver) {
+            hokuyos[i]->isMouseClicked = true;
+        } else {
+            hokuyos[i]->isMouseClicked = false;
+        }
+    }
+}
+
+void Sensors::onMouseDragged(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+    
+    for(int i = 0; i < hokuyos.size(); i++) {
+        if (hokuyos[i]->isMouseClicked) {
+            ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
+            hokuyos[i]->positionX = coordinate.x;
+            hokuyos[i]->positionY = coordinate.y;
+        }
+    }
+}
+
+void Sensors::onMouseReleased(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+    
+    for(int i = 0; i < hokuyos.size(); i++) {
+        if (hokuyos[i]->isMouseClicked) {
+            hokuyos[i]->isMouseClicked = false;
+        }
+    }
 }
