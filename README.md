@@ -33,6 +33,7 @@ This project uses the very cool font [Hack](https://github.com/source-foundry/Ha
 ## tested sensors
 
 - Hokuyo UST-10LX
+- Hokuyo UST-20LX
 
 ## todo
 
