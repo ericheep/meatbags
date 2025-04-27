@@ -92,11 +92,13 @@ void Viewer::drawBounds(Bounds& _bounds) {
     bounds = _bounds;
     ofNoFill();
     ofSetColor(ofColor::magenta);
-    float bx = bounds.x1 * 1000 * scale + space.origin.x;
-    float by = bounds.y1 * 1000 * scale + space.origin.y;
-    float bw = fabs((bounds.x2 - bounds.x1) * 1000) * scale;
-    float bh = fabs((bounds.y2 - bounds.y1) * 1000) * scale;
-    ofDrawRectangle(bx, by, bw, bh);
+    
+    ofPolyline p;
+    for (auto vertex : bounds.polyline.getVertices()) {
+        p.addVertex(vertex * scale + space.origin);
+    }
+    p.close();
+    p.draw();
     
     drawDraggablePoints(bounds);
 }
@@ -110,11 +112,7 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color) {
         
         if (x == 0 && y == 0) break;
 
-        if (x < bounds.x2 * 1000
-            && x > bounds.x1 * 1000
-            && y > bounds.y1 * 1000
-            && y < bounds.y2 * 1000)
-        {
+        if (bounds.polyline.inside(x, y)) {
             pointColor.set(color.r, color.g, color.b, 255);
         } else {
             pointColor.set(color.r, color.g, color.b, 90);
@@ -172,13 +170,13 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
     point *= scale;
     point += space.origin;
     
-    float size = hokuyo->mouseBoxSize;
-    float halfSize = hokuyo->mouseBoxHalfSize;
-    float noseRadius = hokuyo->mouseNoseBoxRadius;
-    float noseSize = hokuyo->mouseNoseBoxSize;
+    float size = hokuyo->position.size;
+    float halfSize = hokuyo->position.halfSize;
+    float noseRadius = hokuyo->noseRadius;
+    float noseSize = hokuyo->nosePosition.size;
 
     ofSetColor(hokuyo->sensorColor);
-    if (hokuyo->isMouseOver) {
+    if (hokuyo->position.isMouseOver) {
         ofFill();
     } else {
         ofNoFill();
@@ -200,7 +198,7 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
         }
     }
     
-    if (hokuyo->isMouseOverNose) {
+    if (hokuyo->nosePosition.isMouseOver) {
         ofFill();
     } else {
         ofNoFill();
@@ -215,17 +213,15 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
 }
 
 void Viewer::drawDraggablePoints(Bounds& bounds) {
-    for (int i = 0; i < 4; i++) {
-        float x1 = bounds.draggablePoints[i].x - bounds.mouseBoxHalfSize;
-        float y1 = bounds.draggablePoints[i].y - bounds.mouseBoxHalfSize;
-        float x2 = bounds.mouseBoxSize;
-        float y2 = bounds.mouseBoxSize;
-        
+    for (auto vertex : bounds.polyline.getVertices()) {
+        ofPoint point = vertex * scale + space.origin;
+        ofRectangle p;
+        float r = bounds.mouseBoxSize;
+        p.setFromCenter(point.x, point.y, r, r);
         ofNoFill();
         
-        if (bounds.highlightedDraggablePointIndex == i) ofFill();
-        
+        //if (bounds.highlightedDraggablePointIndex == i) ofFill();
         ofSetColor(ofColor::magenta);
-        ofDrawRectangle(x1, y1, x2, y2);
+        ofDrawRectangle(p);
     }
 }

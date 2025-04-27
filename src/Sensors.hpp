@@ -9,16 +9,17 @@
 #include "Hokuyo.hpp"
 #include "Bounds.hpp"
 #include "Space.h"
+#include "DraggablePoint.hpp"
 
-#include "superpose3d/superpose3d.hpp"
-using namespace superpose3d;
-
-#include <cpd/rigid.hpp>
-#include <cpd/gauss_transform_fgt.hpp>
+// #include "superpose3d/superpose3d.hpp"
+// using namespace superpose3d;
+// #include <cpd/rigid.hpp>
+// #include <cpd/gauss_transform_fgt.hpp>
 
 class Sensors {
 public:
     Sensors();
+    ~Sensors();
     
     void update();
     
@@ -30,18 +31,18 @@ public:
     void setBounds(Bounds& bounds);
     void getCoordinatesAndIntensities(vector<ofPoint> &coordinates, vector <int> &intensities, int &numberCoordinates);
     bool areNewCoordinatesAvailable();
-    void applySuperpose3d();
-    void applyCoherentPointDrift();
+    // void applySuperpose3d();
+    // void applyCoherentPointDrift();
  
     void setSpace(Space & space);
     
     ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
     ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
 
-    Superpose3D<double, double **> superposer;
-    cpd::Rigid rigid;
-    cpd::Matrix fixed;
-    cpd::Matrix moving;
+    // Superpose3D<double, double **> superposer;
+    // cpd::Rigid rigid;
+    // cpd::Matrix fixed;
+    // cpd::Matrix moving;
     vector<vector<double>> fixedCoordinates;
     vector<vector<double>> movingCoordinates;
     

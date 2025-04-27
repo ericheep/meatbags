@@ -1,8 +1,8 @@
 {
     "bounds": {
-        "bounds_x1": "-1.37314",
-        "bounds_x2": "1.16398",
-        "bounds_y1": "1.20036",
-        "bounds_y2": "5.35806"
+        "bounds_p1": "1, 1",
+        "bounds_p2": "1.5, 3",
+        "bounds_p3": "-1.5, 3",
+        "bounds_p4": "0, 1"
     }
 }

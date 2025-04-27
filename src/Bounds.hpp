@@ -8,25 +8,33 @@
 #include <stdio.h>
 #include "ofMain.h"
 #include "Space.h"
+#include "DraggablePoint.hpp"
 
 class Bounds {
 public:
     Bounds();
+    ~Bounds();
     
-    void updateDraggablePoints();
-    void updateBounds();
-    void setBounds(float x1, float x2, float y1, float y2);
+    Bounds(int numberPoints);
+        
+    void update();
+    void setPoint(int index, ofVec2f point);
     void setAreaSize(float areaSize);
     void setCanvasSize(float width, float height);
     void setOrigin(ofPoint origin);
     void setSpace(Space & space);
-    
-    float x1, x2, y1, y2;
+    ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
+    ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
+
+    vector<ofParameter<ofVec2f>> points;
+    vector<DraggablePoint> positions;
+
     float mouseBoxHalfSize, mouseBoxSize;
     float scale;
+    int numberPoints;
     
     Space space;
-    vector <ofPoint> draggablePoints;
+    ofPolyline polyline;
     int selectedDraggablePointIndex, highlightedDraggablePointIndex;
     
 protected:

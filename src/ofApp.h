@@ -78,12 +78,6 @@ public:
     // viewer parameters
     ofParameter<float> areaSize;
     
-    // bounds parameters
-    ofParameter<float> boundsX1;
-    ofParameter<float> boundsX2;
-    ofParameter<float> boundsY1;
-    ofParameter<float> boundsY2;
-    
     // osc parameters
     ofParameterGroup oscSettings;
     ofParameter<string> oscSenderAddress;

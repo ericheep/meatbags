@@ -16,14 +16,6 @@ void ofApp::setup(){
     ofxGuiSetFillColor(barColor);
     ofxGuiEnableHiResDisplay();
     ofxGuiSetDefaultWidth(200);
-
-    boundsGui.setup("bounds");
-    boundsGui.setDefaultHeight(12);
-    boundsGui.setPosition(ofVec3f(ofGetWidth() - 210, 12));
-    boundsGui.add(boundsX1.set("bounds x1", -2.5, -10.0, 0.0));
-    boundsGui.add(boundsX2.set("bounds x2", 2.5, 0.0, 10.0));
-    boundsGui.add(boundsY1.set("bounds y1", 1.0, 0.0, 20.0));
-    boundsGui.add(boundsY2.set("bounds y2", 5.0, 0.0, 20.0));
     
     meatbagsGui.setup("general settings");
     meatbagsGui.setDefaultHeight(12);
@@ -56,24 +48,26 @@ void ofApp::setup(){
     space.origin = ofPoint(ofGetWidth() / 2.0, 50);
     setSpace();
     
+    bounds = Bounds(4);
+    boundsGui.setup("bounds");
+    boundsGui.setDefaultHeight(12);
+    boundsGui.setPosition(ofVec3f(ofGetWidth() - 210, 12));
+    boundsGui.add(bounds.points[0].set("bounds p1", ofPoint(2.5, 2.5), ofPoint(-10.0, -10.0), ofPoint(10.0, 10.0)));
+    boundsGui.add(bounds.points[1].set("bounds p2", ofPoint(2.5, 2.5), ofPoint(-10.0, -10.0), ofPoint(10.0, 10.0)));
+    boundsGui.add(bounds.points[2].set("bounds p3", ofPoint(2.5, 2.5), ofPoint(-10.0, -10.0), ofPoint(10.0, 10.0)));
+    boundsGui.add(bounds.points[3].set("bounds p4", ofPoint(2.5, 2.5), ofPoint(-10.0, -10.0), ofPoint(10.0, 10.0)));
     boundsGui.loadFromFile("boundsSettings.json");
-    bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
     
     int n = numberSensors;
     setNumberSensors(n);
+    
     for (int i = 0; i < sensorGuis.size(); i++) {
         string filename = "sensor" + to_string(i + 1) + "Settings.json";
         sensorGuis[i]->loadFromFile(filename);
     }
     
     numberSensors.addListener(this, &ofApp::setNumberSensors);
-    
     areaSize.addListener(this, &ofApp::setAreaSize);
-    boundsX1.addListener(this, &ofApp::setBoundsX1);
-    boundsX2.addListener(this, &ofApp::setBoundsX2);
-    boundsY1.addListener(this, &ofApp::setBoundsY1);
-    boundsY2.addListener(this, &ofApp::setBoundsY2);
-    
     oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
     oscSenderPort.addListener(this, &ofApp::setOscSenderPort);
     oscSender.setup(oscSenderAddress, oscSenderPort);
@@ -84,7 +78,7 @@ void ofApp::update(){
     sensors.setBounds(bounds);
     sensors.update();
     meatbags.update();
-    updateGuiBounds();
+    bounds.update();
 
     if (!sensors.areNewCoordinatesAvailable()) return;
     sensors.getCoordinatesAndIntensities(meatbags.coordinates, meatbags.intensities, meatbags.numberCoordinates);
@@ -160,24 +154,6 @@ void ofApp::removeSensor() {
     sensors.removeSensor();
 }
 
-void ofApp::updateGuiBounds() {
-    if (boundsX1 != bounds.x1) {
-        boundsX1 = bounds.x1;
-    }
-    
-    if (boundsX2 != bounds.x2) {
-        boundsX2 = bounds.x2;
-    }
-    
-    if (boundsY1 != bounds.y1) {
-        boundsY1 = bounds.y1;
-    }
-    
-    if (boundsY2 != bounds.y2) {
-        boundsY2 = bounds.y2;
-    }
-}
-
 void ofApp::drawFps() {
     std::stringstream strm;
     strm << setprecision(3) << "fps: " << ofGetFrameRate();
@@ -204,7 +180,6 @@ void ofApp::windowResized(int width, int height) {
     space.origin.x = width / 2.0;
     
     setSpace();
-    bounds.updateDraggablePoints();
 }
 
 void ofApp::setSpace() {
@@ -221,24 +196,6 @@ void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
 void ofApp::setAreaSize(float &areaSize) {
     space.areaSize = areaSize;
     setSpace();
-    
-    bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
-}
-
-void ofApp::setBoundsX1(float &x1) {
-    bounds.setBounds(x1, boundsX2, boundsY1, boundsY2);
-}
-
-void ofApp::setBoundsX2(float &x2) {
-    bounds.setBounds(boundsX1, x2, boundsY1, boundsY2);
-}
-
-void ofApp::setBoundsY1(float &y1) {
-    bounds.setBounds(boundsX1, boundsX2, y1, boundsY2);
-}
-
-void ofApp::setBoundsY2(float &y2) {
-    bounds.setBounds(boundsX1, boundsX2, boundsY1, y2);
 }
 
 void ofApp::setOscSenderAddress(string& oscSenderAddress) {
