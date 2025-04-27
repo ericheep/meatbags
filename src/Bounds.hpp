@@ -18,7 +18,7 @@ public:
     Bounds(int numberPoints);
         
     void update();
-    void setPoint(int index, ofVec2f point);
+    void setNumberPoints(int numberPoints);
     void setAreaSize(float areaSize);
     void setCanvasSize(float width, float height);
     void setOrigin(ofPoint origin);

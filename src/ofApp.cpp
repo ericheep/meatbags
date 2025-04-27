@@ -48,7 +48,7 @@ void ofApp::setup(){
     space.origin = ofPoint(ofGetWidth() / 2.0, 50);
     setSpace();
     
-    bounds = Bounds(4);
+    bounds.setNumberPoints(4);
     boundsGui.setup("bounds");
     boundsGui.setDefaultHeight(12);
     boundsGui.setPosition(ofVec3f(ofGetWidth() - 210, 12));

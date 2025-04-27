@@ -213,14 +213,16 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
 }
 
 void Viewer::drawDraggablePoints(Bounds& bounds) {
-    for (auto vertex : bounds.polyline.getVertices()) {
-        ofPoint point = vertex * scale + space.origin;
+    for (auto position : bounds.positions) {
+        ofPoint point = position * 1000.0 * scale + space.origin;
+
         ofRectangle p;
-        float r = bounds.mouseBoxSize;
+        float r = 15;
         p.setFromCenter(point.x, point.y, r, r);
         ofNoFill();
         
-        //if (bounds.highlightedDraggablePointIndex == i) ofFill();
+        if (position.isMouseOver) ofFill();
+        
         ofSetColor(ofColor::magenta);
         ofDrawRectangle(p);
     }

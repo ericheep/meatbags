@@ -5,7 +5,10 @@
 #include "Bounds.hpp"
 
 Bounds::Bounds() {
-    
+    ofAddListener(ofEvents().mouseMoved, this, &Bounds::onMouseMoved);
+    ofAddListener(ofEvents().mousePressed, this, &Bounds::onMousePressed);
+    ofAddListener(ofEvents().mouseDragged, this, &Bounds::onMouseDragged);
+    ofAddListener(ofEvents().mouseReleased, this, &Bounds::onMouseReleased);
 }
 
 Bounds::~Bounds() {
@@ -15,7 +18,7 @@ Bounds::~Bounds() {
     ofRemoveListener(ofEvents().mouseReleased, this, &Bounds::onMouseReleased);
 }
 
-Bounds::Bounds(int numberPoints) {
+void Bounds::setNumberPoints(int numberPoints) {
     points.resize(numberPoints);
     positions.resize(numberPoints);
     
@@ -25,11 +28,6 @@ Bounds::Bounds(int numberPoints) {
         positions[i].isMouseOver = false;
         positions[i].isMouseClicked = false;
     }
-    
-    ofAddListener(ofEvents().mouseMoved, this, &Bounds::onMouseMoved);
-    ofAddListener(ofEvents().mousePressed, this, &Bounds::onMousePressed);
-    ofAddListener(ofEvents().mouseDragged, this, &Bounds::onMouseDragged);
-    ofAddListener(ofEvents().mouseReleased, this, &Bounds::onMouseReleased);
 }
 
 void Bounds::update() {
@@ -38,18 +36,8 @@ void Bounds::update() {
         polyline.addVertex(ofPoint(point) * 1000);
     }
     for(int i = 0; i < positions.size(); i++) {
-        //positions[i].x = points[i]->x;
-        //positions[i].y = points[i]->y;
-    }
-    polyline.close();
-}
-
-void Bounds::setPoint(int index, ofVec2f point) {
-    // points[index] = point;
-
-    polyline.clear();
-    for (auto point : points) {
-        polyline.addVertex(ofPoint(point));
+        positions[i].x = points[i]->x;
+        positions[i].y = points[i]->y;
     }
     polyline.close();
 }
@@ -71,9 +59,8 @@ void Bounds::onMouseMoved(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
     
     for(int i = 0; i < positions.size(); i++) {
-        ofPoint position = ofPoint(positions[i].x, positions[i].y);
-        ofPoint screenPoint = convertCoordinateToScreenPoint(position);
-
+        ofPoint screenPoint = convertCoordinateToScreenPoint(positions[i]);
+        if (i == 0) cout << screenPoint << " " << mousePoint << endl;
         if(mousePoint.distance(screenPoint) <= positions[i].halfSize) {
             positions[i].isMouseOver = true;
         } else {
@@ -85,7 +72,7 @@ void Bounds::onMouseMoved(ofMouseEventArgs& mouseArgs) {
 void Bounds::onMousePressed(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
 
-    /*for(int i = 0; i < positions.size(); i++) {
+    for(int i = 0; i < positions.size(); i++) {
         ofPoint screenPoint = convertCoordinateToScreenPoint(positions[i]);
 
         if(mousePoint.distance(screenPoint) <= positions[i].halfSize) {
@@ -93,29 +80,26 @@ void Bounds::onMousePressed(ofMouseEventArgs& mouseArgs) {
         } else {
             positions[i].isMouseClicked = false;
         }
-    }*/
+    }
 }
 
 void Bounds::onMouseDragged(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
     
     for(int i = 0; i < positions.size(); i++) {
-        // cout << draggablePoints[i].isMouseClicked << endl;
         if(positions[i].isMouseClicked) {
-            cout << positions.size() << endl;
-
-           // ofPoint coordinate = convertCoordinateToScreenPoint(mousePoint);
-            //points[i] = coordinate;
+            ofPoint coordinate = convertCoordinateToScreenPoint(mousePoint);
+            points[i] = coordinate;
         }
     }
 }
 
 void Bounds::onMouseReleased(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
-    
+
     for(int i = 0; i < positions.size(); i++) {
-        //if (positions[i].isMouseClicked) {
-           // positions[i].isMouseClicked = false;
-        //}
+        if (positions[i].isMouseClicked) {
+           positions[i].isMouseClicked = false;
+        }
     }
 }
