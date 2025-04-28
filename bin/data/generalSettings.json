@@ -7,14 +7,14 @@
             "normalize_OSC_output": "0"
         },
         "meatbags": {
-            "area_size__m_": "13.0196",
-            "blob_persistence__s_": "0.19898",
-            "cluster_epsilon__mm_": "385.434",
-            "cluster_min_points": "39",
+            "area_size__m_": "5",
+            "blob_persistence__s_": "0.1",
+            "cluster_epsilon__mm_": "100",
+            "cluster_min_points": "10",
             "headless_mode__h_": "0"
         },
         "sensors": {
-            "number_sensors": "2"
+            "number_sensors": "1"
         }
     }
 }

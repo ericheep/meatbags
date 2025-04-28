@@ -180,8 +180,8 @@ void ofApp::addFilter(int numberPoints) {
     int currentIndex = filters.filters.size();
     
     float centerRatio = float(currentIndex) / 15.0;
-    float cx = cos(centerRatio * TWO_PI - HALF_PI) * 2.5;
-    float cy = sin(centerRatio * TWO_PI - HALF_PI) * 2.5;
+    float cx = cos(centerRatio * TWO_PI - HALF_PI) * 2.25;
+    float cy = sin(centerRatio * TWO_PI - HALF_PI) * 2.25;
     
     ofPoint center = ofPoint(cx, cy + 3.0);
         
