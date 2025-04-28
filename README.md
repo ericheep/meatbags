@@ -35,8 +35,9 @@ This project uses the very cool font [Hack](https://github.com/source-foundry/Ha
 
 ## todo
 
-- add video mute
+- add hotkey for turning a filter into a mask
+- change out the random colors are selected per sensor (more pastels please)
+- add rectangle behind blob info
 
-![meatbags](https://github.com/user-attachments/assets/34e793e9-e960-452f-a8a4-a0066824f212)
-
+![meatbags](https://github.com/user-attachments/assets/1ccae092-dc5a-4e29-86ae-8151f25a9b43)
 
