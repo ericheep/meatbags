@@ -35,7 +35,6 @@ This project uses the very cool font [Hack](https://github.com/source-foundry/Ha
 
 ## todo
 
-- add hotkey for turning a filter into a mask
 - change out the random colors are selected per sensor (more pastels please)
 - add rectangle behind blob info
 
