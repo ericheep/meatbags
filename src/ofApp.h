@@ -11,6 +11,8 @@
 #include "Viewer.hpp"
 #include "Space.h"
 #include "Sensors.hpp"
+#include "Filter.hpp"
+#include "Filters.hpp"
 
 class ofApp : public ofBaseApp{
 public:
@@ -44,6 +46,11 @@ public:
     void removeSensor();
     void setNumberSensors(int & numberSensors);
     
+    // filterss
+    void addFilter(int numberPoints);
+    void removeFilter();
+    void setNumberFilters(int & numberFilters);
+    
     // view parameters
     void setAreaSize(float &areaSize);
     
@@ -53,19 +60,19 @@ public:
     
     void sendBlobOsc();
     
-    
     Sensors sensors;
+    Filters filters;
     vector<Blob> blobs;
     Meatbags meatbags;
     Space space;
-    Bounds bounds;
     Viewer viewer;
     ofxOscSender oscSender;
     
     ofxPanel meatbagsGui;
     ofxPanel boundsGui;
     vector<ofxPanel*> sensorGuis;
-    
+    vector<ofxPanel*> filterGuis;
+
     ofPoint origin;
     
     // meatbags parameters
@@ -78,22 +85,18 @@ public:
     // viewer parameters
     ofParameter<float> areaSize;
     
-    // bounds parameters
-    ofParameter<float> boundsX1;
-    ofParameter<float> boundsX2;
-    ofParameter<float> boundsY1;
-    ofParameter<float> boundsY2;
-    
     // osc parameters
     ofParameterGroup oscSettings;
     ofParameter<string> oscSenderAddress;
     ofParameter<int> oscSenderPort;
     ofParameter<bool> normalizeBlobs;
     ofParameter<bool> oscActive;
-    
     ofParameter<int> numberSensors;
+    
+    // bounds parameters
+    ofParameter<int> numberFilters;
+    ofParameter<int> numberPoints;
 
     ofParameterGroup sensorsSettings;
-    vector<ofParameterGroup> sensorSettings;
-    vector<ofColor> sensorColors;
+    ofParameterGroup filtersSettings;
 };

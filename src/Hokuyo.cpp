@@ -56,17 +56,19 @@ Hokuyo::Hokuyo() {
     width = 0;
     height = 0;
     
-    mouseBoxSize = 15;
-    mouseBoxHalfSize = mouseBoxSize * 0.5;
-    mouseNoseBoxSize = 12;
-    mouseNoseBoxHalfSize = mouseNoseBoxSize * 0.5;
-    mouseNoseBoxRadius = mouseBoxSize + mouseBoxHalfSize;
+    position = DraggablePoint();
+    position.size = 15;
+    position.halfSize = position.size * 0.5;
+    nosePosition.size = 12;
+    nosePosition.halfSize = nosePosition.size * 0.5;
+    noseRadius = position.size + position.halfSize;
     
-    position = ofPoint(0.0, 0.0);
+    position.x = 0.0;
+    position.y = 0.0;
+    position.isMouseOver = false;
+    position.isMouseClicked = false;
     
     mirrorAngles = false;
-    isMouseOver = false;
-    isMouseClicked = false;
     alignRequested = false;
     
     font.setGlobalDpi(72);
@@ -436,7 +438,7 @@ void Hokuyo::createCoordinate(int index, float distance) {
     float x = cos(theta) * distance;
     float y = sin(theta) * distance;
 
-    coordinates[index].set(ofPoint(x, y) + position);
+    coordinates[index].set(ofPoint(x, y) + ofPoint(position.x, position.y));
 }
 
 void Hokuyo::parseStatusInfo(vector<string> packet) {

@@ -11,7 +11,6 @@
 #include <algorithm>
 #include "dbscan.hpp"
 #include "Blob.hpp"
-#include "Bounds.hpp"
 
 class Meatbags {
 public:
@@ -36,8 +35,6 @@ public:
     void setMirrorX(bool mirrorX);
     float pointDistance(ofPoint a, ofPoint b);
     
-    void setSpace(Space & space);
-
     void setFont(ofTrueTypeFont globalFont);
     void setBlobPersistence(float & blobPersistence);
 
