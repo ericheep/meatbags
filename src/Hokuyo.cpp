@@ -227,6 +227,11 @@ void Hokuyo::update() {
             }
         }
     } else {
+        for (int i = 0; i < angularResolution; i++) {
+            coordinates[i] = ofPoint::zero();
+            intensities[i] = 0;
+        }
+        
         if (isConnected) {
             connectionStatus = "DISCONNECTED";
 
