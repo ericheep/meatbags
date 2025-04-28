@@ -158,7 +158,7 @@ void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector 
 }
 
 ofPoint Sensors::convertCoordinateToScreenPoint(ofPoint coordinate) {
-    return coordinate * scale + space.origin * 1000.0;
+    return coordinate * scale + space.origin;
 }
 
 ofPoint Sensors::convertScreenPointToCoordinate(ofPoint screenPoint) {
