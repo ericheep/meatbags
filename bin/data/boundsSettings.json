@@ -1,8 +1,11 @@
 {
     "bounds": {
-        "bounds_p1": "1, 1",
-        "bounds_p2": "1.5, 3",
-        "bounds_p3": "-1.5, 3",
-        "bounds_p4": "0, 1"
+        "bounds_p1": "1.11994, 2.46961",
+        "bounds_p2": "-1.35009, 2.76958",
+        "bounds_p3": "-1.34949, 4.95711",
+        "bounds_p4": "1.52462, 4.99997",
+        "filters": {
+            "number_filters": "5"
+        }
     }
 }

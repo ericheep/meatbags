@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include "Hokuyo.hpp"
-#include "Bounds.hpp"
+#include "Filters.hpp"
 #include "Space.h"
 #include "DraggablePoint.hpp"
 
@@ -25,34 +25,34 @@ public:
     
     void addSensor(Hokuyo* hokuyo);
     void removeSensor();
-    void alignSensor(Hokuyo* hokuyo);
     void closeSensors();
 
-    void setBounds(Bounds& bounds);
     void getCoordinatesAndIntensities(vector<ofPoint> &coordinates, vector <int> &intensities, int &numberCoordinates);
     bool areNewCoordinatesAvailable();
-    // void applySuperpose3d();
-    // void applyCoherentPointDrift();
- 
+    bool checkWithinFilters(float x, float y);
+    
+    void setFilters(Filters & filters);
     void setSpace(Space & space);
     
     ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
     ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
-
-    // Superpose3D<double, double **> superposer;
-    // cpd::Rigid rigid;
-    // cpd::Matrix fixed;
-    // cpd::Matrix moving;
-    vector<vector<double>> fixedCoordinates;
-    vector<vector<double>> movingCoordinates;
     
     vector <Hokuyo *> hokuyos;
-    Bounds bounds;
+    Filters filters;
     
     Space space;
     int numberCoordinates;
     float scale;
     
+    // vector<vector<double>> fixedCoordinates;
+    // vector<vector<double>> movingCoordinates;
+    // void alignSensor(Hokuyo* hokuyo);
+    // void applySuperpose3d();
+    // void applyCoherentPointDrift();
+    // Superpose3D<double, double **> superposer;
+    // cpd::Rigid rigid;
+    // cpd::Matrix fixed;
+    // cpd::Matrix moving;
 protected:
     void onMouseMoved(ofMouseEventArgs & mouseArgs);
     void onMousePressed(ofMouseEventArgs & mouseArgs);

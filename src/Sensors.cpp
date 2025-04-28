@@ -5,8 +5,8 @@
 #include "Sensors.hpp"
 
 Sensors::Sensors() {
-    movingCoordinates.resize(1440);
-    fixedCoordinates.resize(1440);
+    // movingCoordinates.resize(1440);
+    // fixedCoordinates.resize(1440);
     // rigid.normalize(false);
     
     ofAddListener(ofEvents().mouseMoved, this, &Sensors::onMouseMoved);
@@ -98,8 +98,8 @@ void Sensors::closeSensors() {
     }
 }
 
-void Sensors::setBounds(Bounds& _bounds) {
-    bounds = _bounds;
+void Sensors::setFilters(Filters & _filters) {
+    filters = _filters;
 }
 
 bool Sensors::areNewCoordinatesAvailable() {
@@ -113,6 +113,27 @@ bool Sensors::areNewCoordinatesAvailable() {
     return newCoordinatesAvalable;
 }
 
+bool Sensors::checkWithinFilters(float x, float y) {
+    bool isWithinFilter = false;
+    for (auto filter : filters.filters) {
+        if (!filter->mask) {
+            if (filter->polyline.inside(x * 0.001, y * 0.001)) {
+                isWithinFilter = true;
+            }
+        }
+    }
+    
+    for (auto filter : filters.filters) {
+        if (filter->mask) {
+            if (filter->polyline.inside(x * 0.001, y * 0.001)) {
+                isWithinFilter = false;
+            }
+        }
+    }
+    
+    return isWithinFilter;
+}
+
 void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector <int>& intensities, int &numberCoordinates) {
     int counter = 0;
     for (auto& hokuyo : hokuyos) {
@@ -122,7 +143,7 @@ void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector 
             float y = coordinate.y;
             
             if (coordinate.x != 0 && coordinate.x != 0) {
-                if (bounds.polyline.inside(x, y)) {
+                if (checkWithinFilters(x, y)) {
                     coordinates[counter].set(x, y);
                     intensities[counter] = hokuyo->intensities[intensityIndex];
                     counter++;
@@ -137,7 +158,7 @@ void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector 
 }
 
 ofPoint Sensors::convertCoordinateToScreenPoint(ofPoint coordinate) {
-    return coordinate * scale + space.origin;
+    return coordinate * scale + space.origin * 1000.0;
 }
 
 ofPoint Sensors::convertScreenPointToCoordinate(ofPoint screenPoint) {

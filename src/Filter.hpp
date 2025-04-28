@@ -1,42 +1,39 @@
 //
-//  Bounds.hpp
+//  Filter.hpp
 //
 
-#ifndef Bounds_hpp
-#define Bounds_hpp
+#ifndef Filter_hpp
+#define Filter_hpp
 
 #include <stdio.h>
 #include "ofMain.h"
-#include "Space.h"
 #include "DraggablePoint.hpp"
+#include "Space.h"
 
-class Bounds {
+class Filter {
 public:
-    Bounds();
-    ~Bounds();
-    
-    Bounds(int numberPoints);
+    Filter();
+    ~Filter();
         
     void update();
     void setNumberPoints(int numberPoints);
-    void setAreaSize(float areaSize);
-    void setCanvasSize(float width, float height);
-    void setOrigin(ofPoint origin);
     void setSpace(Space & space);
+    void translatePointsByCentroid(ofPoint centroid);
+    
     ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
     ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
 
     vector<ofParameter<ofVec2f>> points;
     vector<DraggablePoint> positions;
+    DraggablePoint centroid;
+    ofParameter<bool> mask;
 
-    float mouseBoxHalfSize, mouseBoxSize;
     float scale;
     int numberPoints;
+    int index;
     
     Space space;
     ofPolyline polyline;
-    int selectedDraggablePointIndex, highlightedDraggablePointIndex;
-    
 protected:
     void onMouseMoved(ofMouseEventArgs & mouseArgs);
     void onMousePressed(ofMouseEventArgs & mouseArgs);
@@ -44,4 +41,4 @@ protected:
     void onMouseReleased(ofMouseEventArgs & mouseArgs);
 };
 
-#endif /* Bounds_hpp */
+#endif /* Filter_hpp */
