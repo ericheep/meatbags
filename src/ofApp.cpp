@@ -125,6 +125,8 @@ void ofApp::draw(){
 }
 
 void ofApp::setNumberSensors(int & numberSensors) {
+    meatbags.setMaxCoordinateSize(numberSensors * 1440);
+    
     if (numberSensors > sensors.hokuyos.size()) {
         while (sensors.hokuyos.size() < numberSensors) {
             addSensor();

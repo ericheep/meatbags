@@ -31,6 +31,11 @@ void Meatbags::update() {
     }), oldBlobs.end());
 }
 
+void Meatbags::setMaxCoordinateSize(int maxCoordinateSize) {
+    coordinates.resize(maxCoordinateSize);
+    intensities.resize(maxCoordinateSize);
+}
+
 void Meatbags::updateBlobs() {
     if (numberCoordinates == 0) return;
     

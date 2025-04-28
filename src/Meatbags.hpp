@@ -37,6 +37,7 @@ public:
     
     void setFont(ofTrueTypeFont globalFont);
     void setBlobPersistence(float & blobPersistence);
+    void setMaxCoordinateSize(int maxSize);
 
     vector<Blob> newBlobs, oldBlobs;
     vector<ofPoint> coordinates;
