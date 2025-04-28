@@ -45,6 +45,9 @@ void ofApp::setup(){
     boundsGui.setup("bounds");
     boundsGui.setPosition(ofGetWidth() - 210, 15);
     filtersSettings.setName("filters");
+    // filtersSettings.add(addFilterButton.setup("add filter"));
+    // filtersSettings.add(numberFilters.set("number filters", 1, 1, 30));
+
     filtersSettings.add(numberFilters.set("number filters", 1, 1, 30));
     boundsGui.add(filtersSettings);
     
@@ -170,7 +173,7 @@ void ofApp::addSensor() {
     sensors.addSensor(hokuyo);
     sensorGuis.push_back(sensorGui);
     float y = currentIndex * 123;
-    sensorGuis[currentIndex]->setPosition(ofVec3f(14, 210 + y));
+    sensorGuis[currentIndex]->setPosition(ofVec3f(15, 210 + y));
     
     setSpace();
 }
@@ -179,7 +182,7 @@ void ofApp::addFilter(int numberPoints) {
     int onesIndex = filters.filters.size() + 1;
     int currentIndex = filters.filters.size();
     
-    float centerRatio = float(currentIndex) / 15.0;
+    float centerRatio = float(currentIndex) / 16.0;
     float cx = cos(centerRatio * TWO_PI - HALF_PI) * 2.25;
     float cy = sin(centerRatio * TWO_PI - HALF_PI) * 2.25;
     
@@ -191,23 +194,26 @@ void ofApp::addFilter(int numberPoints) {
     
     ofxPanel * filterGui =  NULL;
     filterGui = new ofxPanel();
+    
+    ofParameterGroup coordinatesSettings;
     filterGui->setDefaultWidth(200 - 14);
     filterGui->setup("filter " + to_string(onesIndex) + " settings");
-    for (int i = 0; i < numberPoints; i++) {
-        float ratio = float(i) / numberPoints;
-        float x = cos(ratio * TWO_PI) * 0.5 + center.x;
-        float y = sin(ratio * TWO_PI) * 0.5 + center.y;
-        filterGui->add(filter->points[i].set("p" + to_string(i), ofVec2f(x, y), ofVec2f(-10, 10), ofVec2f(-10, 10)));
-    }
-    filterGui->minimize();
     filterGui->add(filter->mask.set("mask", false));
 
+    coordinatesSettings.setName("coordinates");
+    for (int i = 0; i < numberPoints; i++) {
+        float ratio = float(i) / numberPoints;
+        float x = cos(ratio * TWO_PI + HALF_PI * 0.5) * 0.5 + center.x;
+        float y = sin(ratio * TWO_PI + HALF_PI * 0.5) * 0.5 + center.y;
+        coordinatesSettings.add(filter->points[i].set("p" + to_string(i), ofVec2f(x, y), ofVec2f(-10, 10), ofVec2f(-10, 10)));
+    }
+    filterGui->add(coordinatesSettings);
+    filterGui->getGroup("coordinates").minimize();
     filters.addFilter(filter);
 
     filterGuis.push_back(filterGui);
-    float y = currentIndex * 20;
+    float y = currentIndex * 45;
     filterGuis[currentIndex]->setPosition(ofVec3f(ofGetWidth() - 196, 70 + y));
-    filterGuis[currentIndex]->minimize();
     
     setSpace();
 }

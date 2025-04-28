@@ -39,6 +39,7 @@ protected:
     void onMousePressed(ofMouseEventArgs & mouseArgs);
     void onMouseDragged(ofMouseEventArgs & mouseArgs);
     void onMouseReleased(ofMouseEventArgs & mouseArgs);
+    void onKeyPressed(ofKeyEventArgs & keyArgs);
 };
 
 #endif /* Filter_hpp */

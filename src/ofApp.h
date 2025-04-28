@@ -91,12 +91,14 @@ public:
     ofParameter<int> oscSenderPort;
     ofParameter<bool> normalizeBlobs;
     ofParameter<bool> oscActive;
-    ofParameter<int> numberSensors;
     
-    // bounds parameters
-    ofParameter<int> numberFilters;
-    ofParameter<int> numberPoints;
-
+    // sensors
+    ofxButton addSensorButton, removeSensorButton;
+    ofParameter<int> numberSensors;
     ofParameterGroup sensorsSettings;
+
+    // filters parameters
+    ofxButton addFilterButton, removeFilterButton;
+    ofParameter<int> numberFilters;
     ofParameterGroup filtersSettings;
 };

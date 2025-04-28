@@ -9,6 +9,7 @@ Filter::Filter() {
     ofAddListener(ofEvents().mousePressed, this, &Filter::onMousePressed);
     ofAddListener(ofEvents().mouseDragged, this, &Filter::onMouseDragged);
     ofAddListener(ofEvents().mouseReleased, this, &Filter::onMouseReleased);
+    ofAddListener(ofEvents().keyPressed, this, &Filter::onKeyPressed);
 }
 
 Filter::~Filter() {
@@ -16,6 +17,7 @@ Filter::~Filter() {
     ofRemoveListener(ofEvents().mousePressed, this, &Filter::onMousePressed);
     ofRemoveListener(ofEvents().mouseDragged, this, &Filter::onMouseDragged);
     ofRemoveListener(ofEvents().mouseReleased, this, &Filter::onMouseReleased);
+    ofRemoveListener(ofEvents().keyPressed, this, &Filter::onKeyPressed);
 }
 
 void Filter::setNumberPoints(int numberPoints) {
@@ -143,5 +145,11 @@ void Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
     if (centroid.isMouseClicked) {
         centroid.isMouseClicked = false;
         centroid.isMouseOver = false;
+    }
+}
+
+void Filter::onKeyPressed(ofKeyEventArgs& keyArgs) {
+    if (centroid.isMouseOver) {
+        if (keyArgs.key == 109) mask = !mask;
     }
 }
