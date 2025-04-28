@@ -156,7 +156,7 @@ void ofApp::addSensor() {
     int onesIndex = sensors.hokuyos.size() + 1;
     int currentIndex = sensors.hokuyos.size();
    
-    float hue = fmod(currentIndex * 31.875 + 130.0, 255);
+    float hue = fmod(currentIndex * 31.875 + 140.0, 255);
     ofColor randomColor = ofColor::fromHsb(hue, 125.0, 255.0);
     
     ofPoint center = ofPoint(0, 1.25);
