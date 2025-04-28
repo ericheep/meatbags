@@ -5,8 +5,8 @@
 #include "Meatbags.hpp"
 
 Meatbags::Meatbags() {
-    coordinates.resize(4320);
-    intensities.resize(4320);
+    coordinates.resize(1440);
+    intensities.resize(1440);
     
     numberCoordinates = 0;
     lastFrameTime = 0;
