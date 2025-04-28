@@ -10,6 +10,7 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 #include "ofxNetwork.h"
+#include "DraggablePoint.hpp"
 
 #include "sstream"
 
@@ -84,8 +85,8 @@ public:
     float sensorRotationRad;
     bool newCoordinatesAvailable;
     
-    ofPoint position, mousePosition;
-    float mouseBoxSize, mouseBoxHalfSize;
+    DraggablePoint position, nosePosition;
+    float mouseBoxSize, mouseBoxHalfSize, noseRadius;
     float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
     bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
     bool isConnected, alignRequested;

@@ -16,14 +16,6 @@ void ofApp::setup(){
     ofxGuiSetFillColor(barColor);
     ofxGuiEnableHiResDisplay();
     ofxGuiSetDefaultWidth(200);
-
-    boundsGui.setup("bounds");
-    boundsGui.setDefaultHeight(12);
-    boundsGui.setPosition(ofVec3f(ofGetWidth() - 210, 12));
-    boundsGui.add(boundsX1.set("bounds x1", -2.5, -10.0, 0.0));
-    boundsGui.add(boundsX2.set("bounds x2", 2.5, 0.0, 10.0));
-    boundsGui.add(boundsY1.set("bounds y1", 1.0, 0.0, 20.0));
-    boundsGui.add(boundsY2.set("bounds y2", 5.0, 0.0, 20.0));
     
     meatbagsGui.setup("general settings");
     meatbagsGui.setDefaultHeight(12);
@@ -50,41 +42,50 @@ void ofApp::setup(){
     meatbagsGui.loadFromFile("generalSettings.json");
     meatbagsGui.maximize();
     
-    space.width = ofGetWidth();
-    space.height = ofGetHeight();
-    space.areaSize = areaSize;
-    space.origin = ofPoint(ofGetWidth() / 2.0, 50);
-    setSpace();
+    boundsGui.setup("bounds");
+    boundsGui.setPosition(ofGetWidth() - 210, 15);
+    filtersSettings.setName("filters");
+    filtersSettings.add(numberFilters.set("number filters", 1, 1, 30));
+    boundsGui.add(filtersSettings);
     
     boundsGui.loadFromFile("boundsSettings.json");
-    bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
     
     int n = numberSensors;
     setNumberSensors(n);
+    
     for (int i = 0; i < sensorGuis.size(); i++) {
         string filename = "sensor" + to_string(i + 1) + "Settings.json";
         sensorGuis[i]->loadFromFile(filename);
     }
     
+    n = numberFilters;
+    setNumberFilters(n);
+    
+    for (int i = 0; i < filterGuis.size(); i++) {
+        string filename = "filter" + to_string(i + 1) + "Settings.json";
+        filterGuis[i]->loadFromFile(filename);
+    }
+    
     numberSensors.addListener(this, &ofApp::setNumberSensors);
-    
+    numberFilters.addListener(this, &ofApp::setNumberFilters);
     areaSize.addListener(this, &ofApp::setAreaSize);
-    boundsX1.addListener(this, &ofApp::setBoundsX1);
-    boundsX2.addListener(this, &ofApp::setBoundsX2);
-    boundsY1.addListener(this, &ofApp::setBoundsY1);
-    boundsY2.addListener(this, &ofApp::setBoundsY2);
-    
     oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
     oscSenderPort.addListener(this, &ofApp::setOscSenderPort);
     oscSender.setup(oscSenderAddress, oscSenderPort);
+    
+    space.width = ofGetWidth();
+    space.height = ofGetHeight();
+    space.areaSize = areaSize;
+    space.origin = ofPoint(ofGetWidth() / 2.0, 50);
+    setSpace();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    sensors.setBounds(bounds);
+    sensors.setFilters(filters);
     sensors.update();
     meatbags.update();
-    updateGuiBounds();
+    filters.update();
 
     if (!sensors.areNewCoordinatesAvailable()) return;
     sensors.getCoordinatesAndIntensities(meatbags.coordinates, meatbags.intensities, meatbags.numberCoordinates);
@@ -103,13 +104,18 @@ void ofApp::draw(){
     
     viewer.drawGrid();
     viewer.drawBlobs(meatbags.oldBlobs);
-    viewer.drawBounds(bounds);
-    viewer.drawSensors(sensors);
+    viewer.drawFilters(filters);
+    viewer.drawSensors(sensors, filters);
     
     meatbagsGui.draw();
     boundsGui.draw();
+    
     for (int i = sensorGuis.size() - 1; i >= 0; i--) {
         sensorGuis[i]->draw();
+    }
+    
+    for (int i = filterGuis.size() - 1; i >= 0; i--) {
+        filterGuis[i]->draw();
     }
 
     drawFps();
@@ -124,6 +130,19 @@ void ofApp::setNumberSensors(int & numberSensors) {
     if (numberSensors < sensors.hokuyos.size()) {
         while (sensors.hokuyos.size() > numberSensors) {
             removeSensor();
+        }
+    }
+}
+
+void ofApp::setNumberFilters(int & numberFilters) {
+    if (numberFilters > filters.filters.size()) {
+        while (filters.filters.size() < numberFilters) {
+            addFilter(4);
+        }
+    }
+    if (numberFilters < filters.filters.size()) {
+        while (filters.filters.size() > numberFilters) {
+            removeFilter();
         }
     }
 }
@@ -152,6 +171,45 @@ void ofApp::addSensor() {
     sensorGuis.push_back(sensorGui);
     float y = currentIndex * 123;
     sensorGuis[currentIndex]->setPosition(ofVec3f(14, 210 + y));
+    
+    setSpace();
+}
+
+void ofApp::addFilter(int numberPoints) {
+    int onesIndex = filters.filters.size() + 1;
+    int currentIndex = filters.filters.size();
+    
+    float centerRatio = float(currentIndex) / 15.0;
+    float cx = cos(centerRatio * TWO_PI - HALF_PI) * 2.5;
+    float cy = sin(centerRatio * TWO_PI - HALF_PI) * 2.5;
+    
+    ofPoint center = ofPoint(cx, cy + 3.0);
+        
+    Filter* filter = new Filter();
+    filter->setNumberPoints(numberPoints);
+    filter->index = onesIndex;
+    
+    ofxPanel * filterGui =  NULL;
+    filterGui = new ofxPanel();
+    filterGui->setDefaultWidth(200 - 14);
+    filterGui->setup("filter " + to_string(onesIndex) + " settings");
+    for (int i = 0; i < numberPoints; i++) {
+        float ratio = float(i) / numberPoints;
+        float x = cos(ratio * TWO_PI) * 0.5 + center.x;
+        float y = sin(ratio * TWO_PI) * 0.5 + center.y;
+        filterGui->add(filter->points[i].set("p" + to_string(i), ofVec2f(x, y), ofVec2f(-10, 10), ofVec2f(-10, 10)));
+    }
+    filterGui->minimize();
+    filterGui->add(filter->mask.set("mask", false));
+
+    filters.addFilter(filter);
+
+    filterGuis.push_back(filterGui);
+    float y = currentIndex * 20;
+    filterGuis[currentIndex]->setPosition(ofVec3f(ofGetWidth() - 196, 70 + y));
+    filterGuis[currentIndex]->minimize();
+    
+    setSpace();
 }
 
 void ofApp::removeSensor() {
@@ -160,22 +218,10 @@ void ofApp::removeSensor() {
     sensors.removeSensor();
 }
 
-void ofApp::updateGuiBounds() {
-    if (boundsX1 != bounds.x1) {
-        boundsX1 = bounds.x1;
-    }
-    
-    if (boundsX2 != bounds.x2) {
-        boundsX2 = bounds.x2;
-    }
-    
-    if (boundsY1 != bounds.y1) {
-        boundsY1 = bounds.y1;
-    }
-    
-    if (boundsY2 != bounds.y2) {
-        boundsY2 = bounds.y2;
-    }
+void ofApp::removeFilter() {
+    int index = filters.filters.size() - 1;
+    filterGuis.pop_back();
+    filters.removeFilter();
 }
 
 void ofApp::drawFps() {
@@ -192,6 +238,12 @@ void ofApp::exit(){
         string filename = "sensor" + to_string(i + 1) + "Settings.json";
         sensorGuis[i]->saveToFile(filename);
     }
+    
+    for (int i = 0; i < filterGuis.size(); i++) {
+        string filename = "filter" + to_string(i + 1) + "Settings.json";
+        filterGuis[i]->saveToFile(filename);
+    }
+    
     sensors.closeSensors();
 }
 
@@ -204,13 +256,12 @@ void ofApp::windowResized(int width, int height) {
     space.origin.x = width / 2.0;
     
     setSpace();
-    bounds.updateDraggablePoints();
 }
 
 void ofApp::setSpace() {
-    bounds.setSpace(space);
     viewer.setSpace(space);
     sensors.setSpace(space);
+    filters.setSpace(space);
 }
 
 void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
@@ -221,24 +272,6 @@ void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
 void ofApp::setAreaSize(float &areaSize) {
     space.areaSize = areaSize;
     setSpace();
-    
-    bounds.setBounds(boundsX1, boundsX2, boundsY1, boundsY2);
-}
-
-void ofApp::setBoundsX1(float &x1) {
-    bounds.setBounds(x1, boundsX2, boundsY1, boundsY2);
-}
-
-void ofApp::setBoundsX2(float &x2) {
-    bounds.setBounds(boundsX1, x2, boundsY1, boundsY2);
-}
-
-void ofApp::setBoundsY1(float &y1) {
-    bounds.setBounds(boundsX1, boundsX2, y1, boundsY2);
-}
-
-void ofApp::setBoundsY2(float &y2) {
-    bounds.setBounds(boundsX1, boundsX2, boundsY1, y2);
 }
 
 void ofApp::setOscSenderAddress(string& oscSenderAddress) {
