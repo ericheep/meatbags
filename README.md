@@ -35,7 +35,6 @@ This project uses the very cool font [Hack](https://github.com/source-foundry/Ha
 
 ## todo
 
-- change out the random colors are selected per sensor (more pastels please)
 - add rectangle behind blob info
 
 ![meatbags](https://github.com/user-attachments/assets/1ccae092-dc5a-4e29-86ae-8151f25a9b43)
