@@ -70,7 +70,7 @@ Hokuyo::Hokuyo() {
     alignRequested = false;
     
     font.setGlobalDpi(72);
-    font.load(ofToDataPath("Hack-Regular.ttf"), 11);
+    font.load(ofToDataPath("Hack-Bold.ttf"), 12);
 }
 
 void Hokuyo::alignSensor() {
@@ -280,8 +280,6 @@ void Hokuyo::setMirrorAngles(bool &_mirrorAngles) {
 }
 
 void Hokuyo::draw() {
-    float offset = 10;
-    
     ofSetColor(ofColor::grey);
     string sensorInfoString =
     "version: " + vendorInfo + "\n" +
@@ -312,17 +310,22 @@ void Hokuyo::draw() {
     
     string combinedString = sensorInfoString + "\n" + parameterInfoString;
     
-    width = 320;
-    height = font.stringHeight(combinedString);
+    float offset = 10;
     
-    float textBoxHeight = height + offset * 2;
-    float textBoxWidth = width + offset * 2;
+    float textBoxHeight = font.stringHeight(combinedString) + 15;
+    float textBoxWidth = 360;
+    
+    float textX = x - textBoxWidth * 0.5;
+    float textY = y - textBoxHeight * 0.5;
     
     ofFill();
-    ofSetColor(0, 0, 0, 185);
-    ofDrawRectangle(x, y - textBoxHeight, textBoxWidth, height);
+    ofSetColor(0, 0, 0, 230);
+    ofDrawRectangle(textX, textY, textBoxWidth, textBoxHeight);
     ofSetColor(ofColor::pink);
-    font.drawString(combinedString, x + offset, y - height + offset);
+    ofNoFill();
+    ofDrawRectangle(textX, textY, textBoxWidth, textBoxHeight);
+    ofFill();
+    font.drawString(combinedString, textX + offset, textY + offset * 1.75);
 }
 
 string Hokuyo::checkSum(string str, int fromEnd) {

@@ -147,7 +147,7 @@ void ofApp::addSensor() {
     sensorGui->add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
     sensorGui->add(hokuyo->mirrorAngles.set("mirror angles", false));
     sensorGui->add(hokuyo->showSensorInformation.set("show sensor info", false));
-    hokuyo->setInfoPosition(10, ofGetHeight() - 10);
+    hokuyo->setInfoPosition(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
     sensors.addSensor(hokuyo);
     sensorGuis.push_back(sensorGui);
     float y = currentIndex * 123;
