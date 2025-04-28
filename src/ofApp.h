@@ -69,7 +69,7 @@ public:
     ofxOscSender oscSender;
     
     ofxPanel meatbagsGui;
-    ofxPanel boundsGui;
+    ofxPanel filtersGui;
     vector<ofxPanel*> sensorGuis;
     vector<ofxPanel*> filterGuis;
 

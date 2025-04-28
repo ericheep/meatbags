@@ -21,7 +21,7 @@ void ofApp::setup(){
     meatbagsGui.setDefaultHeight(12);
     
     meatbagsSettings.setName("meatbags");
-    meatbagsSettings.add(areaSize.set( "area size (m)", 5.0, 0.5, 20.0));
+    meatbagsSettings.add(areaSize.set( "area size (m)", 10.0, 0.5, 30.0));
     meatbagsSettings.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     meatbagsSettings.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
     meatbagsSettings.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
@@ -36,22 +36,22 @@ void ofApp::setup(){
     meatbagsGui.add(oscSettings);
     
     sensorsSettings.setName("sensors");
-    sensorsSettings.add(numberSensors.set("number sensors", 1, 1, 5));
+    sensorsSettings.add(numberSensors.set("number sensors", 1, 1, 8));
     meatbagsGui.add(sensorsSettings);
  
     meatbagsGui.loadFromFile("generalSettings.json");
     meatbagsGui.maximize();
     
-    boundsGui.setup("bounds");
-    boundsGui.setPosition(ofGetWidth() - 210, 15);
+    filtersGui.setup("filters");
+    filtersGui.setPosition(ofGetWidth() - 210, 15);
     filtersSettings.setName("filters");
     // filtersSettings.add(addFilterButton.setup("add filter"));
     // filtersSettings.add(numberFilters.set("number filters", 1, 1, 30));
 
     filtersSettings.add(numberFilters.set("number filters", 1, 1, 30));
-    boundsGui.add(filtersSettings);
+    filtersGui.add(filtersSettings);
     
-    boundsGui.loadFromFile("boundsSettings.json");
+    filtersGui.loadFromFile("filtersSettings.json");
     
     int n = numberSensors;
     setNumberSensors(n);
@@ -111,7 +111,7 @@ void ofApp::draw(){
     viewer.drawSensors(sensors, filters);
     
     meatbagsGui.draw();
-    boundsGui.draw();
+    filtersGui.draw();
     
     for (int i = sensorGuis.size() - 1; i >= 0; i--) {
         sensorGuis[i]->draw();
@@ -155,10 +155,24 @@ void ofApp::setNumberFilters(int & numberFilters) {
 void ofApp::addSensor() {
     int onesIndex = sensors.hokuyos.size() + 1;
     int currentIndex = sensors.hokuyos.size();
+   
+    float hue = fmod(currentIndex * 31.875 + 130.0, 255);
+    ofColor randomColor = ofColor::fromHsb(hue, 125.0, 255.0);
+    
+    ofPoint center = ofPoint(0, 1.25);
 
-    ofColor randomColor = ofColor::fromHsb(ofRandom(0, 255),  255.0, 255.0);
+    float centerRatio = float(currentIndex) / 8.0;
+    float sensorX = cos(centerRatio * TWO_PI - HALF_PI) * 1.25 + center.x;
+    float sensorY = sin(centerRatio * TWO_PI - HALF_PI) * 1.25 + center.y;
     
     Hokuyo* hokuyo = new Hokuyo();
+    
+    ofParameterGroup positionSettings;
+    positionSettings.setName("position");
+    positionSettings.add(hokuyo->positionX.set("position x", sensorX, -15.0, 15.0));
+    positionSettings.add(hokuyo->positionY.set("position y", sensorY, 0.0, 30.0));
+    positionSettings.add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
+    
     ofxPanel * sensorGui =  NULL;
     sensorGui = new ofxPanel();
     sensorGui->setDefaultWidth(200 - 14);
@@ -166,16 +180,20 @@ void ofApp::addSensor() {
     sensorGui->add(hokuyo->sensorColor.set("color", randomColor));
     sensorGui->add(hokuyo->ipAddress.set("IP address", "0.0.0.0"));
     sensorGui->add(hokuyo->autoReconnectActive.set("auto reconnect", true));
-    sensorGui->add(hokuyo->positionX.set("position x", currentIndex * 1.0, -10.0, 10.0));
-    sensorGui->add(hokuyo->positionY.set("position y", 0.0, 0.0, 20.0));
-    sensorGui->add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
     sensorGui->add(hokuyo->mirrorAngles.set("mirror angles", false));
     sensorGui->add(hokuyo->showSensorInformation.set("show sensor info", false));
+    sensorGui->add(positionSettings);
+    sensorGui->getGroup("position").minimize();
     hokuyo->setInfoPosition(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
     sensors.addSensor(hokuyo);
     sensorGuis.push_back(sensorGui);
-    float y = currentIndex * 123;
-    sensorGuis[currentIndex]->setPosition(ofVec3f(15, 210 + y));
+   
+    float guiX = 15;
+    if (currentIndex >= 4) guiX = 212;
+    
+    float guiY = (currentIndex % 4) * 100;
+    
+    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 210 + guiY));
     
     setSpace();
 }
@@ -184,11 +202,13 @@ void ofApp::addFilter(int numberPoints) {
     int onesIndex = filters.filters.size() + 1;
     int currentIndex = filters.filters.size();
     
-    float centerRatio = float(currentIndex) / 16.0;
+    float centerRatio = float(currentIndex) / 15.0;
     float cx = cos(centerRatio * TWO_PI - HALF_PI) * 2.25;
     float cy = sin(centerRatio * TWO_PI - HALF_PI) * 2.25;
     
-    ofPoint center = ofPoint(cx, cy + 3.0);
+    ofPoint center = ofPoint(cx, cy + 6.0);
+
+    if (currentIndex >= 15) center.y = cy + 12.0;
         
     Filter* filter = new Filter();
     filter->setNumberPoints(numberPoints);
@@ -198,8 +218,8 @@ void ofApp::addFilter(int numberPoints) {
     filterGui = new ofxPanel();
     
     ofParameterGroup coordinatesSettings;
-    filterGui->setDefaultWidth(200 - 14);
-    filterGui->setup("filter " + to_string(onesIndex) + " settings");
+    filterGui->setDefaultWidth(130 - 14);
+    filterGui->setup("filter " + to_string(onesIndex));
     filterGui->add(filter->mask.set("mask", false));
 
     coordinatesSettings.setName("coordinates");
@@ -212,10 +232,13 @@ void ofApp::addFilter(int numberPoints) {
     filterGui->add(coordinatesSettings);
     filterGui->getGroup("coordinates").minimize();
     filters.addFilter(filter);
-
     filterGuis.push_back(filterGui);
-    float y = currentIndex * 45;
-    filterGuis[currentIndex]->setPosition(ofVec3f(ofGetWidth() - 196, 70 + y));
+    
+    float guiX = ofGetWidth() - 126;
+    if (currentIndex >= 15) guiX -= 130;
+    float guiY = (currentIndex % 15) * 45;
+    
+    filterGuis[currentIndex]->setPosition(ofVec3f(guiX, 70 + guiY));
     
     setSpace();
 }
@@ -241,7 +264,7 @@ void ofApp::drawFps() {
 //--------------------------------------------------------------
 void ofApp::exit(){
     meatbagsGui.saveToFile("generalSettings.json");
-    boundsGui.saveToFile("boundsSettings.json");
+    filtersGui.saveToFile("filtersSettings.json");
     for (int i = 0; i < sensorGuis.size(); i++) {
         string filename = "sensor" + to_string(i + 1) + "Settings.json";
         sensorGuis[i]->saveToFile(filename);
