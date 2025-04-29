@@ -8,7 +8,6 @@ void ofApp::setup(){
     ofxGuiSetTextColor(ofColor::black);
     ofSetFrameRate(60);
     
-    
     ofColor barColor = ofColor::snow;
     barColor.a = 210;
     ofxGuiSetBackgroundColor(barColor);
@@ -79,7 +78,7 @@ void ofApp::setup(){
     space.width = ofGetWidth();
     space.height = ofGetHeight();
     space.areaSize = areaSize;
-    space.origin = ofPoint(ofGetWidth() / 2.0, 50);
+    space.origin = ofPoint(ofGetWidth() / 2.0, 200);
     setSpace();
 }
 
