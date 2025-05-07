@@ -33,7 +33,7 @@ void Viewer::drawGrid() {
     for (int i = 0; i < (int) space.areaSize + 4; i++) {
         int gridLineIndex = i + -( (int) space.areaSize + 4) / 2;
         
-        for (int j = -3; j < (int) space.areaSize + 6; j++) {
+        for (int j = -6; j < (int) space.areaSize + 6; j++) {
             float x = gridLineIndex * 1000.0 * scale + space.origin.x;
             float y = j * 1000.0 * scale + space.origin.y;
         
