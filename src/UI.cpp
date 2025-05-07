@@ -3,6 +3,7 @@
 //
 
 #include "UI.hpp"
+#include <functional>
 
 UI::UI() {
     ofAddListener(ofEvents().mouseMoved, this, &UI::onMouseMoved);
@@ -169,7 +170,9 @@ void UI::onMousePressed(ofMouseEventArgs& mouseArgs) {
     checkIfMouseClicked(removeOscSenderButton, mousePoint);
     
     if (saveButton.isMouseClicked && saveButton.clickLatch) {
-        // save();
+        if (onSaveCallback) {
+            onSaveCallback();
+        }
         saveButton.clickLatch = false;
     }
     

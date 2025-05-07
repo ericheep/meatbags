@@ -21,6 +21,7 @@ void ofApp::setup(){
     setSpace();
     
     buttonUI.setPosition(ofPoint(25, 20));
+    buttonUI.onSaveCallback = std::bind(&ofApp::save, this);
 }
 
 void ofApp::setupGui() {
@@ -351,7 +352,6 @@ void ofApp::exit() {
 
 void ofApp::save() {
     meatbagsGui.saveToFile("generalSettings.json");
-    filtersGui.saveToFile("filtersSettings.json");
     hiddenGui.saveToFile("hiddenSettings.json");
 
     for (int i = 0; i < sensorGuis.size(); i++) {

@@ -23,6 +23,7 @@ public:
     void removeFilter();
     void addOscSender();
     void removeOscSender();
+    std::function<void()> onSaveCallback;
     
     void checkIfMouseOver(UIButton & button, ofPoint mousePoint);
     void checkIfMouseClicked(UIButton & button, ofPoint mousePoint);
