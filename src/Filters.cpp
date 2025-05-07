@@ -8,13 +8,13 @@ Filters::Filters() {
 }
 
 void Filters::update() {
-    for (auto& filter : filters) {
+    for (auto & filter : filters) {
         filter->update();
     }
 }
 
 void Filters::setSpace(Space & _space) {    
-    for (auto& filter : filters) {
+    for (auto & filter : filters) {
         filter->setSpace(_space);
     }
 }
