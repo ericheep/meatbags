@@ -11,11 +11,6 @@ Meatbags::Meatbags() {
     numberCoordinates = 0;
     lastFrameTime = 0;
     
-    boundsX1 = -2.5;
-    boundsX2 = 2.5;
-    boundsY1 = 0;
-    boundsY2 = 5;
-    
     blobPersistence.addListener(this, &Meatbags::setBlobPersistence);
 }
 

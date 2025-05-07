@@ -42,8 +42,6 @@ public:
     vector<Blob> newBlobs, oldBlobs;
     vector<ofPoint> coordinates;
     vector<int> intensities;
-
-    float boundsX1, boundsX2, boundsY1, boundsY2;
     
     ofParameter<float> blobPersistence;
     ofParameter<float> epsilon;
