@@ -2,84 +2,96 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofxGuiSetFont(ofToDataPath("Hack-Regular.ttf"), 11);
-    ofxGuiSetBorderColor(ofColor::black);
-    ofxGuiSetHeaderColor(ofColor::thistle);
-    ofxGuiSetTextColor(ofColor::black);
     ofSetFrameRate(60);
+    setupGui();
     
-    ofColor barColor = ofColor::snow;
-    barColor.a = 210;
-    ofxGuiSetBackgroundColor(barColor);
-    barColor.a = 255;
-    ofxGuiSetFillColor(barColor);
-    ofxGuiEnableHiResDisplay();
-    ofxGuiSetDefaultWidth(200);
-    
-    meatbagsGui.setup("general settings");
-    meatbagsGui.setDefaultHeight(12);
-    
-    meatbagsSettings.setName("meatbags");
-    meatbagsSettings.add(areaSize.set( "area size (m)", 10.0, 0.5, 30.0));
-    meatbagsSettings.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
-    meatbagsSettings.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
-    meatbagsSettings.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
-    meatbagsSettings.add(headlessMode.set("headless mode (h)", false));
-    meatbagsGui.add(meatbagsSettings);
-    
-    oscSettings.setName("OSC");
-    oscSettings.add(oscSenderAddress.set( "OSC address", "192.168.0.11"));
-    oscSettings.add(oscSenderPort.set( "OSC port", 5432, 4000, 12000));
-    oscSettings.add(oscActive.set("OSC active", false));
-    oscSettings.add(normalizeBlobs.set("normalize OSC output", false));
-    meatbagsGui.add(oscSettings);
-    
-    sensorsSettings.setName("sensors");
-    sensorsSettings.add(numberSensors.set("number sensors", 1, 1, 8));
-    meatbagsGui.add(sensorsSettings);
- 
-    meatbagsGui.loadFromFile("generalSettings.json");
-    meatbagsGui.maximize();
-    
-    filtersGui.setup("filters");
-    filtersGui.setPosition(ofGetWidth() - 210, 15);
-    filtersSettings.setName("filters");
-    // filtersSettings.add(addFilterButton.setup("add filter"));
-    // filtersSettings.add(numberFilters.set("number filters", 1, 1, 30));
-
-    filtersSettings.add(numberFilters.set("number filters", 1, 1, 30));
-    filtersGui.add(filtersSettings);
-    
-    filtersGui.loadFromFile("filtersSettings.json");
-    
-    int n = numberSensors;
-    setNumberSensors(n);
-    
-    for (int i = 0; i < sensorGuis.size(); i++) {
-        string filename = "sensor" + to_string(i + 1) + "Settings.json";
-        sensorGuis[i]->loadFromFile(filename);
-    }
-    
-    n = numberFilters;
-    setNumberFilters(n);
-    
-    for (int i = 0; i < filterGuis.size(); i++) {
-        string filename = "filter" + to_string(i + 1) + "Settings.json";
-        filterGuis[i]->loadFromFile(filename);
-    }
-    
-    numberSensors.addListener(this, &ofApp::setNumberSensors);
-    numberFilters.addListener(this, &ofApp::setNumberFilters);
+    buttonUI.numberSensors.addListener(this, &ofApp::setNumberSensors);
+    buttonUI.numberFilters.addListener(this, &ofApp::setNumberFilters);
+    buttonUI.numberOscSenders.addListener(this, &ofApp::setNumberOscSenders);
     areaSize.addListener(this, &ofApp::setAreaSize);
-    oscSenderAddress.addListener(this, &ofApp::setOscSenderAddress);
-    oscSenderPort.addListener(this, &ofApp::setOscSenderPort);
-    oscSender.setup(oscSenderAddress, oscSenderPort);
+    
+    setupSensorGuis();
+    setupFilterGuis();
+    setupOscSenderGuis();
     
     space.width = ofGetWidth();
     space.height = ofGetHeight();
     space.areaSize = areaSize;
     space.origin = ofPoint(ofGetWidth() / 2.0, 200);
     setSpace();
+    
+    buttonUI.setPosition(ofPoint(25, 20));
+}
+
+void ofApp::setupGui() {
+    ofColor backgroundColor = ofColor::snow;
+    backgroundColor.a = 210;
+    
+    ofColor barColor = ofColor::snow;
+    barColor.a = 160;
+    
+    ofColor headerColor = ofColor::thistle;
+    ofColor borderColor = ofColor::black;
+    ofColor textColor = ofColor::black;
+    
+    ofxGuiSetFont(ofToDataPath("Hack-Regular.ttf"), 11);
+    ofxGuiEnableHiResDisplay();
+    ofxGuiSetDefaultHeight(12);
+    ofxGuiSetDefaultWidth(200);
+    ofxGuiSetBorderColor(borderColor);
+    ofxGuiSetHeaderColor(headerColor);
+    ofxGuiSetTextColor(textColor);
+    ofxGuiSetBackgroundColor(backgroundColor);
+    ofxGuiSetFillColor(barColor);
+    
+    hiddenGui.setup();
+    hiddenGui.add(buttonUI.numberSensors.set("number sensors", 1, 1, 8));
+    hiddenGui.add(buttonUI.numberFilters.set("number filters", 1, 1, 15));
+    hiddenGui.add(buttonUI.numberOscSenders.set("number osc senders", 1, 1, 5));
+    hiddenGui.add(areaSize.set( "area size (m)", 10.0, 0.5, 30.0));
+    hiddenGui.loadFromFile("hiddenSettings.json");
+
+    meatbagsGui.setup();
+    meatbagsGui.setName("blob settings");
+    meatbagsGui.setDefaultWidth(200);
+    meatbagsGui.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
+    meatbagsGui.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
+    meatbagsGui.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
+    meatbagsGui.add(headlessMode.set("headless mode (h)", false));
+    meatbagsGui.setPosition(ofVec3f(15, 135, 0));
+    meatbagsGui.loadFromFile("generalSettings.json");
+   
+    filtersGui.loadFromFile("filtersSettings.json");
+}
+
+void ofApp::setupSensorGuis() {
+    int n = buttonUI.numberSensors;
+    setNumberSensors(n);
+    
+    for (int i = 0; i < sensorGuis.size(); i++) {
+        string filename = "sensor" + to_string(i + 1) + "Settings.json";
+        sensorGuis[i]->loadFromFile(filename);
+    }
+}
+
+void ofApp::setupFilterGuis() {
+    int n = buttonUI.numberFilters;
+    setNumberFilters(n);
+    
+    for (int i = 0; i < filterGuis.size(); i++) {
+        string filename = "filter" + to_string(i + 1) + "Settings.json";
+        filterGuis[i]->loadFromFile(filename);
+    }
+}
+
+void ofApp::setupOscSenderGuis() {
+    int n = buttonUI.numberOscSenders;
+    setNumberOscSenders(n);
+    
+    for (int i = 0; i < oscSenderGuis.size(); i++) {
+        string filename = "oscSender" + to_string(i + 1) + "Settings.json";
+        oscSenderGuis[i]->loadFromFile(filename);
+    }
 }
 
 //--------------------------------------------------------------
@@ -95,22 +107,29 @@ void ofApp::update(){
     meatbags.updateBlobs();
     meatbags.getBlobs(blobs);
     
-    if (oscActive) sendBlobOsc();
+    oscSenders.send(blobs, meatbags, sensors, filters);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofBackground(0);
     
-    if (headlessMode) return;
+    if (headlessMode) {
+        ofDrawBitmapString("meatbags " + (string)VERSION, 15, 20);
+        ofDrawBitmapString("headless mode", 15, 40);
+        ofDrawBitmapString("press h to show", 15, 60);
+        return;
+    }
     
+    // draw blobs
     viewer.drawGrid();
     viewer.drawBlobs(meatbags.oldBlobs);
     viewer.drawFilters(filters);
     viewer.drawSensors(sensors, filters);
+    buttonUI.draw();
     
+    // draw guis
     meatbagsGui.draw();
-    filtersGui.draw();
     
     for (int i = sensorGuis.size() - 1; i >= 0; i--) {
         sensorGuis[i]->draw();
@@ -118,6 +137,10 @@ void ofApp::draw(){
     
     for (int i = filterGuis.size() - 1; i >= 0; i--) {
         filterGuis[i]->draw();
+    }
+    
+    for (int i = oscSenderGuis.size() - 1; i >= 0; i--) {
+        oscSenderGuis[i]->draw();
     }
 
     drawFps();
@@ -149,6 +172,23 @@ void ofApp::setNumberFilters(int & numberFilters) {
             removeFilter();
         }
     }
+    
+    setRightSideGuiPositions();
+}
+
+void ofApp::setNumberOscSenders(int & numberOscSenders) {
+    if (numberOscSenders > oscSenders.oscSenders.size()) {
+        while (oscSenders.oscSenders.size() < numberOscSenders) {
+            addOscSender();
+        }
+    }
+    if (numberOscSenders < oscSenders.oscSenders.size()) {
+        while (oscSenders.oscSenders.size() > numberOscSenders) {
+            removeOscSender();
+        }
+    }
+    
+    setRightSideGuiPositions();
 }
 
 void ofApp::addSensor() {
@@ -172,10 +212,9 @@ void ofApp::addSensor() {
     positionSettings.add(hokuyo->positionY.set("position y", sensorY, 0.0, 30.0));
     positionSettings.add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
     
-    ofxPanel * sensorGui =  NULL;
-    sensorGui = new ofxPanel();
-    sensorGui->setDefaultWidth(200 - 14);
-    sensorGui->setup("sensor " + to_string(onesIndex) + " settings");
+    ofxPanel * sensorGui = new ofxPanel();
+    sensorGui->setDefaultWidth(190);
+    sensorGui->setup("sensor " + to_string(onesIndex));
     sensorGui->add(hokuyo->sensorColor.set("color", randomColor));
     sensorGui->add(hokuyo->ipAddress.set("IP address", "0.0.0.0"));
     sensorGui->add(hokuyo->autoReconnectActive.set("auto reconnect", true));
@@ -186,14 +225,13 @@ void ofApp::addSensor() {
     hokuyo->setInfoPosition(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
     sensors.addSensor(hokuyo);
     sensorGuis.push_back(sensorGui);
-   
+       
     float guiX = 15;
-    if (currentIndex >= 4) guiX = 212;
+    if (currentIndex >= 4) guiX = 160;
     
     float guiY = (currentIndex % 4) * 100;
     
-    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 210 + guiY));
-    
+    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 205 + guiY));
     setSpace();
 }
 
@@ -213,14 +251,13 @@ void ofApp::addFilter(int numberPoints) {
     filter->setNumberPoints(numberPoints);
     filter->index = onesIndex;
     
-    ofxPanel * filterGui =  NULL;
-    filterGui = new ofxPanel();
+    ofxPanel * filterGui = new ofxPanel();
     
-    ofParameterGroup coordinatesSettings;
     filterGui->setDefaultWidth(130 - 14);
     filterGui->setup("filter " + to_string(onesIndex));
     filterGui->add(filter->mask.set("mask", false));
 
+    ofParameterGroup coordinatesSettings;
     coordinatesSettings.setName("coordinates");
     for (int i = 0; i < numberPoints; i++) {
         float ratio = float(i) / numberPoints;
@@ -228,19 +265,60 @@ void ofApp::addFilter(int numberPoints) {
         float y = sin(ratio * TWO_PI + HALF_PI * 0.5) * 0.5 + center.y;
         coordinatesSettings.add(filter->points[i].set("p" + to_string(i), ofVec2f(x, y), ofVec2f(-10, 10), ofVec2f(-10, 10)));
     }
+    
     filterGui->add(coordinatesSettings);
     filterGui->getGroup("coordinates").minimize();
     filters.addFilter(filter);
     filterGuis.push_back(filterGui);
     
-    float guiX = ofGetWidth() - 126;
-    if (currentIndex >= 15) guiX -= 130;
-    float guiY = (currentIndex % 15) * 45;
-    
-    filterGuis[currentIndex]->setPosition(ofVec3f(guiX, 70 + guiY));
-    
     setSpace();
 }
+
+void ofApp::addOscSender() {
+    int onesIndex = oscSenders.oscSenders.size() + 1;
+    int currentIndex = oscSenders.oscSenders.size();
+        
+    OscSender* oscSender = new OscSender();
+    
+    ofxPanel * oscSenderGui =  NULL;
+    oscSenderGui = new ofxPanel();
+    
+    ofParameterGroup coordinatesSettings;
+    oscSenderGui->setDefaultWidth(190);
+    oscSenderGui->setup("osc sender " + to_string(onesIndex));
+    oscSenderGui->add(oscSender->oscSenderAddress.set("ip address", "0.0.0.0"));
+    oscSenderGui->add(oscSender->oscSenderPort.set("port", 0));
+    oscSenderGui->add(oscSender->sendBlobsActive.set("send blobs", false));
+    oscSenderGui->add(oscSender->sendLogsActive.set("send logs", false));
+
+    oscSenders.addOscSender(oscSender);
+    oscSenderGuis.push_back(oscSenderGui);
+}
+
+void ofApp::setRightSideGuiPositions() {
+    float oscSenderGuiX = ofGetWidth() - 205;
+    float filterGuiX1 = ofGetWidth() - 131;
+    float filterGuiX2 = ofGetWidth() - 259;
+
+    float y = 14;
+    
+    for (int i = 0; i < oscSenderGuis.size(); i++) {
+        oscSenderGuis[i]->setPosition(ofVec3f(oscSenderGuiX, y));
+        y += 70;
+    }
+    
+    for (int i = 0; i < filterGuis.size(); i++) {
+        if (i < 8) {
+            filterGuis[i]->setPosition(ofVec3f(filterGuiX1, y));
+            y += 46;
+        } else {
+            float offset = 46 * 8;
+            filterGuis[i]->setPosition(ofVec3f(filterGuiX2, y - offset));
+            y += 46;
+        }
+    }
+}
+
 
 void ofApp::removeSensor() {
     int index = sensors.hokuyos.size() - 1;
@@ -254,6 +332,12 @@ void ofApp::removeFilter() {
     filters.removeFilter();
 }
 
+void ofApp::removeOscSender() {
+    int index = oscSenders.oscSenders.size() - 1;
+    oscSenderGuis.pop_back();
+    oscSenders.removeOscSender();
+}
+
 void ofApp::drawFps() {
     std::stringstream strm;
     strm << setprecision(3) << "fps: " << ofGetFrameRate();
@@ -261,9 +345,15 @@ void ofApp::drawFps() {
 }
 
 //--------------------------------------------------------------
-void ofApp::exit(){
+void ofApp::exit() {
+    save();
+}
+
+void ofApp::save() {
     meatbagsGui.saveToFile("generalSettings.json");
     filtersGui.saveToFile("filtersSettings.json");
+    hiddenGui.saveToFile("hiddenSettings.json");
+
     for (int i = 0; i < sensorGuis.size(); i++) {
         string filename = "sensor" + to_string(i + 1) + "Settings.json";
         sensorGuis[i]->saveToFile(filename);
@@ -272,6 +362,11 @@ void ofApp::exit(){
     for (int i = 0; i < filterGuis.size(); i++) {
         string filename = "filter" + to_string(i + 1) + "Settings.json";
         filterGuis[i]->saveToFile(filename);
+    }
+    
+    for (int i = 0; i < oscSenderGuis.size(); i++) {
+        string filename = "oscSender" + to_string(i + 1) + "Settings.json";
+        oscSenderGuis[i]->saveToFile(filename);
     }
     
     sensors.closeSensors();
@@ -286,6 +381,8 @@ void ofApp::windowResized(int width, int height) {
     space.origin.x = width / 2.0;
     
     setSpace();
+    
+    setRightSideGuiPositions();
 }
 
 void ofApp::setSpace() {
@@ -302,38 +399,6 @@ void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
 void ofApp::setAreaSize(float &areaSize) {
     space.areaSize = areaSize;
     setSpace();
-}
-
-void ofApp::setOscSenderAddress(string& oscSenderAddress) {
-    oscSender.setup(oscSenderAddress, oscSenderPort);
-}
-
-void ofApp::setOscSenderPort(int& oscSenderPort) {
-    oscSender.setup(oscSenderAddress, oscSenderPort);
-}
-
-void ofApp::sendBlobOsc() {
-    for (auto& blob : blobs) {
-        ofxOscMessage msg;
-        msg.setAddress("/blobs");
-        msg.addIntArg(blob.index);
-        
-        // millimeters to meters
-        float x = blob.centroid.x * 0.001;
-        float y = blob.centroid.y * 0.001;
-        
-        if (normalizeBlobs) {
-            x = ofMap(x, meatbags.boundsX1, meatbags.boundsX2, 0.0, 1.0);
-            y = ofMap(y, meatbags.boundsY1, meatbags.boundsY2, 0.0, 1.0);
-        }
-        
-        msg.addFloatArg(x);
-        msg.addFloatArg(y);
-        msg.addFloatArg(blob.intensity);
-        msg.addFloatArg(blob.distanceFromSensor);
-        
-        oscSender.sendMessage(msg);
-    }
 }
 
 void ofApp::keyPressed(int key) {

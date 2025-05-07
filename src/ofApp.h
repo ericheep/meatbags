@@ -3,7 +3,6 @@
 #include "ofMain.h"
 #include "ofxNetwork.h"
 #include "ofxGui.h"
-#include "ofxOsc.h"
 
 #include "Hokuyo.hpp"
 #include "Blob.hpp"
@@ -13,6 +12,11 @@
 #include "Sensors.hpp"
 #include "Filter.hpp"
 #include "Filters.hpp"
+#include "OscSender.hpp"
+#include "OscSenders.hpp"
+#include "UI.hpp"
+
+#define VERSION "v0.1.2"
 
 class ofApp : public ofBaseApp{
 public:
@@ -25,6 +29,14 @@ public:
     void keyPressed(int key) override;
 
     void drawFps();
+    void save();
+    
+    // setup gui
+    void setupGui();
+    void setupFilterGuis();
+    void setupOscSenderGuis();
+    void setupSensorGuis();
+    void setRightSideGuiPositions();
     
     // hokuyo parameters
     void setPositionX(float &x);
@@ -36,10 +48,6 @@ public:
     // bounds parameters
     void updateGuiBounds();
     void setSpace();
-    void setBoundsX1(float &boundsX1);
-    void setBoundsX2(float &boundsX2);
-    void setBoundsY1(float &boundsY1);
-    void setBoundsY2(float &boundsY2);
     
     // sensors
     void addSensor();
@@ -51,27 +59,31 @@ public:
     void removeFilter();
     void setNumberFilters(int & numberFilters);
     
+    // osc senders
+    void addOscSender();
+    void removeOscSender();
+    void setNumberOscSenders(int & numberSenders);
+    
     // view parameters
     void setAreaSize(float &areaSize);
-    
-    // osc parameters
-    void setOscSenderAddress(string &oscSenderAddress);
-    void setOscSenderPort(int &oscSenderAddress);
-    
-    void sendBlobOsc();
-    
+
+    UI buttonUI;
     Sensors sensors;
     Filters filters;
     vector<Blob> blobs;
     Meatbags meatbags;
     Space space;
     Viewer viewer;
-    ofxOscSender oscSender;
+    OscSenders oscSenders;
     
+    ofxPanel hiddenGui;;
     ofxPanel meatbagsGui;
     ofxPanel filtersGui;
+    ofxPanel oscSendersGui;
+
     vector<ofxPanel*> sensorGuis;
     vector<ofxPanel*> filterGuis;
+    vector<ofxPanel*> oscSenderGuis;
 
     ofPoint origin;
     
@@ -84,21 +96,4 @@ public:
     
     // viewer parameters
     ofParameter<float> areaSize;
-    
-    // osc parameters
-    ofParameterGroup oscSettings;
-    ofParameter<string> oscSenderAddress;
-    ofParameter<int> oscSenderPort;
-    ofParameter<bool> normalizeBlobs;
-    ofParameter<bool> oscActive;
-    
-    // sensors
-    ofxButton addSensorButton, removeSensorButton;
-    ofParameter<int> numberSensors;
-    ofParameterGroup sensorsSettings;
-
-    // filters parameters
-    ofxButton addFilterButton, removeFilterButton;
-    ofParameter<int> numberFilters;
-    ofParameterGroup filtersSettings;
 };
