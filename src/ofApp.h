@@ -49,6 +49,7 @@ public:
     void setAutoReconnect(bool &autoReconnectActive);
     void setSensorRotation(float &sensorRotation);
     void setMirrorAngles(bool &mirrorAngles);
+    void setLocalIPAddress(string &localIPAddress);
     
     // bounds parameters
     void updateGuiBounds();
@@ -101,6 +102,7 @@ public:
     ofParameter<bool> headlessMode;
     ofParameter<bool> autoSave;
     ofParameter<ofPoint> translation;
+    ofParameter<string> localIPAddress;
     
     // viewer parameters
     ofParameter<float> areaSize;

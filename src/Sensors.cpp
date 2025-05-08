@@ -37,6 +37,12 @@ void Sensors::setSpace(Space & _space) {
     scale = space.width / (space.areaSize * 1000);
 }
 
+void Sensors::setLocalIpAddress(string & localIPAddress) {
+    for (auto& hokuyo : hokuyos) {
+        hokuyo->setLocalIPAddress(localIPAddress);
+    }
+}
+
 /*
 // auto alignment code, will revisit later
 void Sensors::applyCoherentPointDrift() {

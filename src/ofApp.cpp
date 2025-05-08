@@ -9,6 +9,7 @@ void ofApp::setup(){
     buttonUI.numberFilters.addListener(this, &ofApp::setNumberFilters);
     buttonUI.numberOscSenders.addListener(this, &ofApp::setNumberOscSenders);
     areaSize.addListener(this, &ofApp::setAreaSize);
+    localIPAddress.addListener(this, &ofApp::setLocalIPAddress);
     
     setupSensorGuis();
     setupFilterGuis();
@@ -25,6 +26,9 @@ void ofApp::setup(){
     
     moveActive = false;
     setTranslation();
+    
+    string _localIPAddress = localIPAddress;
+    setLocalIPAddress(_localIPAddress);
 }
 
 void ofApp::setupGui() {
@@ -57,13 +61,15 @@ void ofApp::setupGui() {
     hiddenGui.loadFromFile("hiddenSettings.json");
 
     meatbagsGui.setup();
+    meatbagsGui.setDefaultWidth(230);
+    meatbagsGui.add(localIPAddress.set("local address", "0.0.0.0"));
+    meatbagsGui.add(headlessMode.set("headless mode (h)", false));
+    meatbagsGui.add(autoSave.set("auto save", false));
     meatbagsGui.setName("blob settings");
-    meatbagsGui.setDefaultWidth(200);
     meatbagsGui.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     meatbagsGui.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
     meatbagsGui.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
-    meatbagsGui.add(headlessMode.set("headless mode (h)", false));
-    meatbagsGui.add(autoSave.set("auto save", false));
+
     meatbagsGui.setPosition(ofVec3f(15, 135, 0));
     meatbagsGui.loadFromFile("generalSettings.json");
    
@@ -123,10 +129,19 @@ void ofApp::draw(){
     if (headlessMode) {
         ofDrawBitmapString("meatbags " + (string)VERSION, 15, 20);
         ofDrawBitmapString("headless mode", 15, 40);
-        ofDrawBitmapString("~", 15, 60);
-        ofDrawBitmapString("press h to toggle headless mode", 15, 80);
-        ofDrawBitmapString("hold m and move mouse to translate grid", 15, 100);
-        ofDrawBitmapString("press f to while over a center of filter to toggle mask", 15, 120);
+
+        ofDrawBitmapString("(h) toggle headless mode / help file", 15, 80);
+        ofDrawBitmapString("(m) hold and move mouse to translate grid", 15, 100);
+        ofDrawBitmapString("(f) press while over the center of a filter to toggle mask", 15, 120);
+       
+        ofDrawBitmapString("blob OSC format", 15, 160);
+        ofDrawBitmapString("/blob x y width height intensity distanceFromSensor filterIndex1 filterIndex2 ...", 15, 180);
+        
+        ofDrawBitmapString("logging OSC format", 15, 220);
+        ofDrawBitmapString("/generalStatus sensorIndex status", 15, 240);
+        ofDrawBitmapString("/connectionStatus sensorIndex status", 15, 260);
+        ofDrawBitmapString("/laserStatus sensorIndex status", 15, 280);
+
         return;
     }
     
@@ -237,7 +252,7 @@ void ofApp::addSensor() {
     
     float guiY = (currentIndex % 4) * 100;
     
-    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 218 + guiY));
+    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 236 + guiY));
     
     setSpace();
     setTranslation();
@@ -427,6 +442,10 @@ void ofApp::mouseDragged(int x, int y, int button){
         translation = initialTranslation - ofPoint(-x, -y);
         setTranslation();
     }
+}
+
+void ofApp::setLocalIPAddress(string & localIPAddress) {
+    sensors.setLocalIpAddress(localIPAddress);
 }
 
 void ofApp::setAreaSize(float &areaSize) {

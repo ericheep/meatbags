@@ -61,6 +61,7 @@ public:
     void setInfoPosition(float x, float y);
 
     // event functions
+    void setLocalIPAddress(string &localIPAddress);
     void setIPAddress(string &ipAddress);
     void setPositionX(float &positionX);
     void setPositionY(float &positionY);
@@ -97,7 +98,7 @@ public:
 private:
     ofxTCPClient tcpClient;
        
-    string netmask, gateway;
+    string netmask, gateway, localIPAddress;
     int port;
     
     bool laserActive;
