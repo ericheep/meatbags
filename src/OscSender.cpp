@@ -36,6 +36,8 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters &
         
         msg.addFloatArg(x);
         msg.addFloatArg(y);
+        msg.addFloatArg(blob.bounds.width);
+        msg.addFloatArg(blob.bounds.height);
         msg.addFloatArg(blob.intensity);
         msg.addFloatArg(blob.distanceFromSensor * 0.001);
         
