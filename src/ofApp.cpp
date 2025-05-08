@@ -123,7 +123,10 @@ void ofApp::draw(){
     if (headlessMode) {
         ofDrawBitmapString("meatbags " + (string)VERSION, 15, 20);
         ofDrawBitmapString("headless mode", 15, 40);
-        ofDrawBitmapString("press h to show", 15, 60);
+        ofDrawBitmapString("~", 15, 60);
+        ofDrawBitmapString("press h to toggle headless mode", 15, 80);
+        ofDrawBitmapString("hold m and move mouse to translate grid", 15, 100);
+        ofDrawBitmapString("press f to while over a center of filter to toggle mask", 15, 120);
         return;
     }
     

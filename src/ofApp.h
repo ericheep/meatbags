@@ -16,7 +16,7 @@
 #include "OscSenders.hpp"
 #include "UI.hpp"
 
-#define VERSION "v0.1.3"
+#define VERSION "v0.3.0"
 
 class ofApp : public ofBaseApp{
 public:
