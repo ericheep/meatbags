@@ -19,6 +19,12 @@ void Filters::setSpace(Space & _space) {
     }
 }
 
+void Filters::setTranslation(ofPoint _translation) {
+    for (auto & filter : filters) {
+        filter->setTranslation(_translation);
+    }
+}
+
 void Filters::addFilter(Filter* filter) {
     filters.push_back(filter);
 }

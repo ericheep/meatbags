@@ -18,6 +18,7 @@ public:
     void update();
     void setNumberPoints(int numberPoints);
     void setSpace(Space & space);
+    void setTranslation(ofPoint translation);
     void translatePointsByCentroid(ofPoint centroid);
     
     ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
@@ -32,6 +33,7 @@ public:
     int numberPoints;
     int index;
     
+    ofPoint translation;
     Space space;
     ofPolyline polyline;
 protected:

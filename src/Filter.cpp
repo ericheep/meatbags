@@ -54,17 +54,21 @@ void Filter::update() {
     }
 }
 
+void Filter::setTranslation(ofPoint _translation) {
+    translation = _translation;
+}
+
 void Filter::setSpace(Space & _space) {
     space = _space;
     scale = space.width / (space.areaSize * 1000.0);
 }
 
 ofPoint Filter::convertCoordinateToScreenPoint(ofPoint coordinate) {
-    return coordinate * 1000.0 * scale + space.origin;
+    return coordinate * 1000.0 * scale + space.origin + translation;
 }
 
 ofPoint Filter::convertScreenPointToCoordinate(ofPoint screenPoint) {
-    return (screenPoint - space.origin) / scale * 0.001;
+    return (screenPoint - space.origin - translation) / scale * 0.001;
 }
 
 void Filter::onMouseMoved(ofMouseEventArgs& mouseArgs) {
@@ -150,6 +154,6 @@ void Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
 
 void Filter::onKeyPressed(ofKeyEventArgs& keyArgs) {
     if (centroid.isMouseOver) {
-        if (keyArgs.key == 109) mask = !mask;
+        if (keyArgs.key == 102) mask = !mask;
     }
 }

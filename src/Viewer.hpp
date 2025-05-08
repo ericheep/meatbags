@@ -17,6 +17,7 @@ class Viewer {
 public:
     Viewer();
     
+    void draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors);
     void drawGrid();
     void drawDraggablePoints(Filter & bounds);
     void drawDraggablePoints(Filter * filter);
@@ -29,11 +30,13 @@ public:
     void drawSensor(Hokuyo * hokuyo);
     void drawBlobs(vector<Blob> & blobs);
     void setSpace(Space & space);
+    void setTranslation(ofPoint translation);
     bool checkWithinBounds(float x, float y, Filters & filters);
     
     Space space;
     Sensors sensor;
     float scale;
+    ofPoint translation;
     
     ofTrueTypeFont blobFont, sensorFont, filterFont;
     vector<ofColor> sensorColors;

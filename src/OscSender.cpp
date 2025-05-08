@@ -27,7 +27,7 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters &
     
     for (auto & blob : blobs) {
         ofxOscMessage msg;
-        msg.setAddress("/blobs");
+        msg.setAddress("/blob");
         msg.addIntArg(blob.index);
         
         // millimeters to meters
@@ -53,4 +53,39 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters &
 void OscSender::sendLogs(Sensors & sensors) {
     if (!sendLogsActive) return;
 
+    for (auto & sensor : sensors.hokuyos) {
+        string connectionStatus = sensor->connectionStatus;
+        string generalStatus = sensor->status;
+        string laserStatus = sensor->laserState;
+        
+        if (lastConnectionStatus != connectionStatus) {
+            lastConnectionStatus = connectionStatus;
+            
+            ofxOscMessage msg;
+            msg.setAddress("/connectionStatus");
+            msg.addIntArg(sensor->index);
+            msg.addStringArg(connectionStatus);
+            oscSender.sendMessage(msg);
+        }
+        
+        if (lastGeneralStatus != generalStatus) {
+            lastGeneralStatus = generalStatus;
+            
+            ofxOscMessage msg;
+            msg.setAddress("/generalStatus");
+            msg.addIntArg(sensor->index);
+            msg.addStringArg(generalStatus);
+            oscSender.sendMessage(msg);
+        }
+        
+        if (lastLaserStatus != laserStatus) {
+            lastLaserStatus = laserStatus;
+            
+            ofxOscMessage msg;
+            msg.setAddress("/laserStatus");
+            msg.addIntArg(sensor->index);
+            msg.addStringArg(laserStatus);
+            oscSender.sendMessage(msg);
+        }
+    }
 }

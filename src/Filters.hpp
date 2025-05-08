@@ -17,6 +17,7 @@ public:
     void addFilter(Filter* filter);
     void removeFilter();
     
+    void setTranslation(ofPoint translation);
     void setSpace(Space & space);
     
     vector <Filter *> filters;

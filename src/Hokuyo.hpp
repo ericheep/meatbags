@@ -91,6 +91,9 @@ public:
     bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
     bool isConnected, alignRequested;
     string model;
+    
+    int index;
+    string status, connectionStatus, laserState;
 private:
     ofxTCPClient tcpClient;
        
@@ -110,15 +113,14 @@ private:
     int timeStamp;
     
     ofTrueTypeFont font;
-    string laserState, motorSpeed;
+    string motorSpeed, lastStatus;
     string measurementMode, bitRate, sensorDiagnostic;
-    string connectionStatus;
     string vendorInfo, productInfo, firmwareVersion, protocolVersion, serialNumber;
     string minimumMeasurableDistance, maximumMeasureableDistance, angularResolutionInfo;
     string startingStep, endingStep, stepNumberOfFrontDirection, scanningSpeed;
     string scanDirection;
     
-    string status, lastStatus;
+
     float x, y, width, height;
 };
 

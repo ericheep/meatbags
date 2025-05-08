@@ -7,7 +7,7 @@
 Viewer::Viewer() {
     scale = 0.0;
     ofSetCircleResolution(3);
-    
+    translation = ofPoint::zero();
     blobFont.setGlobalDpi(72);
     blobFont.load(ofToDataPath("Hack-Bold.ttf"), 14);
     sensorFont.load(ofToDataPath("Hack-Bold.ttf"), 12);
@@ -19,13 +19,29 @@ void Viewer::setSpace(Space & _space) {
     scale = space.width / (space.areaSize * 1000);
 }
 
+void Viewer::setTranslation(ofPoint _translation) {
+    translation = _translation;
+}
+
+void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
+    ofPushMatrix();
+    ofTranslate(translation);
+    drawGrid();
+    drawBlobs(blobs);
+    drawFilters(filters);
+    drawSensors(sensors, filters);
+    ofPopMatrix();
+    
+    for (auto& sensor : sensors.hokuyos) {
+        if (sensor->showSensorInformation) sensor->draw();
+    }
+    
+    drawConnections(sensors);
+}
+
 void Viewer::drawGrid() {
     ofFill();
     ofSetCircleResolution(23);
-    ofColor originColor = ofColor::darkSalmon;
-    originColor.a = 110;
-    ofSetColor(originColor);
-    ofDrawCircle(space.origin, 6);
     
     ofSetColor(ofColor::grey);
     float crossHalfLength = scale * 25;
@@ -46,6 +62,10 @@ void Viewer::drawGrid() {
             }
         }
     }
+    
+    ofColor originColor = ofColor::thistle;
+    ofSetColor(originColor);
+    ofDrawCircle(space.origin, 4);
 }
 
 void Viewer::drawBlobs(vector<Blob>& blobs) {
@@ -138,10 +158,7 @@ void Viewer::drawSensors(Sensors& sensors, Filters & filters) {
     for (auto& sensor : sensors.hokuyos) {
         drawCoordinates(sensor->coordinates, sensor->sensorColor, filters);
         drawSensor(sensor);
-        if (sensor->showSensorInformation) sensor->draw();
     }
-    
-    drawConnections(sensors);
 }
 
 void Viewer::drawConnections(Sensors& sensors) {

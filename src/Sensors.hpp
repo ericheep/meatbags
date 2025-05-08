@@ -33,6 +33,7 @@ public:
     
     void setFilters(Filters & filters);
     void setSpace(Space & space);
+    void setTranslation(ofPoint translation);
     
     ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
     ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
@@ -40,6 +41,7 @@ public:
     vector <Hokuyo *> hokuyos;
     Filters filters;
     
+    ofPoint translation;
     Space space;
     int numberCoordinates;
     float scale;

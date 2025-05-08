@@ -22,6 +22,9 @@ void ofApp::setup(){
     
     buttonUI.setPosition(ofPoint(25, 20));
     buttonUI.onSaveCallback = std::bind(&ofApp::save, this);
+    
+    moveActive = false;
+    setTranslation();
 }
 
 void ofApp::setupGui() {
@@ -50,6 +53,7 @@ void ofApp::setupGui() {
     hiddenGui.add(buttonUI.numberFilters.set("number filters", 1, 1, 15));
     hiddenGui.add(buttonUI.numberOscSenders.set("number osc senders", 1, 1, 5));
     hiddenGui.add(areaSize.set( "area size (m)", 10.0, 0.5, 30.0));
+    hiddenGui.add(translation.set("translation", ofPoint(0.0, 0.0)));
     hiddenGui.loadFromFile("hiddenSettings.json");
 
     meatbagsGui.setup();
@@ -59,6 +63,7 @@ void ofApp::setupGui() {
     meatbagsGui.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
     meatbagsGui.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
     meatbagsGui.add(headlessMode.set("headless mode (h)", false));
+    meatbagsGui.add(autoSave.set("auto save", false));
     meatbagsGui.setPosition(ofVec3f(15, 135, 0));
     meatbagsGui.loadFromFile("generalSettings.json");
    
@@ -122,13 +127,9 @@ void ofApp::draw(){
         return;
     }
     
-    // draw blobs
-    viewer.drawGrid();
-    viewer.drawBlobs(meatbags.oldBlobs);
-    viewer.drawFilters(filters);
-    viewer.drawSensors(sensors, filters);
+    viewer.draw(meatbags.oldBlobs, filters, sensors);
     buttonUI.draw();
-    
+
     // draw guis
     meatbagsGui.draw();
     
@@ -206,6 +207,7 @@ void ofApp::addSensor() {
     float sensorY = sin(centerRatio * TWO_PI - HALF_PI) * 1.25 + center.y;
     
     Hokuyo* hokuyo = new Hokuyo();
+    hokuyo->index = onesIndex;
     
     ofParameterGroup positionSettings;
     positionSettings.setName("position");
@@ -232,8 +234,10 @@ void ofApp::addSensor() {
     
     float guiY = (currentIndex % 4) * 100;
     
-    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 205 + guiY));
+    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 218 + guiY));
+    
     setSpace();
+    setTranslation();
 }
 
 void ofApp::addFilter(int numberPoints) {
@@ -273,6 +277,7 @@ void ofApp::addFilter(int numberPoints) {
     filterGuis.push_back(filterGui);
     
     setSpace();
+    setTranslation();
 }
 
 void ofApp::addOscSender() {
@@ -347,7 +352,8 @@ void ofApp::drawFps() {
 
 //--------------------------------------------------------------
 void ofApp::exit() {
-    save();
+    if (autoSave) save();
+    sensors.closeSensors();
 }
 
 void ofApp::save() {
@@ -368,8 +374,6 @@ void ofApp::save() {
         string filename = "oscSender" + to_string(i + 1) + "Settings.json";
         oscSenderGuis[i]->saveToFile(filename);
     }
-    
-    sensors.closeSensors();
 }
 
 void ofApp::windowResized(int width, int height) {
@@ -385,6 +389,12 @@ void ofApp::windowResized(int width, int height) {
     setRightSideGuiPositions();
 }
 
+void ofApp::setTranslation() {
+    viewer.setTranslation(translation);
+    filters.setTranslation(translation);
+    sensors.setTranslation(translation);
+}
+
 void ofApp::setSpace() {
     viewer.setSpace(space);
     sensors.setSpace(space);
@@ -396,6 +406,26 @@ void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
     areaSize = ofClamp(areaSize, areaSize.getMin(), areaSize.getMax());
 }
 
+void ofApp::mousePressed(int x, int y, int button) {
+    if (button == 1) {
+        initialTranslation = ofPoint(-x, -y) + translation;
+    }
+}
+
+void ofApp::mouseMoved(int x, int y){
+    if (moveActive) {
+        translation = initialTranslation - ofPoint(-x, -y);
+        setTranslation();
+    }
+}
+
+void ofApp::mouseDragged(int x, int y, int button){
+    if (button == 1) {
+        translation = initialTranslation - ofPoint(-x, -y);
+        setTranslation();
+    }
+}
+
 void ofApp::setAreaSize(float &areaSize) {
     space.areaSize = areaSize;
     setSpace();
@@ -405,4 +435,16 @@ void ofApp::keyPressed(int key) {
     if (key == 104) {
         headlessMode = !headlessMode;
     }
+    if (key == 109) {
+        float x = ofGetMouseX();
+        float y = ofGetMouseY();
+        initialTranslation = ofPoint(-x, -y) + translation;
+
+        moveActive = true;
+    }
 }
+
+void ofApp::keyReleased(int key) {
+    moveActive = false;
+}
+    

@@ -28,6 +28,8 @@ public:
     ofParameter<int> oscSenderPort;
     ofParameter<bool> sendBlobsActive;
     ofParameter<bool> sendLogsActive;
+    
+    string lastConnectionStatus, lastLaserStatus, lastGeneralStatus;
 };
 
 #endif /* OscOut_hpp */

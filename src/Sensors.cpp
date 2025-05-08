@@ -28,6 +28,10 @@ void Sensors::update() {
     }
 }
 
+void Sensors::setTranslation(ofPoint _translation) {
+    translation = _translation;
+}
+
 void Sensors::setSpace(Space & _space) {
     space = _space;
     scale = space.width / (space.areaSize * 1000);
@@ -158,11 +162,11 @@ void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector 
 }
 
 ofPoint Sensors::convertCoordinateToScreenPoint(ofPoint coordinate) {
-    return coordinate * scale + space.origin;
+    return coordinate * scale + space.origin + translation;
 }
 
 ofPoint Sensors::convertScreenPointToCoordinate(ofPoint screenPoint) {
-    return (screenPoint - space.origin) / scale * 0.001;
+    return (screenPoint - space.origin - translation) / scale * 0.001;
 }
 
 void Sensors::onMouseMoved(ofMouseEventArgs& mouseArgs) {

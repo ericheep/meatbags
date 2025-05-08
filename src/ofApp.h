@@ -16,7 +16,7 @@
 #include "OscSenders.hpp"
 #include "UI.hpp"
 
-#define VERSION "v0.1.2"
+#define VERSION "v0.1.3"
 
 class ofApp : public ofBaseApp{
 public:
@@ -26,7 +26,12 @@ public:
     void exit() override;
     void windowResized(int width, int height) override;
     void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
+    void mouseDragged(int x, int y, int button) override;
+    void mouseMoved(int x, int y) override;
+    void mousePressed(int x, int y, int button) override;
+
     void keyPressed(int key) override;
+    void keyReleased(int key) override;
 
     void drawFps();
     void save();
@@ -48,6 +53,7 @@ public:
     // bounds parameters
     void updateGuiBounds();
     void setSpace();
+    void setTranslation();
     
     // sensors
     void addSensor();
@@ -85,7 +91,7 @@ public:
     vector<ofxPanel*> filterGuis;
     vector<ofxPanel*> oscSenderGuis;
 
-    ofPoint origin;
+    ofPoint origin, initialTranslation;
     
     // meatbags parameters
     ofParameterGroup meatbagsSettings;
@@ -93,7 +99,10 @@ public:
     ofParameter<int> minPoints;
     ofParameter<float> blobPersistence;
     ofParameter<bool> headlessMode;
+    ofParameter<bool> autoSave;
+    ofParameter<ofPoint> translation;
     
     // viewer parameters
     ofParameter<float> areaSize;
+    bool moveActive;
 };
