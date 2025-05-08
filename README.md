@@ -35,11 +35,7 @@ This project uses the very cool font [Hack](https://github.com/source-foundry/Ha
 
 ## todo
 
-- add more explicit saving functionality (app currently autosaves on close)
-  - auto save toggle
-  - save button
-  - load button with pop up
 - add rectangle behind blob info
+- add circle shape to filter options
 
-![meatbags](https://github.com/user-attachments/assets/1ccae092-dc5a-4e29-86ae-8151f25a9b43)
-
+![meatbags](https://github.com/user-attachments/assets/e2f610ac-3d7d-4581-a371-1cdfcdc1b13c)
