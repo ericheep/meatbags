@@ -17,7 +17,7 @@
 #include "UI.hpp"
 #include "MemoryFont.hpp"
 
-#define VERSION "v0.3.0"
+#define VERSION "v0.4.0"
 
 class ofApp : public ofBaseApp{
 public:
