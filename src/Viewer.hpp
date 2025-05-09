@@ -11,6 +11,7 @@
 #include "Filters.hpp"
 #include "ofMain.h"
 #include "Space.h"
+#include "MemoryFont.hpp"
 #include <stdio.h>
 
 class Viewer {
@@ -38,7 +39,7 @@ public:
     float scale;
     ofPoint translation;
     
-    ofTrueTypeFont blobFont, sensorFont, filterFont;
+    MemoryFont blobFont, sensorFont, filterFont;
     vector<ofColor> sensorColors;
 };
 

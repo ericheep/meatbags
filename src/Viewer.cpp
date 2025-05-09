@@ -8,10 +8,13 @@ Viewer::Viewer() {
     scale = 0.0;
     ofSetCircleResolution(3);
     translation = ofPoint::zero();
-    blobFont.setGlobalDpi(72);
-    blobFont.load(ofToDataPath("Hack-Bold.ttf"), 14);
-    sensorFont.load(ofToDataPath("Hack-Bold.ttf"), 12);
-    filterFont.load(ofToDataPath("Hack-Bold.ttf"), 12);
+   
+    blobFont.setBold();
+    blobFont.setSize(14);
+    sensorFont.setBold();
+    sensorFont.setSize(13);
+    filterFont.setBold();
+    filterFont.setSize(12);
 }
 
 void Viewer::setSpace(Space & _space) {
@@ -95,13 +98,15 @@ void Viewer::drawBlobs(vector<Blob>& blobs) {
         y << setprecision(2) << blob.centroid.y / 1000.0;
        
         ofSetColor(255, 0, 0);
-        string fontString =
-        index.str() + "\n" +
-        "x: " + x.str() + "\n" +
-        "y: " + y.str() + "\n" +
-        "points: " + to_string(blob.numberPoints);
+        string indexString = index.str();
+        string xString = "x: " + x.str();
+        string yString = "y: " + y.str();
+        string points = "points: " + to_string(blob.numberPoints);
         
-        blobFont.drawString(fontString, centroidX + 15, centroidY - 15);
+        blobFont.draw(indexString, centroidX + 15, centroidY - 21);
+        blobFont.draw(xString, centroidX + 15, centroidY - 7);
+        blobFont.draw(yString, centroidX + 15, centroidY + 7);
+        blobFont.draw(points, centroidX + 15, centroidY + 21);
     }
 }
 
@@ -165,7 +170,7 @@ void Viewer::drawConnections(Sensors& sensors) {
     int numberSensors = sensors.hokuyos.size();
     
     float connectionsBoxHeight = numberSensors * 20;
-    float y = space.height - connectionsBoxHeight + 5;
+    float y = space.height - connectionsBoxHeight + 8;
     float x = 10;
     
     for (int i = 0; i < numberSensors; i++) {
@@ -181,7 +186,7 @@ void Viewer::drawConnections(Sensors& sensors) {
         string sensorString = "Sensor " + to_string(i + 1) + ": " + model;
         ofDrawRectangle(x, y + i * 20 - 8, 7, 7);
         ofSetColor(sensors.hokuyos[i]->sensorColor);
-        sensorFont.drawString(sensorString, x + 15, y + i * 20);
+        sensorFont.draw(sensorString, x + 15, y + i * 20 - 1);
     }
 }
 
@@ -329,9 +334,8 @@ void Viewer::drawDraggablePoints(Filter * filter) {
     ofSetColor(filterColor);
     ofPoint indexPoint = filter->centroid * 1000.0 * scale + space.origin;
     string indexString = to_string(filter->index);
-    float xOffset = filterFont.stringWidth(indexString) * 0.5;
-    float yOffset = filterFont.stringHeight(indexString) * 0.5;
-    filterFont.drawString(to_string(filter->index), indexPoint.x - xOffset, indexPoint.y + yOffset);
+
+    filterFont.draw(to_string(filter->index), indexPoint.x - 3, indexPoint.y + 3);
 
     if (filter->centroid.isMouseOver) {
         ofPoint centroidPoint = filter->centroid * 1000.0 * scale + space.origin;

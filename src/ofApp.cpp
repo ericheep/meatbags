@@ -3,6 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetFrameRate(60);
+    headlessFont.setBold();
+    headlessFont.setSize(12);
     setupGui();
     
     buttonUI.numberSensors.addListener(this, &ofApp::setNumberSensors);
@@ -42,10 +44,8 @@ void ofApp::setupGui() {
     ofColor borderColor = ofColor::black;
     ofColor textColor = ofColor::black;
     
-    ofxGuiSetFont(ofToDataPath("Hack-Regular.ttf"), 11);
-    ofxGuiEnableHiResDisplay();
     ofxGuiSetDefaultHeight(12);
-    ofxGuiSetDefaultWidth(200);
+    ofxGuiSetDefaultWidth(230);
     ofxGuiSetBorderColor(borderColor);
     ofxGuiSetHeaderColor(headerColor);
     ofxGuiSetTextColor(textColor);
@@ -61,7 +61,6 @@ void ofApp::setupGui() {
     hiddenGui.loadFromFile("hiddenSettings.json");
 
     meatbagsGui.setup();
-    meatbagsGui.setDefaultWidth(230);
     meatbagsGui.add(localIPAddress.set("local address", "0.0.0.0"));
     meatbagsGui.add(headlessMode.set("headless mode (h)", false));
     meatbagsGui.add(autoSave.set("auto save", false));
@@ -127,20 +126,20 @@ void ofApp::draw(){
     ofBackground(0);
     
     if (headlessMode) {
-        ofDrawBitmapString("meatbags " + (string)VERSION, 15, 20);
-        ofDrawBitmapString("headless mode", 15, 40);
+        headlessFont.draw("meatbags " + (string)VERSION, 15, 20);
+        headlessFont.draw("headless mode", 15, 40);
 
-        ofDrawBitmapString("(h) toggle headless mode / help file", 15, 80);
-        ofDrawBitmapString("(m) hold and move mouse to translate grid", 15, 100);
-        ofDrawBitmapString("(f) press while over the center of a filter to toggle mask", 15, 120);
+        headlessFont.draw("(h) toggle headless mode / help file", 15, 80);
+        headlessFont.draw("(m) hold and move mouse to translate grid", 15, 100);
+        headlessFont.draw("(f) press while over the center of a filter to toggle mask", 15, 120);
        
-        ofDrawBitmapString("blob OSC format", 15, 160);
-        ofDrawBitmapString("/blob x y width height intensity distanceFromSensor filterIndex1 filterIndex2 ...", 15, 180);
+        headlessFont.draw("blob OSC format", 15, 160);
+        headlessFont.draw("/blob x y width height intensity distanceFromSensor filterIndex1 filterIndex2 ...", 15, 180);
         
-        ofDrawBitmapString("logging OSC format", 15, 220);
-        ofDrawBitmapString("/generalStatus sensorIndex status", 15, 240);
-        ofDrawBitmapString("/connectionStatus sensorIndex status", 15, 260);
-        ofDrawBitmapString("/laserStatus sensorIndex status", 15, 280);
+        headlessFont.draw("logging OSC format", 15, 220);
+        headlessFont.draw("/generalStatus sensorIndex status", 15, 240);
+        headlessFont.draw("/connectionStatus sensorIndex status", 15, 260);
+        headlessFont.draw("/laserStatus sensorIndex status", 15, 280);
 
         return;
     }
@@ -248,11 +247,11 @@ void ofApp::addSensor() {
     sensorGuis.push_back(sensorGui);
        
     float guiX = 15;
-    if (currentIndex >= 4) guiX = 160;
+    if (currentIndex >= 4) guiX = 210;
     
     float guiY = (currentIndex % 4) * 100;
     
-    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 236 + guiY));
+    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 233 + guiY));
     
     setSpace();
     setTranslation();

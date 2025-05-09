@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "ofMain.h"
 #include "UIButton.hpp"
+#include "MemoryFont.hpp"
 
 class UI {
 public:
@@ -43,7 +44,7 @@ public:
     
     ofPoint position;
     
-    ofTrueTypeFont uiFont, titleFont;
+    MemoryFont uiFont, titleFont;
     
     float size, offset;
     

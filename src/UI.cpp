@@ -51,8 +51,10 @@ UI::UI() {
     
     saveButton.setPosition(0, buttonSpacing * 4.25);
     
-    uiFont.load(ofToDataPath("Hack-Bold.ttf"), 9);
-    titleFont.load(ofToDataPath("Hack-Bold.ttf"), 11);
+    uiFont.setBold();
+    uiFont.setSize(13);
+    titleFont.setBold();
+    titleFont.setSize(15);
 }
 
 UI::~UI() {
@@ -75,11 +77,11 @@ void UI::draw() {
     
     ofSetColor(ofColor::thistle);
         
-    titleFont.drawString("meatbags", -8, -1);
-    uiFont.drawString("sensors", 35, addSensorButton.y + 5);
-    uiFont.drawString("filters ", 35, addFilterButton.y + 5);
-    uiFont.drawString("osc senders", 35, addOscSenderButton.y + 5);
-    uiFont.drawString("save", 14, saveButton.y + 5);
+    titleFont.draw("meatbags", -8, -1);
+    uiFont.draw("sensors", 35, addSensorButton.y + 5);
+    uiFont.draw("filters ", 35, addFilterButton.y + 5);
+    uiFont.draw("osc senders", 35, addOscSenderButton.y + 5);
+    uiFont.draw("save", 14, saveButton.y + 5);
     ofPopMatrix();
 }
 

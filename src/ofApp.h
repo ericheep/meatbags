@@ -15,6 +15,7 @@
 #include "OscSender.hpp"
 #include "OscSenders.hpp"
 #include "UI.hpp"
+#include "MemoryFont.hpp"
 
 #define VERSION "v0.3.0"
 
@@ -103,6 +104,8 @@ public:
     ofParameter<bool> autoSave;
     ofParameter<ofPoint> translation;
     ofParameter<string> localIPAddress;
+    
+    MemoryFont headlessFont;
     
     // viewer parameters
     ofParameter<float> areaSize;
