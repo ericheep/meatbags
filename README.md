@@ -9,11 +9,12 @@ You can download a built binary from the releases sidebar (Mac OS only) or you c
 
 If compiling from source code, I recommend using the [projectGenerator](https://openframeworks.cc/learning/01_basics/create_a_new_project/) software to import the project into your IDE of choice.
 
-This project was developed with openFrameowrks v0.12.0, it uses the following openFrameworks addons; all included in the main package.
+This project was developed with openFrameowrks v0.12.0, it uses the following openFrameworks addons; all included in the main package. Be sure to add them using the projectGenerator application.
 
-- ofxNetwork
 - ofxGui
 - ofxOsc
+
+This project also uses a modified version of ofxNetwork that is extended to control which ethernet adapter Meatbags uses to create its TCP connections. This modified addon is part of the source code.
 
 ## use
 
