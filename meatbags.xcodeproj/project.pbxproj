@@ -3,13 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		06B709EE2DCD66D6002B64D7 /* MemoryFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06B709ED2DCD66D6002B64D7 /* MemoryFont.cpp */; };
-		06B709F62DCD6FBC002B64D7 /* Hack-Bold.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06B709F52DCD6FBC002B64D7 /* Hack-Bold.cpp */; };
-		06B709F82DCD6FCA002B64D7 /* Hack-Regular.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06B709F72DCD6FCA002B64D7 /* Hack-Regular.cpp */; };
 		"0A73B28E-A8B7-4BFB-ABCE-98A1D0F04104" /* ofxUDPManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "329AC80A-FF82-434F-94B5-EAA1F46AFDFE" /* ofxUDPManager.cpp */; };
 		"0B451AD0-14A7-44B9-B446-16686010C54D" /* ofxSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "8E42A3A7-519D-4268-9673-F1A0C86632DA" /* ofxSlider.cpp */; };
 		"0C1FC217-34F0-47B0-8614-9C8BA93F3CD7" /* IpEndpointName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "8AC54721-6548-4223-ADD7-C72FA07201ED" /* IpEndpointName.cpp */; };
@@ -81,10 +79,6 @@
 		"05EBCD19-BE5B-4993-8530-C6777196E84E" /* ofxLabel.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxLabel.h; path = ../../../addons/ofxGui/src/ofxLabel.h; sourceTree = SOURCE_ROOT; };
 		06B709EC2DCD66D6002B64D7 /* MemoryFont.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = MemoryFont.hpp; sourceTree = "<group>"; };
 		06B709ED2DCD66D6002B64D7 /* MemoryFont.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryFont.cpp; sourceTree = "<group>"; };
-		06B709EF2DCD6905002B64D7 /* Hack-Bold.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Hack-Bold.h"; sourceTree = "<group>"; };
-		06B709F02DCD6905002B64D7 /* Hack-Regular.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Hack-Regular.h"; sourceTree = "<group>"; };
-		06B709F52DCD6FBC002B64D7 /* Hack-Bold.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "Hack-Bold.cpp"; sourceTree = "<group>"; };
-		06B709F72DCD6FCA002B64D7 /* Hack-Regular.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "Hack-Regular.cpp"; sourceTree = "<group>"; };
 		"0A69C022-4CF8-4E5D-9AF4-14EE546E7AD7" /* NetworkingUtils.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = NetworkingUtils.h; path = ../../../addons/ofxOsc/libs/oscpack/src/ip/NetworkingUtils.h; sourceTree = SOURCE_ROOT; };
 		"0AF67260-B567-4B45-9A22-2F728BED274E" /* OscReceivedElements.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = OscReceivedElements.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h; sourceTree = SOURCE_ROOT; };
 		"0AF88509-DD44-49BC-8A48-DD821727FB2F" /* ofxOscBundle.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxOscBundle.cpp; path = ../../../addons/ofxOsc/src/ofxOscBundle.cpp; sourceTree = SOURCE_ROOT; };
@@ -191,6 +185,10 @@
 		"F3D4E57C-BD3E-479D-B16C-5A103451743E" /* ofxOscMessage.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxOscMessage.h; path = ../../../addons/ofxOsc/src/ofxOscMessage.h; sourceTree = SOURCE_ROOT; };
 		"F51009DC-C3DE-4762-AA1E-2C41F69C902D" /* ofxGuiUtils.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxGuiUtils.h; path = ../../../addons/ofxGui/src/ofxGuiUtils.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		06B70A052DCD87CF002B64D7 /* fonts */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = fonts; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E4B69B590A3A1756003C02F2 /* Frameworks */ = {
@@ -437,10 +435,6 @@
 				"9FE42BAA-A19E-479F-B8D3-1CE7C469F87C" /* Filters.hpp */,
 				"05D14272-4707-402F-884F-F3CE6A97FFBE" /* Hokuyo.cpp */,
 				"A6B2A1C8-0543-4B62-B6FB-024FC97902E5" /* Hokuyo.hpp */,
-				06B709EF2DCD6905002B64D7 /* Hack-Bold.h */,
-				06B709F52DCD6FBC002B64D7 /* Hack-Bold.cpp */,
-				06B709F02DCD6905002B64D7 /* Hack-Regular.h */,
-				06B709F72DCD6FCA002B64D7 /* Hack-Regular.cpp */,
 				"146E5F7C-28E9-4F3A-A5AF-910FE0759A66" /* Meatbags.cpp */,
 				"AC6A5F83-1508-4F09-B8D9-1B5C553715B6" /* Meatbags.hpp */,
 				"8416D1FB-C9B8-4870-BE8B-99C789D52927" /* OscSender.cpp */,
@@ -452,12 +446,13 @@
 				"A4FBF2C0-1CC2-4BCF-A635-15CEBE0D3B46" /* Space.h */,
 				"C89FF6EA-76E5-4577-BFA5-4D2EF08A9C47" /* UI.cpp */,
 				"452F6A12-570A-4E4B-8FE6-726CFACE8B2D" /* UI.hpp */,
-				06B709EC2DCD66D6002B64D7 /* MemoryFont.hpp */,
-				06B709ED2DCD66D6002B64D7 /* MemoryFont.cpp */,
 				"68A7B018-C6C6-433E-811A-843D5469A429" /* UIButton.cpp */,
 				"8003840F-5B19-499A-9DBD-08F3F088F210" /* UIButton.hpp */,
 				"E7039C14-F8ED-4F92-B2AB-E6B600D68EF6" /* Viewer.cpp */,
 				"6CECD0A0-20FB-4E5F-B526-0FA576271D94" /* Viewer.hpp */,
+				06B709EC2DCD66D6002B64D7 /* MemoryFont.hpp */,
+				06B709ED2DCD66D6002B64D7 /* MemoryFont.cpp */,
+				06B70A052DCD87CF002B64D7 /* fonts */,
 				"1283C16E-4BBE-45DC-9F17-2836732693FE" /* dbscan */,
 				"303DF407-6CDF-4A35-8D27-14CCDFB7240D" /* ofxNetwork */,
 				"27F9475E-4422-447A-BC93-ED81DBE5F2A8" /* superpose3d */,
@@ -483,6 +478,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				06B70A052DCD87CF002B64D7 /* fonts */,
 			);
 			name = meatbags;
 			productName = myOFApp;
@@ -589,11 +587,9 @@
 				"42CA636E-5BEF-4756-88D4-17EF9B0722CA" /* ofxSliderGroup.cpp in Sources */,
 				"8A92E2CC-E528-4E33-816B-06FA65656002" /* ofxToggle.cpp in Sources */,
 				"0C1FC217-34F0-47B0-8614-9C8BA93F3CD7" /* IpEndpointName.cpp in Sources */,
-				06B709F82DCD6FCA002B64D7 /* Hack-Regular.cpp in Sources */,
 				"231E9182-72BF-46B8-A633-B238E261679C" /* NetworkingUtils.cpp in Sources */,
 				"A6E20BA9-E49D-44F1-A4C7-4A3040F1A557" /* UdpSocket.cpp in Sources */,
 				"FDF0406A-73C8-4782-8CC1-0B80D456DE39" /* OscOutboundPacketStream.cpp in Sources */,
-				06B709F62DCD6FBC002B64D7 /* Hack-Bold.cpp in Sources */,
 				"963EE76B-7250-4B52-9193-D77C462E1542" /* OscPrintReceivedElements.cpp in Sources */,
 				"366E23D1-3D81-4101-BDC9-D8AFB9242BF5" /* OscReceivedElements.cpp in Sources */,
 				"6EC9213F-CDB5-41EB-9874-E6F85A8A68E6" /* OscTypes.cpp in Sources */,

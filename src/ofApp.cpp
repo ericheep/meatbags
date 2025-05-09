@@ -3,8 +3,10 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetFrameRate(60);
-    headlessFont.setBold();
-    headlessFont.setSize(12);
+    titleFont.setBold();
+    titleFont.setSize(14);
+    headlessFont.setMedium();
+    headlessFont.setSize(14);
     setupGui();
     
     buttonUI.numberSensors.addListener(this, &ofApp::setNumberSensors);
@@ -126,17 +128,17 @@ void ofApp::draw(){
     ofBackground(0);
     
     if (headlessMode) {
-        headlessFont.draw("meatbags " + (string)VERSION, 15, 20);
+        titleFont.draw("meatbags " + (string)VERSION, 15, 20);
         headlessFont.draw("headless mode", 15, 40);
 
         headlessFont.draw("(h) toggle headless mode / help file", 15, 80);
         headlessFont.draw("(m) hold and move mouse to translate grid", 15, 100);
         headlessFont.draw("(f) press while over the center of a filter to toggle mask", 15, 120);
        
-        headlessFont.draw("blob OSC format", 15, 160);
+        titleFont.draw("blob OSC format", 15, 160);
         headlessFont.draw("/blob x y width height intensity distanceFromSensor filterIndex1 filterIndex2 ...", 15, 180);
         
-        headlessFont.draw("logging OSC format", 15, 220);
+        titleFont.draw("logging OSC format", 15, 220);
         headlessFont.draw("/generalStatus sensorIndex status", 15, 240);
         headlessFont.draw("/connectionStatus sensorIndex status", 15, 260);
         headlessFont.draw("/laserStatus sensorIndex status", 15, 280);

@@ -105,7 +105,7 @@ public:
     ofParameter<ofPoint> translation;
     ofParameter<string> localIPAddress;
     
-    MemoryFont headlessFont;
+    MemoryFont titleFont, headlessFont;
     
     // viewer parameters
     ofParameter<float> areaSize;

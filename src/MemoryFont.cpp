@@ -5,7 +5,7 @@
 #include "MemoryFont.hpp"
 
 MemoryFont::MemoryFont() {
-    // Initialize FreeType
+    // initialize FreeType
     if (FT_Init_FreeType(&ft)) {
         ofLogError() << "Could not init FreeType";
         return;
@@ -13,24 +13,29 @@ MemoryFont::MemoryFont() {
 
     setRegular();
 
-    // Set font size
+    // set default font size
     FT_Set_Pixel_Sizes(face, 0, 48);
 
-    // Load glyphs for ASCII characters
+    // load glyphs for ASCII characters
     buildGlyphs();
 }
 
 void MemoryFont::setBold() {
-    // Load font from memory
-    if (FT_New_Memory_Face(ft, Hack_Bold_ttf, Hack_Bold_ttf_len, 0, &face)) {
+    if (FT_New_Memory_Face(ft, FiraMono_Bold_ttf, FiraMono_Bold_ttf_len, 0, &face)) {
         ofLogError() << "Could not load font from memory";
         return;
     }
 }
 
 void MemoryFont::setRegular() {
-    // Load font from memory
-    if (FT_New_Memory_Face(ft, Hack_Regular_ttf, Hack_Regular_ttf_len, 0, &face)) {
+    if (FT_New_Memory_Face(ft, FiraMono_Regular_ttf, FiraMono_Regular_ttf_len, 0, &face)) {
+        ofLogError() << "Could not load font from memory";
+        return;
+    }
+}
+
+void MemoryFont::setMedium() {
+    if (FT_New_Memory_Face(ft, FiraMono_Medium_ttf, FiraMono_Medium_ttf_len, 0, &face)) {
         ofLogError() << "Could not load font from memory";
         return;
     }
@@ -51,7 +56,7 @@ void MemoryFont::buildGlyphs() {
         glyphTextures[c].loadData(pixels);
 
         glyphWidths[c] = face->glyph->advance.x >> 6;
-        glyphHeights[c] = bmp.rows;
+        glyphTopOffsets[c] = face->glyph->bitmap_top;
     }
 }
 
@@ -61,14 +66,15 @@ void MemoryFont::setSize(int size) {
 }
 
 void MemoryFont::draw(string text, float x, float y) {
-    for (char c : text) {
-        float localY = y;
-        if (c == 'g' || c == 'y' || c == 'p' || c == 'q') localY += 3;
+    for (char ch : text) {
+        unsigned char c = (unsigned char)ch;
+        if (c >= 128) continue;
         
+        // only draw if the texture exists (e.g., not a space)
         if (glyphTextures[c].isAllocated()) {
-            glyphTextures[c].draw(x, localY - glyphHeights[c]);
+            glyphTextures[c].draw(x, y - glyphTopOffsets[c]);
         }
-        
-        x += glyphWidths[c] ;
+
+        x += glyphWidths[c];
     }
 }
