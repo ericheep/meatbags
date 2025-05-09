@@ -17,7 +17,9 @@ This project was developed with openFrameowrks v0.12.0, it uses the following op
 
 ## use
 
-After opening and closing the application Meatbags will create a batch of JSON files that are automatically loaded on startup and saved on exit. These hold the configuration state of the application and allow easy startup for art install scenarios. 
+After opening and closing the application Meatbags will create a batch of JSON files that are automatically loaded on startup with the option to auto-save on exit. These hold the configuration state of the application and allow easy startup for art install scenarios. 
+
+This software is provided free for artists to use in their art installs and free for educational purposes. For commercial purposes email me at ericheep@gmail.com. Read the [license](https://github.com/ericheep/meatbags/blob/main/LICENSE.md) for further terms.
 
 ## external code
 
@@ -25,8 +27,6 @@ This project uses the DBSCAN algorithm for clustering the LiDAR measurements rec
 
 A C++11 implementation of C++20's std::span is by [tcbrindle](https://github.com/tcbrindle/span
 ) also used to enable Eleobert's dbscan implementation.
-
-This project uses the very cool font [Hack](https://github.com/source-foundry/Hack).
 
 ## tested sensors
 
