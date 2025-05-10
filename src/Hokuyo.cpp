@@ -72,8 +72,8 @@ Hokuyo::Hokuyo() {
     mirrorAngles = false;
     alignRequested = false;
     
-    font.setGlobalDpi(72);
-    font.load(ofToDataPath("Hack-Bold.ttf"), 12);
+    font.setMedium();
+    font.setSize(12);
 }
 
 void Hokuyo::alignSensor() {
@@ -296,51 +296,56 @@ void Hokuyo::setMirrorAngles(bool &_mirrorAngles) {
 
 void Hokuyo::draw() {
     ofSetColor(ofColor::grey);
-    string sensorInfoString =
-    "version: " + vendorInfo + "\n" +
-    "model: " + model + "\n" +
-    "firmware: " +  firmwareVersion + "\n" +
-    "protocol: " + protocolVersion + "\n" +
-    "serial: " + serialNumber + + "\n" +
-    "laser state: " + laserState + "\n" +
-    "polling start step: " + to_string(startStep) + "\n" +
-    "polling end step: " + to_string(endStep) + "\n" +
-    "measurement mode: " + measurementMode + "\n" +
-    "bitrate: " + bitRate + "\n" +
-    "timestamp: " + to_string(timeStamp) + "\n" +
-    "sensor diagnostic: " + sensorDiagnostic + "\n" +
-    "IP Address: " + tcpClient.getIP() + "\n" +
-    "port: " + to_string(port) + "\n" +
-    "connection status: " + connectionStatus + "\n" +
-    "status: " + status;
     
-    string parameterInfoString =
-    "min measurable dist: " + minimumMeasurableDistance + "\n" +
-    "max measurable dist: " + maximumMeasureableDistance + "\n" +
-    "angular resolution: " + angularResolutionInfo + "\n" +
-    "starting step: " + startingStep + "\n" +
-    "ending step: " + endingStep + "\n" +
-    "front direction steps: " + stepNumberOfFrontDirection + "\n" +
-    "scanning speed: " + scanningSpeed;
     
-    string combinedString = sensorInfoString + "\n" + parameterInfoString;
+    vector<string> sensorInfoLines;
+    
+    sensorInfoLines.push_back("version: " + vendorInfo);
+    sensorInfoLines.push_back("model: " + model);
+    sensorInfoLines.push_back("firmware: " +  firmwareVersion);
+    sensorInfoLines.push_back("protocol: " + protocolVersion);
+    sensorInfoLines.push_back("serial: " + serialNumber);
+    sensorInfoLines.push_back("laser state: " + laserState);
+    sensorInfoLines.push_back("polling start step: " + to_string(startStep));
+    sensorInfoLines.push_back("polling end step: " + to_string(endStep));
+    sensorInfoLines.push_back("measurement mode: " + measurementMode);
+    sensorInfoLines.push_back("bitrate: " + bitRate);
+    sensorInfoLines.push_back("timestamp: " + to_string(timeStamp));
+    sensorInfoLines.push_back("sensor diagnostic: " + sensorDiagnostic);
+    sensorInfoLines.push_back("IP Address: " + tcpClient.getIP());
+    sensorInfoLines.push_back("port: " + to_string(port));
+    sensorInfoLines.push_back("connection status: " + connectionStatus);
+    sensorInfoLines.push_back("status: " + status);
+    sensorInfoLines.push_back("min measurable dist: " + minimumMeasurableDistance);
+    sensorInfoLines.push_back("max measurable dist: " + maximumMeasureableDistance);
+    sensorInfoLines.push_back("angular resolution: " + angularResolutionInfo);
+    sensorInfoLines.push_back("starting step: " + startingStep);
+    sensorInfoLines.push_back("ending step: " + endingStep);
+    sensorInfoLines.push_back("front direction steps: " + stepNumberOfFrontDirection);
+    sensorInfoLines.push_back("scanning speed: " + scanningSpeed);
     
     float offset = 10;
     
-    float textBoxHeight = font.stringHeight(combinedString) + 15;
-    float textBoxWidth = 360;
+    float textBoxHeight = sensorInfoLines.size() * 16;
+    float textBoxWidth = 340;
     
     float textX = x - textBoxWidth * 0.5;
     float textY = y - textBoxHeight * 0.5;
     
     ofFill();
-    ofSetColor(0, 0, 0, 230);
-    ofDrawRectangle(textX, textY, textBoxWidth, textBoxHeight);
+    ofSetColor(0, 0, 0, 300);
+    ofRectangle textBox;
+    textBox.setFromCenter(x, y, textBoxWidth, textBoxHeight + 8);
+    ofDrawRectangle(textBox);
     ofSetColor(ofColor::pink);
     ofNoFill();
-    ofDrawRectangle(textX, textY, textBoxWidth, textBoxHeight);
+    ofDrawRectangle(textBox);
     ofFill();
-    font.drawString(combinedString, textX + offset, textY + offset * 1.75);
+    
+    for (int i = 0; i < sensorInfoLines.size(); i++) {
+        float y = textY + 16 * i;
+        font.draw(sensorInfoLines[i], textX + 6, y + 10);
+    }
 }
 
 string Hokuyo::checkSum(string str, int fromEnd) {

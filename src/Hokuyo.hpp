@@ -11,6 +11,7 @@
 #include "ofxGui.h"
 #include "ofxNetwork.h"
 #include "DraggablePoint.hpp"
+#include "MemoryFont.hpp"
 
 #include "sstream"
 
@@ -113,7 +114,7 @@ private:
     
     int timeStamp;
     
-    ofTrueTypeFont font;
+    MemoryFont font;
     string motorSpeed, lastStatus;
     string measurementMode, bitRate, sensorDiagnostic;
     string vendorInfo, productInfo, firmwareVersion, protocolVersion, serialNumber;
