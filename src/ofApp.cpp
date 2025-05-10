@@ -73,8 +73,6 @@ void ofApp::setupGui() {
 
     meatbagsGui.setPosition(ofVec3f(15, 135, 0));
     meatbagsGui.loadFromFile("generalSettings.json");
-   
-    filtersGui.loadFromFile("filtersSettings.json");
 }
 
 void ofApp::setupSensorGuis() {
@@ -311,8 +309,8 @@ void ofApp::addOscSender() {
     ofParameterGroup coordinatesSettings;
     oscSenderGui->setDefaultWidth(190);
     oscSenderGui->setup("osc sender " + to_string(onesIndex));
-    oscSenderGui->add(oscSender->oscSenderAddress.set("ip address", "0.0.0.0"));
-    oscSenderGui->add(oscSender->oscSenderPort.set("port", 0));
+    oscSenderGui->add(oscSender->oscSenderAddress.set("ip address", "127.0.0.1"));
+    oscSenderGui->add(oscSender->oscSenderPort.set("port", 5432));
     oscSenderGui->add(oscSender->sendBlobsActive.set("send blobs", false));
     oscSenderGui->add(oscSender->sendLogsActive.set("send logs", false));
 

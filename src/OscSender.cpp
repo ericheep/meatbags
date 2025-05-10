@@ -7,6 +7,9 @@
 OscSender::OscSender() {
     oscSenderAddress.addListener(this, &OscSender::setOscSenderAddress);
     oscSenderPort.addListener(this, &OscSender::setOscSenderPort);
+    
+    oscSenderAddress = "127.0.0.1";
+    oscSenderPort = 5322;
 }
 
 OscSender::~OscSender() {
@@ -15,10 +18,12 @@ OscSender::~OscSender() {
 }
 
 void OscSender::setOscSenderAddress(string& oscSenderAddress) {
+    if (oscSenderPort == 0) return;
     oscSender.setup(oscSenderAddress, oscSenderPort);
 }
 
 void OscSender::setOscSenderPort(int& oscSenderPort) {
+    if (oscSenderPort == 0) return;
     oscSender.setup(oscSenderAddress, oscSenderPort);
 }
 
