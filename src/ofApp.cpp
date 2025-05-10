@@ -402,7 +402,7 @@ void ofApp::windowResized(int width, int height) {
     space.origin.x = width / 2.0;
     
     setSpace();
-    
+    sensors.setInfoPositions(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
     setRightSideGuiPositions();
 }
 
