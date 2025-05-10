@@ -147,13 +147,21 @@ bool ofxTCPManager::Listen(int iMaxConnections)
 
 bool ofxTCPManager::BindToDeviceIP(const std::string& localIP, unsigned short port, bool reuse)
 {
+    if (m_hSocket < 0) {
+        m_hSocket = ::socket(AF_INET, SOCK_STREAM, 0);
+        if (m_hSocket < 0) {
+            ofxNetworkLogLastError();
+            return false;
+        }
+    }
+        
     struct sockaddr_in local;
     memset(&local, 0, sizeof(sockaddr_in));
     local.sin_family = AF_INET;
     local.sin_port = htons(port); // 0 means ephemeral port
-    std::cout << localIP.c_str() << std::endl;
+
     if (inet_pton(AF_INET, localIP.c_str(), &local.sin_addr) <= 0) {
-        // ofLogError("ofxTCPManager") << "Invalid local IP address: " << localIP;
+        std::cerr << "Invalid local IP address: " << localIP;
         return false;
     }
 
