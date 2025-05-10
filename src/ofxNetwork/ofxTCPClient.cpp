@@ -33,7 +33,6 @@ void ofxTCPClient::setVerbose(bool _verbose){
 
 //--------------------------
 bool ofxTCPClient::setup(string ip, int _port, bool blocking, string localIP){
-
 	ofxTCPSettings settings(ip, _port);
 
 	settings.blocking = blocking;
@@ -42,13 +41,15 @@ bool ofxTCPClient::setup(string ip, int _port, bool blocking, string localIP){
 }
 
 //--------------------------
-bool ofxTCPClient::setup(const ofxTCPSettings & settings, string localIP){
-    if (localIP != "0.0.0.0") TCPClient.BindToDeviceIP(localIP);
-    
+bool ofxTCPClient::setup(const ofxTCPSettings & settings, string localIP){        
 	if( !TCPClient.Create() ){
 		ofLogError("ofxTCPClient") << "setup(): couldn't create client";
 		return false;
-	}else if( !TCPClient.Connect((char *)settings.address.c_str(), settings.port) ){
+	}
+    
+    if (localIP != "0.0.0.0") TCPClient.BindToDeviceIP(localIP);
+    
+    if( !TCPClient.Connect((char *)settings.address.c_str(), settings.port) ){
 		ofLogError("ofxTCPClient") << "setup(): couldn't connect to " << settings.address << " " << settings.port;
 		TCPClient.Close(); //we free the connection
 		return false;
