@@ -35,6 +35,7 @@ public:
     void setFilters(Filters & filters);
     void setSpace(Space & space);
     void setTranslation(ofPoint translation);
+    void setInfoPositions(float x, float y);
     
     ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
     ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);

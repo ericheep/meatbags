@@ -43,6 +43,12 @@ void Sensors::setLocalIpAddress(string & localIPAddress) {
     }
 }
 
+void Sensors::setInfoPositions(float x, float y) {
+    for (auto& hokuyo : hokuyos) {
+        hokuyo->setInfoPosition(x, y);
+    }
+}
+
 /*
 // auto alignment code, will revisit later
 void Sensors::applyCoherentPointDrift() {
