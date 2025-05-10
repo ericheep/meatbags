@@ -90,6 +90,8 @@ void Hokuyo::threadedFunction() {
 }
 
 void Hokuyo::connect() {
+    if (ipAddress.get() == "0.0.0.0") return;
+
     startThread();
 }
 
