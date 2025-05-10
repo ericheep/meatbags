@@ -41,7 +41,7 @@ void MemoryFont::setMedium() {
     }
 }
 
-void MemoryFont::buildGlyphs() {
+void MemoryFont::buildGlyphs() { 
     for (unsigned char c = 0; c < 128; c++) {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
             ofLogError() << "Could not load glyph " << c;
@@ -49,6 +49,14 @@ void MemoryFont::buildGlyphs() {
         }
 
         FT_Bitmap& bmp = face->glyph->bitmap;
+        
+        // Skip if bitmap has no data
+        if (!bmp.buffer || bmp.width == 0 || bmp.rows == 0) {
+            glyphWidths[c] = face->glyph->advance.x >> 6;
+            glyphTopOffsets[c] = face->glyph->bitmap_top;
+            continue;
+        }
+        
         ofPixels pixels;
         pixels.setFromPixels(bmp.buffer, bmp.width, bmp.rows, OF_PIXELS_GRAY);
 
