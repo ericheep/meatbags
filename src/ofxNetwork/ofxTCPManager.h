@@ -47,6 +47,7 @@ SetTimeoutReceive()
 #include <wchar.h>
 #include <stdio.h>
 
+
 #ifndef TARGET_WIN32
 
 	//unix includes - works for osx should be same for *nix
@@ -77,9 +78,12 @@ SetTimeoutReceive()
 	#define FAR
 	#define SO_MAX_MSG_SIZE TCP_MAXSEG
 #else
-	//windows includes
-	#include <winsock2.h>
-	#include <ws2tcpip.h>		// TCP/IP annex needed for multicasting
+// Windows includes
+#include <winsock2.h>
+#include <ws2tcpip.h>    // For TCP/IP, including multicasting
+#include <iphlpapi.h>    // For GetAdaptersAddresses (to enumerate interfaces)
+#pragma comment(lib, "ws2_32.lib")  // Link against ws2_32.lib (Winsock)
+#pragma comment(lib, "iphlpapi.lib") // Link against iphlpapi.lib for GetAdaptersAddresses
 #endif
 
 //--------------------------------------------------------------------------------

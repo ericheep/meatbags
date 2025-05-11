@@ -171,7 +171,40 @@ bool ofxTCPManager::BindToDeviceIP(const std::string& localIP, unsigned short po
 }
 
 bool ofxTCPManager::SelectInterface(const std::string interface) {
-    int ifIndex = if_nametoindex(interface.c_str());
+#ifdef _WIN32
+	// Windows-specific code to bind a socket to an interface by IP address
+	// Step 1: Retrieve the IP address of the specified interface
+	IP_ADAPTER_ADDRESSES* pAddresses = NULL;
+	ULONG outBufLen = 15000;
+	pAddresses = (IP_ADAPTER_ADDRESSES*)malloc(outBufLen);
+	if (GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, pAddresses, &outBufLen) == NO_ERROR) {
+		// Iterate through the adapters and find the one with the given interface name
+		for (IP_ADAPTER_ADDRESSES* pCurrAddresses = pAddresses; pCurrAddresses != NULL; pCurrAddresses = pCurrAddresses->Next) {
+			if (pCurrAddresses->OperStatus == IfOperStatusUp && interface == pCurrAddresses->AdapterName) {
+				// Found the matching interface, now bind to its first IP address
+				sockaddr_in sa;
+				memset(&sa, 0, sizeof(sa));
+				sa.sin_family = AF_INET;
+				sa.sin_port = 0;  // Bind to any available port
+
+				// Take the first IP address of the interface
+				sa.sin_addr = ((sockaddr_in*)pCurrAddresses->FirstUnicastAddress->Address.lpSockaddr)->sin_addr;
+
+				// Step 2: Bind the socket to this address
+				if (bind(m_hSocket, (struct sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+					std::cerr << "Failed to bind to interface: " << interface << std::endl;
+					return false;
+				}
+				free(pAddresses);
+				return true;
+			}
+		}
+	}
+	free(pAddresses);
+	std::cerr << "Could not find interface: " << interface << std::endl;
+	return false;
+#else
+	int ifIndex = if_nametoindex(interface.c_str());
     
     if (ifIndex > 0) {
         if (setsockopt(m_hSocket, IPPROTO_IP, IP_BOUND_IF, &ifIndex, sizeof(ifIndex)) < 0) {
@@ -180,8 +213,9 @@ bool ofxTCPManager::SelectInterface(const std::string interface) {
     } else {
         perror("Invalid interface name");
     }
-    
-    return true;
+
+	return true;
+#endif
 }
 
 //--------------------------------------------------------------------------------

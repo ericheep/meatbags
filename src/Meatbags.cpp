@@ -161,7 +161,7 @@ void Meatbags::renewBlobs() {
 
 int Meatbags::findFreeBlobIndex() {
     int freeIndex = 0;
-    Boolean lookingForFreeIndex = true;
+    bool lookingForFreeIndex = true;
     
     while (lookingForFreeIndex) {
         lookingForFreeIndex = false;

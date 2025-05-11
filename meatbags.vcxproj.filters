@@ -1,0 +1,429 @@
+<?xml version="1.0"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemGroup>
+		<ClCompile Include="src\ofApp.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\main.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\Blob.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\DraggablePoint.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\Filter.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\Filters.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\Hokuyo.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\InterfaceSelector.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\Meatbags.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\MemoryFont.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\OscSender.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\OscSenders.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\Sensors.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\UI.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\UIButton.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\Viewer.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\dbscan\dbscan.cpp">
+			<Filter>src\dbscan</Filter>
+		</ClCompile>
+		<ClCompile Include="src\fonts\FiraMono-Bold.cpp">
+			<Filter>src\fonts</Filter>
+		</ClCompile>
+		<ClCompile Include="src\fonts\FiraMono-Medium.cpp">
+			<Filter>src\fonts</Filter>
+		</ClCompile>
+		<ClCompile Include="src\fonts\FiraMono-Regular.cpp">
+			<Filter>src\fonts</Filter>
+		</ClCompile>
+		<ClCompile Include="src\main.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\ofApp.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\ofxNetwork\ofxNetworkUtils.cpp">
+			<Filter>src\ofxNetwork</Filter>
+		</ClCompile>
+		<ClCompile Include="src\ofxNetwork\ofxTCPClient.cpp">
+			<Filter>src\ofxNetwork</Filter>
+		</ClCompile>
+		<ClCompile Include="src\ofxNetwork\ofxTCPManager.cpp">
+			<Filter>src\ofxNetwork</Filter>
+		</ClCompile>
+		<ClCompile Include="src\ofxNetwork\ofxTCPServer.cpp">
+			<Filter>src\ofxNetwork</Filter>
+		</ClCompile>
+		<ClCompile Include="src\ofxNetwork\ofxUDPManager.cpp">
+			<Filter>src\ofxNetwork</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxDropdown\src\ofxDropdown.cpp">
+			<Filter>addons\ofxDropdown\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxDropdown\src\ofxDropdownOption.cpp">
+			<Filter>addons\ofxDropdown\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxBaseGui.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxButton.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxColorPicker.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxGuiGroup.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxInputField.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxLabel.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxPanel.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxSlider.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxSliderGroup.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxGui\src\ofxToggle.cpp">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\src\ofxOscBundle.cpp">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\src\ofxOscMessage.cpp">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\src\ofxOscParameterSync.cpp">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\src\ofxOscReceiver.cpp">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\src\ofxOscSender.cpp">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\libs\oscpack\src\ip\IpEndpointName.cpp">
+			<Filter>addons\ofxOsc\libs\oscpack\src\ip</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\libs\oscpack\src\ip\win32\NetworkingUtils.cpp">
+			<Filter>addons\ofxOsc\libs\oscpack\src\ip\win32</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\libs\oscpack\src\ip\win32\UdpSocket.cpp">
+			<Filter>addons\ofxOsc\libs\oscpack\src\ip\win32</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscOutboundPacketStream.cpp">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscPrintReceivedElements.cpp">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscReceivedElements.cpp">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscTypes.cpp">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClCompile>
+	</ItemGroup>
+	<ItemGroup>
+		<Filter Include="src">
+			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="src\dbscan">
+			<UniqueIdentifier>{1FFB788A--E03-A-4E-7D-B-A7E-A39822637ADF}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="src\fonts">
+			<UniqueIdentifier>{2C76C494--62F-0-4F-03-B-385-91109CEA401A}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="src\ofxNetwork">
+			<UniqueIdentifier>{8E84C010--9AE-C-42-5F-8-E34-EEB43F657BDA}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="src\superpose3d">
+			<UniqueIdentifier>{2604F1DA--B56-1-40-4C-A-F72-5808E345DEDA}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="src\tcb">
+			<UniqueIdentifier>{BBD3B02F--140-E-4E-72-9-117-C655BE3621AB}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons">
+			<UniqueIdentifier>{68CD4DBF--0A1-D-4F-59-B-980-92B172724526}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxDropdown">
+			<UniqueIdentifier>{9B29E23B--839-6-40-4E-B-CA8-AD56CBFB1FA1}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxDropdown\src">
+			<UniqueIdentifier>{47BE9ACF--5E8-2-49-9D-A-92E-9684B75ABA94}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxGui">
+			<UniqueIdentifier>{3750FC6E--579-2-4A-15-9-740-804FF6262FF3}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxGui\src">
+			<UniqueIdentifier>{DCC0B0B2--541-E-48-2B-A-2FE-AAB14636B35A}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxOsc">
+			<UniqueIdentifier>{D3C75419--7CC-8-46-8D-A-D57-9030360B7BD3}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxOsc\src">
+			<UniqueIdentifier>{56AFC843--D08-5-47-5A-A-7F9-2410AF4800B4}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxOsc\libs">
+			<UniqueIdentifier>{F13139AA--DC1-3-48-0D-B-997-57C21D07934B}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxOsc\libs\oscpack">
+			<UniqueIdentifier>{4A8E186B--810-9-4B-26-A-386-16AECD4DD365}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxOsc\libs\oscpack\src">
+			<UniqueIdentifier>{0FC38AA3--499-6-4A-33-B-8E0-801DE91E9BD3}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxOsc\libs\oscpack\src\ip">
+			<UniqueIdentifier>{32DE29AE--B3E-4-4F-83-B-97D-B814D049D65C}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxOsc\libs\oscpack\src\ip\win32">
+			<UniqueIdentifier>{6462B8E7--11A-2-4A-E6-8-1C9-A18E7E5329CC}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxOsc\libs\oscpack\src\osc">
+			<UniqueIdentifier>{2A2ACAB0--7F5-B-47-BC-9-7DE-DEBC1AC7D963}</UniqueIdentifier>
+		</Filter>
+	</ItemGroup>
+	<ItemGroup>
+		<ClInclude Include="src\ofApp.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Blob.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\DraggablePoint.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Filter.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Filters.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Hokuyo.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\InterfaceSelector.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Meatbags.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\MemoryFont.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\OscSender.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\OscSenders.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Sensors.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Space.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\UI.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\UIButton.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Viewer.hpp">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\dbscan\dbscan.hpp">
+			<Filter>src\dbscan</Filter>
+		</ClInclude>
+		<ClInclude Include="src\dbscan\nanoflann.hpp">
+			<Filter>src\dbscan</Filter>
+		</ClInclude>
+		<ClInclude Include="src\fonts\FiraMono-Bold.h">
+			<Filter>src\fonts</Filter>
+		</ClInclude>
+		<ClInclude Include="src\fonts\FiraMono-Medium.h">
+			<Filter>src\fonts</Filter>
+		</ClInclude>
+		<ClInclude Include="src\fonts\FiraMono-Regular.h">
+			<Filter>src\fonts</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofApp.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofxNetwork\ofxNetwork.h">
+			<Filter>src\ofxNetwork</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofxNetwork\ofxNetworkUtils.h">
+			<Filter>src\ofxNetwork</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofxNetwork\ofxTCPClient.h">
+			<Filter>src\ofxNetwork</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofxNetwork\ofxTCPManager.h">
+			<Filter>src\ofxNetwork</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofxNetwork\ofxTCPServer.h">
+			<Filter>src\ofxNetwork</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofxNetwork\ofxTCPSettings.h">
+			<Filter>src\ofxNetwork</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofxNetwork\ofxUDPManager.h">
+			<Filter>src\ofxNetwork</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofxNetwork\ofxUDPSettings.h">
+			<Filter>src\ofxNetwork</Filter>
+		</ClInclude>
+		<ClInclude Include="src\superpose3d\jacobi_pd.hpp">
+			<Filter>src\superpose3d</Filter>
+		</ClInclude>
+		<ClInclude Include="src\superpose3d\matrix_alloc_jpd.hpp">
+			<Filter>src\superpose3d</Filter>
+		</ClInclude>
+		<ClInclude Include="src\superpose3d\peigencalc.hpp">
+			<Filter>src\superpose3d</Filter>
+		</ClInclude>
+		<ClInclude Include="src\superpose3d\superpose3d.hpp">
+			<Filter>src\superpose3d</Filter>
+		</ClInclude>
+		<ClInclude Include="src\tcb\span.hpp">
+			<Filter>src\tcb</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxDropdown\src\ofxDropdown.h">
+			<Filter>addons\ofxDropdown\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxDropdown\src\ofxDropdownOption.hpp">
+			<Filter>addons\ofxDropdown\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxBaseGui.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxButton.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxColorPicker.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxGui.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxGuiGroup.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxGuiUtils.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxInputField.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxLabel.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxPanel.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxSlider.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxSliderGroup.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxGui\src\ofxToggle.h">
+			<Filter>addons\ofxGui\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\src\ofxOsc.h">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\src\ofxOscArg.h">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\src\ofxOscBundle.h">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\src\ofxOscMessage.h">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\src\ofxOscParameterSync.h">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\src\ofxOscReceiver.h">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\src\ofxOscSender.h">
+			<Filter>addons\ofxOsc\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\ip\IpEndpointName.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\ip</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\ip\NetworkingUtils.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\ip</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\ip\PacketListener.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\ip</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\ip\TimerListener.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\ip</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\ip\UdpSocket.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\ip</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\MessageMappingOscPacketListener.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscException.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscHostEndianness.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscOutboundPacketStream.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscPacketListener.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscPrintReceivedElements.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscReceivedElements.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxOsc\libs\oscpack\src\osc\OscTypes.h">
+			<Filter>addons\ofxOsc\libs\oscpack\src\osc</Filter>
+		</ClInclude>
+	</ItemGroup>
+	<ItemGroup>
+		<ResourceCompile Include="icon.rc" />
+	</ItemGroup>
+</Project>

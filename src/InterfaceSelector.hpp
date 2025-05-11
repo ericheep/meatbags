@@ -7,29 +7,36 @@
 
 #include "ofMain.h"
 #include <stdio.h>
+#include <iostream>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <iphlpapi.h>
+#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "ws2_32.lib")
+#else
 #include <ifaddrs.h>
 #include <arpa/inet.h>
-#include <iostream>
-#include <net/if.h>       // for if_nametoindex()
-#include <sys/socket.h>   // for setsockopt()
-#include <netinet/in.h>   // for IPPROTO_IP
-#include <netinet/ip.h>   // for IP_BOUND_IF (macOS-specific)
+#include <net/if.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#endif
 
 class InterfaceSelector {
 public:
     InterfaceSelector();
     
     void listInterfaces();
-    void selectInterface();
-    string getInterface(string interfaceAndIP);
-    string getIP(string interfaceAndIP);
+    string getInterface(string _interfaceAndIP);
+    string getIP(string _interfaceAndIP);
     
     struct interfaceAndIP {
         int index;
         int interfaceIndex;
         string interface;
         string IP;
-        string interfaceAndIP;
+        string interfaceAndIPString;    
     };
     
     vector<interfaceAndIP> interfaces;
