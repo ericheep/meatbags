@@ -9,31 +9,31 @@ bool ofxTCPManager::m_bWinsockInit= false;
 //--------------------------------------------------------------------------------
 ofxTCPManager::ofxTCPManager()
 {
-  // was winsock initialized?
-  	#ifdef TARGET_WIN32
-		if (!m_bWinsockInit) {
-			unsigned short vr;
-			WSADATA	wsaData;
-			vr = MAKEWORD(2,	2);
-			WSAStartup(vr, &wsaData);
-			m_bWinsockInit=	true;
-		}
-	#else
-		//this disables the other apps from shutting down if the client
-		//or server disconnects.
-		signal(SIGPIPE,SIG_IGN);
-		signal(EPIPE,SIG_IGN);
-	#endif
-
-  nonBlocking = false;
-  m_hSocket= INVALID_SOCKET;
-  m_dwTimeoutSend= OF_TCP_DEFAULT_TIMEOUT;
-  m_dwTimeoutReceive= OF_TCP_DEFAULT_TIMEOUT;
-  m_dwTimeoutAccept= OF_TCP_DEFAULT_TIMEOUT;
-  m_dwTimeoutConnect= 5;//OF_TCP_DEFAULT_TIMEOUT;
-  m_iListenPort= -1;
-  m_closing = false;
-  m_iMaxConnections = 100;
+    // was winsock initialized?
+#ifdef TARGET_WIN32
+    if (!m_bWinsockInit) {
+        unsigned short vr;
+        WSADATA	wsaData;
+        vr = MAKEWORD(2,	2);
+        WSAStartup(vr, &wsaData);
+        m_bWinsockInit=	true;
+    }
+#else
+    //this disables the other apps from shutting down if the client
+    //or server disconnects.
+    signal(SIGPIPE,SIG_IGN);
+    signal(EPIPE,SIG_IGN);
+#endif
+    
+    nonBlocking = false;
+    m_hSocket= INVALID_SOCKET;
+    m_dwTimeoutSend= OF_TCP_DEFAULT_TIMEOUT;
+    m_dwTimeoutReceive= OF_TCP_DEFAULT_TIMEOUT;
+    m_dwTimeoutAccept= OF_TCP_DEFAULT_TIMEOUT;
+    m_dwTimeoutConnect= 5;//OF_TCP_DEFAULT_TIMEOUT;
+    m_iListenPort= -1;
+    m_closing = false;
+    m_iMaxConnections = 100;
 };
 
 //--------------------------------------------------------------------------------
@@ -42,62 +42,62 @@ ofxTCPManager::ofxTCPManager()
 bool ofxTCPManager::Close()
 {
     if (m_hSocket == INVALID_SOCKET) return(true);
-
-	#ifdef TARGET_WIN32
-		if(closesocket(m_hSocket) == SOCKET_ERROR)
-	#else
-		m_closing = true;
-		shutdown(m_hSocket,SHUT_RDWR);
-		if(close(m_hSocket) == SOCKET_ERROR)
-	#endif
-		{
-			//	if it's reported we're not/no longer a socket, let it fall through and be invalidated
-			int err = ofxNetworkGetLastError();
-			if( err != OFXNETWORK_ERROR(NOTSOCK) ){
-				ofxNetworkLogError( err, __FILE__, __LINE__-2 );
-				return(false);
-			}
-		}
-
-	m_hSocket= INVALID_SOCKET;
-
-	#ifdef TARGET_WIN32
-		//This was commented out in the original
-		//WSACleanup();
-	#endif
-	return(true);
+    
+#ifdef TARGET_WIN32
+    if(closesocket(m_hSocket) == SOCKET_ERROR)
+#else
+        m_closing = true;
+    shutdown(m_hSocket,SHUT_RDWR);
+    if(close(m_hSocket) == SOCKET_ERROR)
+#endif
+    {
+        //	if it's reported we're not/no longer a socket, let it fall through and be invalidated
+        int err = ofxNetworkGetLastError();
+        if( err != OFXNETWORK_ERROR(NOTSOCK) ){
+            ofxNetworkLogError( err, __FILE__, __LINE__-2 );
+            return(false);
+        }
+    }
+    
+    m_hSocket= INVALID_SOCKET;
+    
+#ifdef TARGET_WIN32
+    //This was commented out in the original
+    //WSACleanup();
+#endif
+    return(true);
 }
 
 //--------------------------------------------------------------------------------
 void ofxTCPManager::CleanUp() {
-	#ifdef TARGET_WIN32
-		WSACleanup();
-	#endif
-  m_bWinsockInit = false;
+#ifdef TARGET_WIN32
+    WSACleanup();
+#endif
+    m_bWinsockInit = false;
 }
 
 //--------------------------------------------------------------------------------
 bool ofxTCPManager::CheckIsConnected(){
 #ifdef TARGET_WIN32
-	fd_set fd;
-	FD_ZERO(&fd);
-	FD_SET(m_hSocket, &fd);
-	timeval tv = { (time_t)0, 1 };
-	if (select(0, &fd, NULL, NULL, &tv) == 1) {
-		int so_error;
-		socklen_t len = sizeof so_error;
-		getsockopt(m_hSocket, SOL_SOCKET, SO_ERROR, (char*)&so_error, &len);
-		if (so_error == 0) {
-			u_long toread;
+    fd_set fd;
+    FD_ZERO(&fd);
+    FD_SET(m_hSocket, &fd);
+    timeval tv = { (time_t)0, 1 };
+    if (select(0, &fd, NULL, NULL, &tv) == 1) {
+        int so_error;
+        socklen_t len = sizeof so_error;
+        getsockopt(m_hSocket, SOL_SOCKET, SO_ERROR, (char*)&so_error, &len);
+        if (so_error == 0) {
+            u_long toread;
 #ifdef TARGET_WIN32
-			ioctlsocket(m_hSocket, FIONREAD, &toread);
+            ioctlsocket(m_hSocket, FIONREAD, &toread);
 #else
-			ioctl(m_hSocket, FIONREAD, &toread);
+            ioctl(m_hSocket, FIONREAD, &toread);
 #endif
-			if (toread == 0) {
-				return false;
-			}
-		}
+            if (toread == 0) {
+                return false;
+            }
+        }
     }
     return true;
 #else
@@ -122,16 +122,16 @@ bool ofxTCPManager::CheckIsConnected(){
 //--------------------------------------------------------------------------------
 bool ofxTCPManager::Create()
 {
-	if (m_hSocket != INVALID_SOCKET) return(false);
-	m_closing = false;
-
-	m_hSocket = socket( AF_INET, SOCK_STREAM, IPPROTO_IP);
-
-	bool ret = (m_hSocket != INVALID_SOCKET);
-
-	if(!ret) ofxNetworkLogLastError();
-
-	return ret;
+    if (m_hSocket != INVALID_SOCKET) return(false);
+    m_closing = false;
+    
+    m_hSocket = socket( AF_INET, SOCK_STREAM, IPPROTO_IP);
+    
+    bool ret = (m_hSocket != INVALID_SOCKET);
+    
+    if(!ret) ofxNetworkLogLastError();
+    
+    return ret;
 }
 
 bool ofxTCPManager::BindToDeviceIP(const std::string& localIP, unsigned short port, bool reuse)
@@ -148,12 +148,12 @@ bool ofxTCPManager::BindToDeviceIP(const std::string& localIP, unsigned short po
     memset(&local, 0, sizeof(sockaddr_in));
     local.sin_family = AF_INET;
     local.sin_port = htons(port);
-
+    
     if (inet_pton(AF_INET, localIP.c_str(), &local.sin_addr) <= 0) {
         std::cerr << "Invalid local IP address: " << localIP;
         return false;
     }
-
+    
     if (reuse) {
         int enable = 1;
         if (setsockopt(m_hSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int)) < 0) {
@@ -161,50 +161,50 @@ bool ofxTCPManager::BindToDeviceIP(const std::string& localIP, unsigned short po
             return false;
         }
     }
-
+    
     if (::bind(m_hSocket, (struct sockaddr*)&local, sizeof(local)) < 0) {
         ofxNetworkLogLastError();
         return false;
     }
-
+    
     return true;
 }
 
 bool ofxTCPManager::SelectInterface(const std::string interface) {
 #ifdef _WIN32
-	// Windows-specific code to bind a socket to an interface by IP address
-	// Step 1: Retrieve the IP address of the specified interface
-	IP_ADAPTER_ADDRESSES* pAddresses = NULL;
-	ULONG outBufLen = 15000;
-	pAddresses = (IP_ADAPTER_ADDRESSES*)malloc(outBufLen);
-	if (GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, pAddresses, &outBufLen) == NO_ERROR) {
-		// Iterate through the adapters and find the one with the given interface name
-		for (IP_ADAPTER_ADDRESSES* pCurrAddresses = pAddresses; pCurrAddresses != NULL; pCurrAddresses = pCurrAddresses->Next) {
-			if (pCurrAddresses->OperStatus == IfOperStatusUp && interface == pCurrAddresses->AdapterName) {
-				// Found the matching interface, now bind to its first IP address
-				sockaddr_in sa;
-				memset(&sa, 0, sizeof(sa));
-				sa.sin_family = AF_INET;
-				sa.sin_port = 0;  // Bind to any available port
-
-				// Take the first IP address of the interface
-				sa.sin_addr = ((sockaddr_in*)pCurrAddresses->FirstUnicastAddress->Address.lpSockaddr)->sin_addr;
-
-				// Step 2: Bind the socket to this address
-				if (bind(m_hSocket, (struct sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
-					std::cerr << "Failed to bind to interface: " << interface << std::endl;
-					return false;
-				}
-				free(pAddresses);
-				return true;
-			}
-		}
-	}
-	free(pAddresses);
-	std::cerr << "Could not find interface: " << interface << std::endl;
-	return false;
+    // Windows-specific code to bind a socket to an interface by IP address
+    // Step 1: Retrieve the IP address of the specified interface
+    IP_ADAPTER_ADDRESSES* pAddresses = NULL;
+    ULONG outBufLen = 15000;
+    pAddresses = (IP_ADAPTER_ADDRESSES*)malloc(outBufLen);
+    if (GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, pAddresses, &outBufLen) == NO_ERROR) {
+        // Iterate through the adapters and find the one with the given interface name
+        for (IP_ADAPTER_ADDRESSES* pCurrAddresses = pAddresses; pCurrAddresses != NULL; pCurrAddresses = pCurrAddresses->Next) {
+            if (pCurrAddresses->OperStatus == IfOperStatusUp && interface == pCurrAddresses->AdapterName) {
+                // Found the matching interface, now bind to its first IP address
+                sockaddr_in sa;
+                memset(&sa, 0, sizeof(sa));
+                sa.sin_family = AF_INET;
+                sa.sin_port = 0;  // Bind to any available port
+                
+                // Take the first IP address of the interface
+                sa.sin_addr = ((sockaddr_in*)pCurrAddresses->FirstUnicastAddress->Address.lpSockaddr)->sin_addr;
+                
+                // Step 2: Bind the socket to this address
+                if (bind(m_hSocket, (struct sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+                    std::cerr << "Failed to bind to interface: " << interface << std::endl;
+                    return false;
+                }
+                free(pAddresses);
+                return true;
+            }
+        }
+    }
+    free(pAddresses);
+    std::cerr << "Could not find interface: " << interface << std::endl;
+    return false;
 #else
-	int ifIndex = if_nametoindex(interface.c_str());
+    int ifIndex = if_nametoindex(interface.c_str());
     
     if (ifIndex > 0) {
         if (setsockopt(m_hSocket, IPPROTO_IP, IP_BOUND_IF, &ifIndex, sizeof(ifIndex)) < 0) {
@@ -213,197 +213,197 @@ bool ofxTCPManager::SelectInterface(const std::string interface) {
     } else {
         perror("Invalid interface name");
     }
-
-	return true;
+    
+    return true;
 #endif
 }
 
 //--------------------------------------------------------------------------------
 bool ofxTCPManager::Listen(int iMaxConnections)
 {
-	if (m_hSocket == INVALID_SOCKET) return(false);
-	m_iMaxConnections = iMaxConnections;
-	bool ret = (listen(m_hSocket, iMaxConnections)!= SOCKET_ERROR);
-	if(!ret) ofxNetworkLogLastError();
-	return ret;
+    if (m_hSocket == INVALID_SOCKET) return(false);
+    m_iMaxConnections = iMaxConnections;
+    bool ret = (listen(m_hSocket, iMaxConnections)!= SOCKET_ERROR);
+    if(!ret) ofxNetworkLogLastError();
+    return ret;
 }
 
 bool ofxTCPManager::Bind(unsigned short usPort, bool bReuse)
 {
-	struct sockaddr_in local;
-	memset(&local, 0, sizeof(sockaddr_in));
-
-	local.sin_family = AF_INET;
-	local.sin_addr.s_addr = INADDR_ANY;
-	//Port MUST be in Network Byte Order
-	local.sin_port = htons(usPort);
-
-	if (bReuse) {
-		int enable = 1;
-		if (setsockopt(m_hSocket,SOL_SOCKET,SO_REUSEADDR,(char*)&enable,sizeof(int)) < 0){
-			ofxNetworkLogLastError();
-			return false;
-		}
-	}
-
-	if (::bind(m_hSocket,(struct sockaddr*)&local,sizeof(local))){
-		ofxNetworkLogLastError();
-		return false;
-	}
-	return true;
+    struct sockaddr_in local;
+    memset(&local, 0, sizeof(sockaddr_in));
+    
+    local.sin_family = AF_INET;
+    local.sin_addr.s_addr = INADDR_ANY;
+    //Port MUST be in Network Byte Order
+    local.sin_port = htons(usPort);
+    
+    if (bReuse) {
+        int enable = 1;
+        if (setsockopt(m_hSocket,SOL_SOCKET,SO_REUSEADDR,(char*)&enable,sizeof(int)) < 0){
+            ofxNetworkLogLastError();
+            return false;
+        }
+    }
+    
+    if (::bind(m_hSocket,(struct sockaddr*)&local,sizeof(local))){
+        ofxNetworkLogLastError();
+        return false;
+    }
+    return true;
 }
 
 //--------------------------------------------------------------------------------
 bool ofxTCPManager::Accept(ofxTCPManager& sConnect)
 {
-  sockaddr_in addr;
-
-  #ifndef TARGET_WIN32
-	socklen_t iSize;
-  #else
-	int iSize;
-  #endif
-
-  if (m_hSocket == INVALID_SOCKET) return(false);
-
-  if (m_dwTimeoutAccept != NO_TIMEOUT) {
-	  fd_set fd;
-	  FD_ZERO(&fd);
-	  FD_SET(m_hSocket, &fd);
-	  timeval tv= {(time_t)m_dwTimeoutAccept, 0};
-	  if(select(0, &fd, NULL, NULL, &tv) == 0) {
-		  ofxNetworkLogLastError();
-		  return(false);
-	  }
-  }
-
-  iSize= sizeof(sockaddr_in);
-  sConnect.m_hSocket = accept(m_hSocket, (sockaddr*)&addr, &iSize);
-  bool ret = (sConnect.m_hSocket != INVALID_SOCKET);
-  if(!ret && !m_closing) ofxNetworkLogLastError();
-  return ret;
+    sockaddr_in addr;
+    
+#ifndef TARGET_WIN32
+    socklen_t iSize;
+#else
+    int iSize;
+#endif
+    
+    if (m_hSocket == INVALID_SOCKET) return(false);
+    
+    if (m_dwTimeoutAccept != NO_TIMEOUT) {
+        fd_set fd;
+        FD_ZERO(&fd);
+        FD_SET(m_hSocket, &fd);
+        timeval tv= {(time_t)m_dwTimeoutAccept, 0};
+        if(select(0, &fd, NULL, NULL, &tv) == 0) {
+            ofxNetworkLogLastError();
+            return(false);
+        }
+    }
+    
+    iSize= sizeof(sockaddr_in);
+    sConnect.m_hSocket = accept(m_hSocket, (sockaddr*)&addr, &iSize);
+    bool ret = (sConnect.m_hSocket != INVALID_SOCKET);
+    if(!ret && !m_closing) ofxNetworkLogLastError();
+    return ret;
 }
 
 
 //--------------------------------------------------------------------------------
 bool ofxTCPManager::Connect(const char *pAddrStr, unsigned short usPort)
 {
-  sockaddr_in addr_in= {0};
-  struct hostent *he;
-
-  if (m_hSocket == INVALID_SOCKET){
-	  return(false);
-  }
-
-  if ((he = gethostbyname(pAddrStr)) == NULL)
-    return(false);
-
-	addr_in.sin_family= AF_INET; // host byte order
-	addr_in.sin_port  = htons(usPort); // short, network byte order
-	addr_in.sin_addr  = *((struct in_addr *)he->h_addr);
-
-	// set to non-blocking before connect
+    sockaddr_in addr_in= {0};
+    struct hostent *he;
+    
+    if (m_hSocket == INVALID_SOCKET){
+        return(false);
+    }
+    
+    if ((he = gethostbyname(pAddrStr)) == NULL)
+        return(false);
+    
+    addr_in.sin_family= AF_INET; // host byte order
+    addr_in.sin_port  = htons(usPort); // short, network byte order
+    addr_in.sin_addr  = *((struct in_addr *)he->h_addr);
+    
+    // set to non-blocking before connect
     bool wasBlocking = nonBlocking;
-	if(m_dwTimeoutConnect != NO_TIMEOUT){
-		SetNonBlocking(true);
-	}
-
+    if(m_dwTimeoutConnect != NO_TIMEOUT){
+        SetNonBlocking(true);
+    }
+    
     int ret = connect(m_hSocket, (sockaddr *)&addr_in, sizeof(sockaddr));
     int err = ofxNetworkGetLastError(); int errline=__LINE__;
-	if( ret < 0 ){
-		// set a timeout
-		if ((err == OFXNETWORK_ERROR(INPROGRESS) || err == OFXNETWORK_ERROR(WOULDBLOCK)) && m_dwTimeoutConnect != NO_TIMEOUT) {
-			ret = WaitSend(m_dwTimeoutConnect, 0);
-			if(ret == 0) {
-				socklen_t len = sizeof err;
-				if (getsockopt(m_hSocket, SOL_SOCKET, SO_ERROR, (char*)&err, &len)<0){
-					ret = SOCKET_ERROR;
-				}else if(err != 0) {
-					ret = SOCKET_ERROR;
-				} 
-			}
-		}else{
-			ofxNetworkLogError( err, __FILE__, errline );
-		}
-	}
+    if( ret < 0 ){
+        // set a timeout
+        if ((err == OFXNETWORK_ERROR(INPROGRESS) || err == OFXNETWORK_ERROR(WOULDBLOCK)) && m_dwTimeoutConnect != NO_TIMEOUT) {
+            ret = WaitSend(m_dwTimeoutConnect, 0);
+            if(ret == 0) {
+                socklen_t len = sizeof err;
+                if (getsockopt(m_hSocket, SOL_SOCKET, SO_ERROR, (char*)&err, &len)<0){
+                    ret = SOCKET_ERROR;
+                }else if(err != 0) {
+                    ret = SOCKET_ERROR;
+                }
+            }
+        }else{
+            ofxNetworkLogError( err, __FILE__, errline );
+        }
+    }
     
-
-	if(m_dwTimeoutConnect != NO_TIMEOUT){
-		SetNonBlocking(wasBlocking);
-	}
     
-	return ret>=0;
+    if(m_dwTimeoutConnect != NO_TIMEOUT){
+        SetNonBlocking(wasBlocking);
+    }
+    
+    return ret>=0;
 }
 
 //--------------------------------------------------------------------------------
 int ofxTCPManager::WaitReceive(time_t timeoutSeconds, time_t timeoutMicros){
-	if (m_hSocket == INVALID_SOCKET) return SOCKET_ERROR;
-
-	fd_set fd;
-	FD_ZERO(&fd);
-	FD_SET(m_hSocket, &fd);
-	timeval	tv;
-	tv.tv_sec = timeoutSeconds;
-	tv.tv_usec = timeoutMicros;
-	auto ret = select(m_hSocket+1,&fd,NULL,NULL,&tv);
-	if(ret == 0){
-		return SOCKET_TIMEOUT;
-	}else if(ret < 0){
-		return SOCKET_ERROR;
-	}else{
-		return 0;
-	}
+    if (m_hSocket == INVALID_SOCKET) return SOCKET_ERROR;
+    
+    fd_set fd;
+    FD_ZERO(&fd);
+    FD_SET(m_hSocket, &fd);
+    timeval	tv;
+    tv.tv_sec = timeoutSeconds;
+    tv.tv_usec = timeoutMicros;
+    auto ret = select(m_hSocket+1,&fd,NULL,NULL,&tv);
+    if(ret == 0){
+        return SOCKET_TIMEOUT;
+    }else if(ret < 0){
+        return SOCKET_ERROR;
+    }else{
+        return 0;
+    }
 }
 
 //--------------------------------------------------------------------------------
 int ofxTCPManager::WaitSend(time_t timeoutSeconds, time_t timeoutMicros){
-	if (m_hSocket == INVALID_SOCKET) return SOCKET_ERROR;
-
-	fd_set fd;
-	FD_ZERO(&fd);
-	FD_SET(m_hSocket, &fd);
-	timeval	tv;
-	tv.tv_sec = timeoutSeconds;
-	tv.tv_usec = timeoutMicros;
-	auto ret = select(m_hSocket+1,NULL,&fd,NULL,&tv);
-	if(ret == 0){
-		return SOCKET_TIMEOUT;
-	}else if(ret < 0){
-		return SOCKET_ERROR;
-	}else{
-		return 0;
-	}
+    if (m_hSocket == INVALID_SOCKET) return SOCKET_ERROR;
+    
+    fd_set fd;
+    FD_ZERO(&fd);
+    FD_SET(m_hSocket, &fd);
+    timeval	tv;
+    tv.tv_sec = timeoutSeconds;
+    tv.tv_usec = timeoutMicros;
+    auto ret = select(m_hSocket+1,NULL,&fd,NULL,&tv);
+    if(ret == 0){
+        return SOCKET_TIMEOUT;
+    }else if(ret < 0){
+        return SOCKET_ERROR;
+    }else{
+        return 0;
+    }
 }
 
 //--------------------------------------------------------------------------------
 bool ofxTCPManager::SetNonBlocking(bool useNonBlocking)
 {
-	//if(useNonBlocking==nonBlocking){
-		//return true;
-	//}
+    //if(useNonBlocking==nonBlocking){
+    //return true;
+    //}
     auto prevNonBlocking = nonBlocking;
     nonBlocking = useNonBlocking;
-
-	#ifdef TARGET_WIN32
-		unsigned long arg = nonBlocking;
-		int retVal = ioctlsocket(m_hSocket,FIONBIO,&arg);
-	#else
-		int flags = fcntl(m_hSocket, F_GETFL, 0);
-		int retVal;
-		if(useNonBlocking){
-			retVal = fcntl(m_hSocket, F_SETFL, flags | O_NONBLOCK);
-		}else{
-			retVal = fcntl(m_hSocket, F_SETFL, flags & ~O_NONBLOCK);
-		}
-	#endif
-
-	bool ret = (retVal >= 0);
-	if(!ret){
-		ofxNetworkLogLastError();
-		nonBlocking = prevNonBlocking;
-	}
-
-	return ret;
+    
+#ifdef TARGET_WIN32
+    unsigned long arg = nonBlocking;
+    int retVal = ioctlsocket(m_hSocket,FIONBIO,&arg);
+#else
+    int flags = fcntl(m_hSocket, F_GETFL, 0);
+    int retVal;
+    if(useNonBlocking){
+        retVal = fcntl(m_hSocket, F_SETFL, flags | O_NONBLOCK);
+    }else{
+        retVal = fcntl(m_hSocket, F_SETFL, flags & ~O_NONBLOCK);
+    }
+#endif
+    
+    bool ret = (retVal >= 0);
+    if(!ret){
+        ofxNetworkLogLastError();
+        nonBlocking = prevNonBlocking;
+    }
+    
+    return ret;
 }
 
 bool ofxTCPManager::IsNonBlocking(){
@@ -413,21 +413,21 @@ bool ofxTCPManager::IsNonBlocking(){
 //--------------------------------------------------------------------------------
 int ofxTCPManager::Write(const char* pBuff, const int iSize)
 {
-	int iBytesSent= 0;
-	int iBytesTemp;
-	const char* pTemp= pBuff;
-
-	do {
-		iBytesTemp= Send(pTemp, iSize - iBytesSent);
-		// error occured?
-		if (iBytesTemp == SOCKET_ERROR) return(SOCKET_ERROR);
-		if (iBytesTemp == SOCKET_TIMEOUT) return(SOCKET_TIMEOUT);
-
-		iBytesSent+= iBytesTemp;
-		pTemp+= iBytesTemp;
-	} while(iBytesSent < iSize);
-
-	return(iBytesSent);
+    int iBytesSent= 0;
+    int iBytesTemp;
+    const char* pTemp= pBuff;
+    
+    do {
+        iBytesTemp= Send(pTemp, iSize - iBytesSent);
+        // error occured?
+        if (iBytesTemp == SOCKET_ERROR) return(SOCKET_ERROR);
+        if (iBytesTemp == SOCKET_TIMEOUT) return(SOCKET_TIMEOUT);
+        
+        iBytesSent+= iBytesTemp;
+        pTemp+= iBytesTemp;
+    } while(iBytesSent < iSize);
+    
+    return(iBytesSent);
 }
 
 //--------------------------------------------------------------------------------
@@ -437,14 +437,14 @@ int ofxTCPManager::Write(const char* pBuff, const int iSize)
 int ofxTCPManager::Send(const char* pBuff, const int iSize)
 {
     if (m_hSocket == INVALID_SOCKET) return(SOCKET_ERROR);
-
+    
     if (m_dwTimeoutSend	!= NO_TIMEOUT){
-		auto ret = WaitSend(m_dwTimeoutSend,0);
-		if(ret!=0){
-			return ret;
-		}
-	}
-	return send(m_hSocket, pBuff, iSize, 0);
+        auto ret = WaitSend(m_dwTimeoutSend,0);
+        if(ret!=0){
+            return ret;
+        }
+    }
+    return send(m_hSocket, pBuff, iSize, 0);
 }
 
 //--------------------------------------------------------------------------------
@@ -453,41 +453,41 @@ int ofxTCPManager::Send(const char* pBuff, const int iSize)
 /// SOCKET_ERROR in case of a problem.
 int ofxTCPManager::SendAll(const char* pBuff, const int iSize)
 {
-	if (m_hSocket == INVALID_SOCKET) return(SOCKET_ERROR);
-
-	auto timestamp = ofGetElapsedTimeMicros();
-	auto timeleftSecs = m_dwTimeoutSend;
-	auto timeleftMicros = 0;
-	int total= 0;
-	int bytesleft = iSize;
-	int ret=-1;
-
-	while (total < iSize) {
-		if (m_dwTimeoutSend	!= NO_TIMEOUT){
-			auto ret = WaitSend(timeleftSecs,timeleftMicros);
-			if(ret!=0){
-				return ret;
-			}
-		}
-		ret = send(m_hSocket, pBuff + total, bytesleft, 0);
-		if (ret == SOCKET_ERROR) {
-			return SOCKET_ERROR;
-		}
-		total += ret;
-		bytesleft -=ret;
-		if (m_dwTimeoutSend	!= NO_TIMEOUT){
-			auto now = ofGetElapsedTimeMicros();
-			auto diff = now - timestamp;
-			if (diff > m_dwTimeoutSend * 1000000){
-				return SOCKET_TIMEOUT;
-			}
-			float timeFloat = m_dwTimeoutSend - diff/1000000.;
-			timeleftSecs = timeFloat;
-			timeleftMicros = (timeFloat - timeleftSecs) * 1000000;
-		}
-	}
-
-	return total;
+    if (m_hSocket == INVALID_SOCKET) return(SOCKET_ERROR);
+    
+    auto timestamp = ofGetElapsedTimeMicros();
+    auto timeleftSecs = m_dwTimeoutSend;
+    auto timeleftMicros = 0;
+    int total= 0;
+    int bytesleft = iSize;
+    int ret=-1;
+    
+    while (total < iSize) {
+        if (m_dwTimeoutSend	!= NO_TIMEOUT){
+            auto ret = WaitSend(timeleftSecs,timeleftMicros);
+            if(ret!=0){
+                return ret;
+            }
+        }
+        ret = send(m_hSocket, pBuff + total, bytesleft, 0);
+        if (ret == SOCKET_ERROR) {
+            return SOCKET_ERROR;
+        }
+        total += ret;
+        bytesleft -=ret;
+        if (m_dwTimeoutSend	!= NO_TIMEOUT){
+            auto now = ofGetElapsedTimeMicros();
+            auto diff = now - timestamp;
+            if (diff > m_dwTimeoutSend * 1000000){
+                return SOCKET_TIMEOUT;
+            }
+            float timeFloat = m_dwTimeoutSend - diff/1000000.;
+            timeleftSecs = timeFloat;
+            timeleftMicros = (timeFloat - timeleftSecs) * 1000000;
+        }
+    }
+    
+    return total;
 }
 
 
@@ -499,14 +499,14 @@ int ofxTCPManager::SendAll(const char* pBuff, const int iSize)
 int ofxTCPManager::Receive(char* pBuff, const int iSize)
 {
     if (m_hSocket == INVALID_SOCKET) return(SOCKET_ERROR);
-
-	if (m_dwTimeoutReceive	!= NO_TIMEOUT){
-		auto ret = WaitReceive(m_dwTimeoutReceive,0);
-		if(ret!=0){
-			return ret;
-		}
-	}
-	return recv(m_hSocket, pBuff, iSize, 0);
+    
+    if (m_dwTimeoutReceive	!= NO_TIMEOUT){
+        auto ret = WaitReceive(m_dwTimeoutReceive,0);
+        if(ret!=0){
+            return ret;
+        }
+    }
+    return recv(m_hSocket, pBuff, iSize, 0);
 }
 
 
@@ -518,16 +518,16 @@ int ofxTCPManager::Receive(char* pBuff, const int iSize)
 ///
 int ofxTCPManager::PeekReceive(char* pBuff, const int iSize)
 {
-	if (m_hSocket == INVALID_SOCKET) return(SOCKET_ERROR);
-
-	if (m_dwTimeoutReceive	!= NO_TIMEOUT){
-		auto ret = WaitReceive(m_dwTimeoutReceive,0);
-		if(ret!=0){
-			return ret;
-		}
-	}
- 
-	return recv(m_hSocket, pBuff, iSize, MSG_PEEK);
+    if (m_hSocket == INVALID_SOCKET) return(SOCKET_ERROR);
+    
+    if (m_dwTimeoutReceive	!= NO_TIMEOUT){
+        auto ret = WaitReceive(m_dwTimeoutReceive,0);
+        if(ret!=0){
+            return ret;
+        }
+    }
+    
+    return recv(m_hSocket, pBuff, iSize, MSG_PEEK);
 }
 
 //--------------------------------------------------------------------------------
@@ -536,166 +536,166 @@ int ofxTCPManager::PeekReceive(char* pBuff, const int iSize)
 /// SOCKET_ERROR in case of a problem.
 int ofxTCPManager::ReceiveAll(char* pBuff, const int iSize)
 {
-	if (m_hSocket == INVALID_SOCKET) return(SOCKET_ERROR);
-
-	auto timestamp = ofGetElapsedTimeMicros();
-	auto timeleftSecs = m_dwTimeoutReceive;
-	auto timeleftMicros = 0;
-	int totalBytes=0;
-
-	do {
-		if (m_dwTimeoutReceive	!= NO_TIMEOUT){
-			auto ret = WaitReceive(timeleftSecs, timeleftMicros);
-			if(ret!=0){
-				return ret;
-			}
-		}
-		int ret = recv(m_hSocket, pBuff+totalBytes, iSize-totalBytes, 0);
-		if (ret==0 && totalBytes != iSize){
-			return SOCKET_ERROR;
-		}
-		if (ret < 0){
-			return SOCKET_ERROR;
-		}
-		totalBytes += ret;
-
-		if (m_dwTimeoutReceive	!= NO_TIMEOUT){
-			auto now = ofGetElapsedTimeMicros();
-			auto diff = now - timestamp;
-			if(diff > m_dwTimeoutReceive){
-				return SOCKET_TIMEOUT;
-			}
-			float timeFloat = m_dwTimeoutSend - diff/1000000.;
-			timeleftSecs = timeFloat;
-			timeleftMicros = (timeFloat - timeleftSecs) * 1000000;
-		}
-	}while(totalBytes < iSize);
-
-	return totalBytes;
+    if (m_hSocket == INVALID_SOCKET) return(SOCKET_ERROR);
+    
+    auto timestamp = ofGetElapsedTimeMicros();
+    auto timeleftSecs = m_dwTimeoutReceive;
+    auto timeleftMicros = 0;
+    int totalBytes=0;
+    
+    do {
+        if (m_dwTimeoutReceive	!= NO_TIMEOUT){
+            auto ret = WaitReceive(timeleftSecs, timeleftMicros);
+            if(ret!=0){
+                return ret;
+            }
+        }
+        int ret = recv(m_hSocket, pBuff+totalBytes, iSize-totalBytes, 0);
+        if (ret==0 && totalBytes != iSize){
+            return SOCKET_ERROR;
+        }
+        if (ret < 0){
+            return SOCKET_ERROR;
+        }
+        totalBytes += ret;
+        
+        if (m_dwTimeoutReceive	!= NO_TIMEOUT){
+            auto now = ofGetElapsedTimeMicros();
+            auto diff = now - timestamp;
+            if(diff > m_dwTimeoutReceive){
+                return SOCKET_TIMEOUT;
+            }
+            float timeFloat = m_dwTimeoutSend - diff/1000000.;
+            timeleftSecs = timeFloat;
+            timeleftMicros = (timeFloat - timeleftSecs) * 1000000;
+        }
+    }while(totalBytes < iSize);
+    
+    return totalBytes;
 }
 
 //--------------------------------------------------------------------------------
 bool ofxTCPManager::GetRemoteAddr(LPINETADDR pInetAddr)
 {
-  if (m_hSocket == INVALID_SOCKET) return(false);
-
-	#ifndef TARGET_WIN32
-		socklen_t iSize;
-	#else
-		int iSize;
-	#endif
-
-	iSize= sizeof(sockaddr);
-	bool ret = (getpeername(m_hSocket, (sockaddr *)pInetAddr, &iSize) != SOCKET_ERROR);
-	if(!ret) ofxNetworkLogLastError();
-	return ret;
+    if (m_hSocket == INVALID_SOCKET) return(false);
+    
+#ifndef TARGET_WIN32
+    socklen_t iSize;
+#else
+    int iSize;
+#endif
+    
+    iSize= sizeof(sockaddr);
+    bool ret = (getpeername(m_hSocket, (sockaddr *)pInetAddr, &iSize) != SOCKET_ERROR);
+    if(!ret) ofxNetworkLogLastError();
+    return ret;
 }
 
 //--------------------------------------------------------------------------------
 bool ofxTCPManager::GetInetAddr(LPINETADDR pInetAddr)
 {
-  if (m_hSocket == INVALID_SOCKET) return(false);
-
-	#ifndef TARGET_WIN32
-		socklen_t iSize;
-	#else
-		int iSize;
-	#endif
-
-	iSize= sizeof(sockaddr);
-	bool ret = (getsockname(m_hSocket, (sockaddr *)pInetAddr, &iSize) != SOCKET_ERROR);
-	if(!ret) ofxNetworkLogLastError();
-	return ret;
+    if (m_hSocket == INVALID_SOCKET) return(false);
+    
+#ifndef TARGET_WIN32
+    socklen_t iSize;
+#else
+    int iSize;
+#endif
+    
+    iSize= sizeof(sockaddr);
+    bool ret = (getsockname(m_hSocket, (sockaddr *)pInetAddr, &iSize) != SOCKET_ERROR);
+    if(!ret) ofxNetworkLogLastError();
+    return ret;
 }
 
 void ofxTCPManager::SetTimeoutConnect(int timeoutInSeconds) {
-	m_dwTimeoutConnect= timeoutInSeconds;
+    m_dwTimeoutConnect= timeoutInSeconds;
 }
 void ofxTCPManager::SetTimeoutSend(int timeoutInSeconds) {
-	m_dwTimeoutSend= timeoutInSeconds;
+    m_dwTimeoutSend= timeoutInSeconds;
 }
 void ofxTCPManager::SetTimeoutReceive(int timeoutInSeconds) {
-	m_dwTimeoutReceive= timeoutInSeconds;
+    m_dwTimeoutReceive= timeoutInSeconds;
 }
 void ofxTCPManager::SetTimeoutAccept(int timeoutInSeconds) {
-	m_dwTimeoutAccept= timeoutInSeconds;
+    m_dwTimeoutAccept= timeoutInSeconds;
 }
 int ofxTCPManager::GetTimeoutConnect() {
-	return m_dwTimeoutConnect;
+    return m_dwTimeoutConnect;
 }
 int ofxTCPManager::GetTimeoutSend() {
-	return m_dwTimeoutSend;
+    return m_dwTimeoutSend;
 }
 int ofxTCPManager::GetTimeoutReceive() {
-	return m_dwTimeoutReceive;
+    return m_dwTimeoutReceive;
 }
 int ofxTCPManager::GetTimeoutAccept() {
-	return m_dwTimeoutAccept;
+    return m_dwTimeoutAccept;
 }
 
 int ofxTCPManager::GetReceiveBufferSize() {
-	if (m_hSocket == INVALID_SOCKET) return(false);
-
-	#ifndef TARGET_WIN32
-		socklen_t size;
-	#else
-		int size;
-	#endif
-
-	int sizeBuffer=0;
-	size = sizeof(int);
-	int ret = getsockopt(m_hSocket, SOL_SOCKET, SO_RCVBUF, (char*)&sizeBuffer, &size);
-	if(ret==-1) ofxNetworkLogLastError();
-	return sizeBuffer;
+    if (m_hSocket == INVALID_SOCKET) return(false);
+    
+#ifndef TARGET_WIN32
+    socklen_t size;
+#else
+    int size;
+#endif
+    
+    int sizeBuffer=0;
+    size = sizeof(int);
+    int ret = getsockopt(m_hSocket, SOL_SOCKET, SO_RCVBUF, (char*)&sizeBuffer, &size);
+    if(ret==-1) ofxNetworkLogLastError();
+    return sizeBuffer;
 }
 
 bool ofxTCPManager::SetReceiveBufferSize(int sizeInByte) {
-	if (m_hSocket == INVALID_SOCKET) return(false);
-
-	if ( setsockopt(m_hSocket, SOL_SOCKET, SO_RCVBUF, (char*)&sizeInByte, sizeof(sizeInByte)) == 0){
-		return true;
-	}else{
-		ofxNetworkLogLastError();
-		return false;
-	}
+    if (m_hSocket == INVALID_SOCKET) return(false);
+    
+    if ( setsockopt(m_hSocket, SOL_SOCKET, SO_RCVBUF, (char*)&sizeInByte, sizeof(sizeInByte)) == 0){
+        return true;
+    }else{
+        ofxNetworkLogLastError();
+        return false;
+    }
 }
 
 int ofxTCPManager::GetSendBufferSize() {
-	if (m_hSocket == INVALID_SOCKET) return(false);
-
-	#ifndef TARGET_WIN32
-		socklen_t size;
-	#else
-		int size;
-	#endif
-
-	int sizeBuffer=0;
-	size = sizeof(int);
-	int ret = getsockopt(m_hSocket, SOL_SOCKET, SO_SNDBUF, (char*)&sizeBuffer, &size);
-	if(ret==-1) ofxNetworkLogLastError();
-	return sizeBuffer;
+    if (m_hSocket == INVALID_SOCKET) return(false);
+    
+#ifndef TARGET_WIN32
+    socklen_t size;
+#else
+    int size;
+#endif
+    
+    int sizeBuffer=0;
+    size = sizeof(int);
+    int ret = getsockopt(m_hSocket, SOL_SOCKET, SO_SNDBUF, (char*)&sizeBuffer, &size);
+    if(ret==-1) ofxNetworkLogLastError();
+    return sizeBuffer;
 }
 
 bool ofxTCPManager::SetSendBufferSize(int sizeInByte) {
-	if (m_hSocket == INVALID_SOCKET) return(false);
-
-	if ( setsockopt(m_hSocket, SOL_SOCKET, SO_SNDBUF, (char*)&sizeInByte, sizeof(sizeInByte)) == 0){
-		return true;
-	}else{
-		ofxNetworkLogLastError();
-		return false;
-	}
+    if (m_hSocket == INVALID_SOCKET) return(false);
+    
+    if ( setsockopt(m_hSocket, SOL_SOCKET, SO_SNDBUF, (char*)&sizeInByte, sizeof(sizeInByte)) == 0){
+        return true;
+    }else{
+        ofxNetworkLogLastError();
+        return false;
+    }
 }
 
 int ofxTCPManager::GetMaxConnections() {
-  return m_iMaxConnections;
+    return m_iMaxConnections;
 }
 
 bool ofxTCPManager::CheckHost(const char *pAddrStr) {
-  hostent * hostEntry;
-  in_addr iaHost;
-  iaHost.s_addr = inet_addr(pAddrStr);
-  hostEntry = gethostbyaddr((const char *)&iaHost, sizeof(struct in_addr), AF_INET);
-  return ((!hostEntry) ? false : true);
+    hostent * hostEntry;
+    in_addr iaHost;
+    iaHost.s_addr = inet_addr(pAddrStr);
+    hostEntry = gethostbyaddr((const char *)&iaHost, sizeof(struct in_addr), AF_INET);
+    return ((!hostEntry) ? false : true);
 }
 
