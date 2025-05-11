@@ -9,6 +9,7 @@
 #include <vector>
 #include <cstdlib>
 #include "tcb/span.hpp"
+#include <iterator>
 
 struct point2
 {
