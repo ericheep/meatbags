@@ -22,7 +22,17 @@ This project also uses a modified version of ofxNetwork that is extended to cont
 
 After opening and closing the application Meatbags will create a batch of JSON files that are automatically loaded on startup with the option to auto-save on exit. These hold the configuration state of the application and allow easy startup for art install scenarios. 
 
-This software is provided free for artists to use in their art installs and free for educational purposes. For commercial purposes email me at ericheep@gmail.com. Read the [license](https://github.com/ericheep/meatbags/blob/main/LICENSE.md) for further terms.
+Meatbags is meant to be used as companion software to creative coding applications. After a configuration is set it is recommended to toggle __headless mode__ and run Meatbags as a background application. It can be set to send OSC out, the OSC schema is provided below:
+
+
+    /blob index x y width height laserIntensity filterIndex1 filterIndex2 ...
+    /blobsActive index1 index2 ...
+    /filter index isAnyBlobInside closestBlobDistanceToFilterCentroid
+    /generalStatus sensorIndex status
+    /laserStatus sensorIndex status
+    /connectionStatus sensorIndex status
+
+__Created by artists for artists.__ This software is provided free for artists to use in their art installs and free for educational purposes. For commercial purposes email me at ericheep@gmail.com. Read the [license](https://github.com/ericheep/meatbags/blob/main/LICENSE.md) for further terms.
 
 ## external code
 
