@@ -20,6 +20,7 @@ public:
     MemoryFont();
     
     void draw(string text, float x, float y);
+    float getStringWidth(string text);
     void setSize(int size);
     
     void setBold();

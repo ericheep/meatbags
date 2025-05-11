@@ -8,12 +8,14 @@
 #include <stdio.h>
 #include "ofMain.h"
 #include "Filter.hpp"
+#include "Blob.hpp"
 
 class Filters {
 public:
     Filters();
     
     void update();
+    void checkBlobs(vector<Blob> & blobs);
     void addFilter(Filter* filter);
     void removeFilter();
     

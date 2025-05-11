@@ -54,6 +54,26 @@ void Filter::update() {
     }
 }
 
+void Filter::checkBlobs(vector<Blob> & blobs) {
+    isBlobInside = false;
+    distanceOfClosestBlob = std::numeric_limits<float>::infinity();
+    
+    for (auto & blob : blobs) {
+        // millimeters to meters
+        float x = blob.centroid.x * 0.001;
+        float y = blob.centroid.y * 0.001;
+        
+        if (polyline.inside(x, y)) {
+            isBlobInside = true;
+            float distance = centroid.distance(ofPoint(x, y));
+            
+            if (distance < distanceOfClosestBlob) {
+                distanceOfClosestBlob = distance;
+            }
+        }
+    }
+}
+
 void Filter::setTranslation(ofPoint _translation) {
     translation = _translation;
 }

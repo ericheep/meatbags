@@ -19,7 +19,7 @@
 #include "MemoryFont.hpp"
 #include "InterfaceSelector.hpp"
 
-#define VERSION "v0.4.1"
+#define VERSION "v0.4.2"
 
 class ofApp : public ofBaseApp{
 public:
@@ -36,6 +36,10 @@ public:
     void keyPressed(int key) override;
     void keyReleased(int key) override;
 
+    void drawMeatbags();
+    void drawHelpText();
+    void drawSaveNotification();
+    
     void drawFps();
     void save();
     
@@ -109,9 +113,10 @@ public:
     ofParameter<ofPoint> translation;
     ofParameter<string> localIPAddress;
     
-    MemoryFont titleFont, headlessFont;
+    MemoryFont titleFont, headlessFont, saveFont;
     
     // viewer parameters
     ofParameter<float> areaSize;
-    bool moveActive;
+    float saveNotificationTimer, saveNotificationTotalTime;
+    bool moveActive, ctrlKeyActive;
 };

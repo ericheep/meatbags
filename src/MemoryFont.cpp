@@ -73,6 +73,18 @@ void MemoryFont::setSize(int size) {
     buildGlyphs();
 }
 
+float MemoryFont::getStringWidth(string text) {
+    float stringWidth = 0;
+    for (char ch : text) {
+        unsigned char c = (unsigned char)ch;
+        if (c >= 128) continue;
+        
+        stringWidth += glyphWidths[c];
+    }
+    
+    return stringWidth;
+}
+
 void MemoryFont::draw(string text, float x, float y) {
     for (char ch : text) {
         unsigned char c = (unsigned char)ch;

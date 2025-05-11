@@ -19,7 +19,8 @@ public:
 
     void setOscSenderAddress(string& oscSenderAddress);
     void setOscSenderPort(int& oscSenderPort);
-    void sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters & filters);
+    void sendBlobOsc(vector<Blob> & blobs, Filters & filters);
+    void sendFilterOsc(vector<Blob> & blobs, Filters & filtere);
     void sendLogs(Sensors & sensors);
     
     ofxOscSender oscSender;
@@ -27,8 +28,9 @@ public:
     ofParameter<string> oscSenderAddress;
     ofParameter<int> oscSenderPort;
     ofParameter<bool> sendBlobsActive;
+    ofParameter<bool> sendFiltersActive;
     ofParameter<bool> sendLogsActive;
-    
+
     string lastConnectionStatus, lastLaserStatus, lastGeneralStatus;
 };
 

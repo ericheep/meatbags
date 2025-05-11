@@ -13,6 +13,12 @@ void Filters::update() {
     }
 }
 
+void Filters::checkBlobs(vector<Blob> & blobs) {
+    for (auto & filter : filters) {
+        filter->checkBlobs(blobs);
+    }
+}
+
 void Filters::setSpace(Space & _space) {    
     for (auto & filter : filters) {
         filter->setSpace(_space);

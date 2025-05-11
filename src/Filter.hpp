@@ -9,6 +9,7 @@
 #include "ofMain.h"
 #include "DraggablePoint.hpp"
 #include "Space.h"
+#include "Blob.hpp"
 
 class Filter {
 public:
@@ -16,6 +17,7 @@ public:
     ~Filter();
         
     void update();
+    void checkBlobs(vector<Blob> & blobs);
     void setNumberPoints(int numberPoints);
     void setSpace(Space & space);
     void setTranslation(ofPoint translation);
@@ -32,6 +34,8 @@ public:
     float scale;
     int numberPoints;
     int index;
+    bool isBlobInside;
+    float distanceOfClosestBlob;
     
     ofPoint translation;
     Space space;

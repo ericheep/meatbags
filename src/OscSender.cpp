@@ -27,9 +27,7 @@ void OscSender::setOscSenderPort(int& oscSenderPort) {
     oscSender.setup(oscSenderAddress, oscSenderPort);
 }
 
-void OscSender::sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters & filters) {
-    if (!sendBlobsActive) return;
-    
+void OscSender::sendBlobOsc(vector<Blob> & blobs, Filters & filters) {
     ofxOscMessage blobsActiveMsg;
     blobsActiveMsg.setAddress("/blobsActive");
     
@@ -48,7 +46,6 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters &
         msg.addFloatArg(blob.bounds.width);
         msg.addFloatArg(blob.bounds.height);
         msg.addFloatArg(blob.intensity);
-        msg.addFloatArg(blob.distanceFromSensor * 0.001);
         
         // sends out which filter(s) the blob is in
         for (auto & filter : filters.filters) {
@@ -63,9 +60,22 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters &
     oscSender.sendMessage(blobsActiveMsg);
 }
 
-void OscSender::sendLogs(Sensors & sensors) {
-    if (!sendLogsActive) return;
+void OscSender::sendFilterOsc(vector<Blob> & blobs, Filters & filters) {
+    for (auto & filter : filters.filters) {
+        ofxOscMessage msg;
+        msg.setAddress("/filter");
+        
+        msg.addIntArg(filter->index);
+        msg.addIntArg(filter->isBlobInside);
 
+        if (filter->isBlobInside) msg.addFloatArg(filter->distanceOfClosestBlob);
+        
+        oscSender.sendMessage(msg);
+    }
+}
+
+
+void OscSender::sendLogs(Sensors & sensors) {
     for (auto & sensor : sensors.hokuyos) {
         string connectionStatus = sensor->connectionStatus;
         string generalStatus = sensor->status;
