@@ -14,7 +14,9 @@ This project was developed with openFrameowrks v0.12.0, it uses the following op
 - ofxGui
 - ofxOsc
 
-This project also uses a modified version of ofxNetwork that is extended to control which ethernet adapter Meatbags uses to create its TCP connections. This modified addon is part of the source code.
+Additionally, this project uses the [ofxDropdown](https://github.com/roymacdonald/ofxDropdown) addon and must be included in your addons folder if you're buliding this project from source.
+
+This project also uses a modified version of ofxNetwork that is extended to control which ethernet adapter Meatbags uses to create its TCP connections. This modified version is included in the source code.
 
 ## use
 
