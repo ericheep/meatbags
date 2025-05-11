@@ -311,7 +311,7 @@ void Viewer::drawFilter(Filter * filter) {
 
 void Viewer::drawDraggablePoints(Filter * filter) {
     ofColor filterColor = ofColor::magenta;
-    if (filter->isBlobInside) filterColor.a = 150;
+    if (!filter->isBlobInside) filterColor.a = 150;
     if (filter->mask) filterColor = ofColor::lightPink;
     
     for (auto position : filter->positions) {
