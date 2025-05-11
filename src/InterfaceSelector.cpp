@@ -79,9 +79,9 @@ void InterfaceSelector::listInterfaces() {
         interfaceAndIP ifaip;
         ifaip.IP = ip;
         ifaip.interface = ifa->ifa_name;
-
         string interfaceAndIP = ifaip.interface + ": " + ifaip.IP;
-        ifaip.interfaceAndIP = interfaceAndIP;
+
+        ifaip.interfaceAndIPString = interfaceAndIP;
 
         interfaces.push_back(ifaip);
         interfacesStrings.push_back(interfaceAndIP);
