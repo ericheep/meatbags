@@ -30,10 +30,14 @@ void OscSender::setOscSenderPort(int& oscSenderPort) {
 void OscSender::sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters & filters) {
     if (!sendBlobsActive) return;
     
+    ofxOscMessage blobsActiveMsg;
+    blobsActiveMsg.setAddress("/blobsActive");
+    
     for (auto & blob : blobs) {
         ofxOscMessage msg;
         msg.setAddress("/blob");
         msg.addIntArg(blob.index);
+        blobsActiveMsg.addIntArg(blob.index);
         
         // millimeters to meters
         float x = blob.centroid.x * 0.001;
@@ -55,6 +59,8 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Meatbags & meatbags, Filters &
     
         oscSender.sendMessage(msg);
     }
+    
+    oscSender.sendMessage(blobsActiveMsg);
 }
 
 void OscSender::sendLogs(Sensors & sensors) {
