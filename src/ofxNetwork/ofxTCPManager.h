@@ -178,6 +178,7 @@ public:
 	bool Connect(const char *pAddrStr, unsigned short usPort);
 	bool Bind(unsigned short usPort, bool bReuse = false);
     bool BindToDeviceIP(const std::string& localIP, unsigned short port = 0, bool reuse = true);
+    bool SelectInterface(const std::string interface);
 	bool Accept(ofxTCPManager& sock);
 	//sends the data, but it is not guaranteed that really all data will be sent
 	int  Send(const char* pBuff, const int iSize);

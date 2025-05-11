@@ -31,6 +31,7 @@ public:
     bool areNewCoordinatesAvailable();
     bool checkWithinFilters(float x, float y);
     
+    void setInterfaceAndIP(string interface, string IP);
     void setLocalIpAddress(string & localIPAddress);
     void setFilters(Filters & filters);
     void setSpace(Space & space);

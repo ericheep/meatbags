@@ -43,6 +43,12 @@ void Sensors::setLocalIpAddress(string & localIPAddress) {
     }
 }
 
+void Sensors::setInterfaceAndIP(string interface, string localIP) {
+    for (auto& hokuyo : hokuyos) {
+        hokuyo->setInterfaceAndIP(interface, localIP);
+    }
+}
+
 void Sensors::setInfoPositions(float x, float y) {
     for (auto& hokuyo : hokuyos) {
         hokuyo->setInfoPosition(x, y);

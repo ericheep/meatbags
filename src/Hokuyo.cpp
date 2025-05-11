@@ -43,6 +43,7 @@ Hokuyo::Hokuyo() {
     netmask = "255.255.255.0";
     gateway = "192.168.0.1";
     localIPAddress = "0.0.0.0";
+    interface = "";
     
     // containers
     angles.resize(angularResolution);
@@ -85,7 +86,7 @@ void Hokuyo::setSensorRotation(float &_sensorRotationDeg) {
 }
 
 void Hokuyo::threadedFunction() {
-    tcpClient.setup(ipAddress, port, false, localIPAddress);
+    tcpClient.setup(ipAddress, port, false, interface, localIPAddress);
     tcpClient.setMessageDelimiter("\012\012");
 }
 
@@ -251,6 +252,11 @@ void Hokuyo::update() {
 }
 
 // event listeners
+void Hokuyo::setInterfaceAndIP(string _interface, string _localIP) {
+    interface = _interface;
+    localIPAddress = _localIP;
+}
+
 void Hokuyo::setLocalIPAddress(string & _localIPAddress) {
     localIPAddress = _localIPAddress;
 }

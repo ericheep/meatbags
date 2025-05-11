@@ -13,8 +13,8 @@ void ofApp::setup(){
     buttonUI.numberFilters.addListener(this, &ofApp::setNumberFilters);
     buttonUI.numberOscSenders.addListener(this, &ofApp::setNumberOscSenders);
     areaSize.addListener(this, &ofApp::setAreaSize);
-    localIPAddress.addListener(this, &ofApp::setLocalIPAddress);
-    
+    interfacesDropdown.addListener(this, &ofApp::setInterface);
+
     setupSensorGuis();
     setupFilterGuis();
     setupOscSenderGuis();
@@ -30,9 +30,11 @@ void ofApp::setup(){
     
     moveActive = false;
     setTranslation();
-    
-    string _localIPAddress = localIPAddress;
-    setLocalIPAddress(_localIPAddress);
+    interfacesDropdown.disableMultipleSelection();
+    if (interfacesDropdown.getAllSelected().size() > 0) {
+        string selection = interfacesDropdown.getAllSelected()[0];
+        setInterface(selection);
+    }
 }
 
 void ofApp::setupGui() {
@@ -62,8 +64,14 @@ void ofApp::setupGui() {
     hiddenGui.add(translation.set("translation", ofPoint(0.0, 0.0)));
     hiddenGui.loadFromFile("hiddenSettings.json");
 
+    interfaceSelector.listInterfaces();
+    interfacesDropdown.add(interfaceSelector.interfacesStrings);
+    interfacesDropdown.setFillColor(ofColor::thistle);
+    interfacesDropdown.setBackgroundColor(backgroundColor);
+    interfacesDropdown.setTextColor(textColor);
+    
     meatbagsGui.setup();
-    meatbagsGui.add(localIPAddress.set("local address", "0.0.0.0"));
+    meatbagsGui.add(& interfacesDropdown);
     meatbagsGui.add(headlessMode.set("headless mode (h)", false));
     meatbagsGui.add(autoSave.set("auto save", false));
     meatbagsGui.setName("blob settings");
@@ -134,7 +142,7 @@ void ofApp::draw(){
         headlessFont.draw("(f) press while over the center of a filter to toggle mask", 15, 120);
        
         titleFont.draw("blob OSC format", 15, 160);
-        headlessFont.draw("/blob x y width height intensity distanceFromSensor filterIndex1 filterIndex2 ...", 15, 180);
+        headlessFont.draw("/blob index x y width height laserIntensity filterIndex1 filterIndex2 ...", 15, 180);
         
         titleFont.draw("logging OSC format", 15, 220);
         headlessFont.draw("/generalStatus sensorIndex status", 15, 240);
@@ -163,6 +171,13 @@ void ofApp::draw(){
     }
 
     drawFps();
+}
+
+void ofApp::setInterface(string & interfaceAndIP) {
+    string interface = interfaceSelector.getInterface(interfaceAndIP);
+    string IP = interfaceSelector.getIP(interfaceAndIP);
+    
+    sensors.setInterfaceAndIP(interface, IP);
 }
 
 void ofApp::setNumberSensors(int & numberSensors) {
@@ -251,7 +266,7 @@ void ofApp::addSensor() {
     
     float guiY = (currentIndex % 4) * 100;
     
-    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 233 + guiY));
+    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 254 + guiY));
     
     setSpace();
     setTranslation();
@@ -441,10 +456,6 @@ void ofApp::mouseDragged(int x, int y, int button){
         translation = initialTranslation - ofPoint(-x, -y);
         setTranslation();
     }
-}
-
-void ofApp::setLocalIPAddress(string & localIPAddress) {
-    sensors.setLocalIpAddress(localIPAddress);
 }
 
 void ofApp::setAreaSize(float &areaSize) {

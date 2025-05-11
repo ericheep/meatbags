@@ -134,31 +134,20 @@ bool ofxTCPManager::Create()
 	return ret;
 }
 
-
-//--------------------------------------------------------------------------------
-bool ofxTCPManager::Listen(int iMaxConnections)
-{
-	if (m_hSocket == INVALID_SOCKET) return(false);
-	m_iMaxConnections = iMaxConnections;
-	bool ret = (listen(m_hSocket, iMaxConnections)!= SOCKET_ERROR);
-	if(!ret) ofxNetworkLogLastError();
-	return ret;
-}
-
 bool ofxTCPManager::BindToDeviceIP(const std::string& localIP, unsigned short port, bool reuse)
 {
-    if (m_hSocket < 0) {
+    if (m_hSocket == INVALID_SOCKET) {
         m_hSocket = ::socket(AF_INET, SOCK_STREAM, 0);
         if (m_hSocket < 0) {
             ofxNetworkLogLastError();
             return false;
         }
     }
-        
+    
     struct sockaddr_in local;
     memset(&local, 0, sizeof(sockaddr_in));
     local.sin_family = AF_INET;
-    local.sin_port = htons(port); // 0 means ephemeral port
+    local.sin_port = htons(port);
 
     if (inet_pton(AF_INET, localIP.c_str(), &local.sin_addr) <= 0) {
         std::cerr << "Invalid local IP address: " << localIP;
@@ -181,6 +170,29 @@ bool ofxTCPManager::BindToDeviceIP(const std::string& localIP, unsigned short po
     return true;
 }
 
+bool ofxTCPManager::SelectInterface(const std::string interface) {
+    int ifIndex = if_nametoindex(interface.c_str());
+    
+    if (ifIndex > 0) {
+        if (setsockopt(m_hSocket, IPPROTO_IP, IP_BOUND_IF, &ifIndex, sizeof(ifIndex)) < 0) {
+            std::cerr << "Failed to bind to interface: " << interface << std::endl;
+        }
+    } else {
+        perror("Invalid interface name");
+    }
+    
+    return true;
+}
+
+//--------------------------------------------------------------------------------
+bool ofxTCPManager::Listen(int iMaxConnections)
+{
+	if (m_hSocket == INVALID_SOCKET) return(false);
+	m_iMaxConnections = iMaxConnections;
+	bool ret = (listen(m_hSocket, iMaxConnections)!= SOCKET_ERROR);
+	if(!ret) ofxNetworkLogLastError();
+	return ret;
+}
 
 bool ofxTCPManager::Bind(unsigned short usPort, bool bReuse)
 {

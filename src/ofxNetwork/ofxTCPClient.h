@@ -22,8 +22,8 @@ class ofxTCPClient{
 		void threadedFunction();
 
 		void setVerbose(bool _verbose);
-		bool setup(std::string ip, int _port, bool blocking = false, std::string localIP = "0.0.0.0");
-		bool setup(const ofxTCPSettings & settings, std::string localIP);
+		bool setup(std::string ip, int _port, bool blocking = false, std::string interface = "", std::string localIP = "0.0.0.0");
+		bool setup(const ofxTCPSettings & settings, std::string interface, std::string localIP);
 		void setMessageDelimiter(std::string delim);
 		bool close();
 
@@ -49,7 +49,7 @@ class ofxTCPClient{
 		//if you are trying to send something other than just ascii strings
 		bool sendRawBytes(const char * rawBytes, const int numBytes);
 
-
+        void selectInterface(std::string interface);
 		//get the message as a string
 		//this will only work with messages coming via
 		//send() and sendToAll()

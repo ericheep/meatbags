@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxNetwork.h"
 #include "ofxGui.h"
+#include "ofxDropdown.h"
 
 #include "Hokuyo.hpp"
 #include "Blob.hpp"
@@ -16,8 +17,9 @@
 #include "OscSenders.hpp"
 #include "UI.hpp"
 #include "MemoryFont.hpp"
+#include "InterfaceSelector.hpp"
 
-#define VERSION "v0.4.0"
+#define VERSION "v0.4.1"
 
 class ofApp : public ofBaseApp{
 public:
@@ -50,7 +52,7 @@ public:
     void setAutoReconnect(bool &autoReconnectActive);
     void setSensorRotation(float &sensorRotation);
     void setMirrorAngles(bool &mirrorAngles);
-    void setLocalIPAddress(string &localIPAddress);
+    void setInterface(string &interface);
     
     // bounds parameters
     void updateGuiBounds();
@@ -83,6 +85,7 @@ public:
     Space space;
     Viewer viewer;
     OscSenders oscSenders;
+    InterfaceSelector interfaceSelector;
     
     ofxPanel hiddenGui;;
     ofxPanel meatbagsGui;
@@ -92,6 +95,7 @@ public:
     vector<ofxPanel*> sensorGuis;
     vector<ofxPanel*> filterGuis;
     vector<ofxPanel*> oscSenderGuis;
+    ofxDropdown_<string> interfacesDropdown { "interfaces" };
 
     ofPoint origin, initialTranslation;
     
