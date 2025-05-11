@@ -32,7 +32,7 @@ Meatbags is meant to be used as companion software to creative coding applicatio
     /laserStatus sensorIndex status
     /connectionStatus sensorIndex status
 
-__Created by artists for artists.__ This software is provided free for artists to use in their art installs and free for educational purposes. For commercial purposes email me at ericheep@gmail.com. Read the [license](https://github.com/ericheep/meatbags/blob/main/LICENSE.md) for further terms.
+__Created by artists for artists.__ This software is provided free for artists to use in their art installs and free for educational purposes. The license is provided on my [here](https://github.com/ericheep/meatbags/blob/main/LICENSE.md). For commercial purposes email me at ericheep@gmail.com.
 
 ## external code
 
@@ -48,6 +48,7 @@ A C++11 implementation of C++20's std::span is by [tcbrindle](https://github.com
 
 ## todo
 
+- compile on Windows
 - add rectangle behind blob info
 - add circle shape to filter options
 
