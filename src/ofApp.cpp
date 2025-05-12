@@ -3,12 +3,14 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetFrameRate(60);
+    
     titleFont.setBold();
     titleFont.setSize(14);
-    headlessFont.setMedium();
-    headlessFont.setSize(14);
+    helpFont.setMedium();
+    helpFont.setSize(14);
     saveFont.setBold();
     saveFont.setSize(18);
+    
     setupGui();
     
     buttonUI.numberSensors.addListener(this, &ofApp::setNumberSensors);
@@ -40,6 +42,11 @@ void ofApp::setup(){
     
     saveNotificationTotalTime = 2.0;
     saveNotificationTimer = saveNotificationTotalTime;
+    
+    if (headlessMode) {
+        isHelpMode = true;
+        hideWindow();
+    }
 }
 
 void ofApp::setupGui() {
@@ -77,7 +84,7 @@ void ofApp::setupGui() {
     
     meatbagsGui.setup();
     meatbagsGui.add(& interfacesDropdown);
-    meatbagsGui.add(headlessMode.set("headless mode (h)", false));
+    meatbagsGui.add(headlessMode.set("start headless", false));
     meatbagsGui.add(autoSave.set("auto save", false));
     meatbagsGui.setName("blob settings");
     meatbagsGui.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
@@ -140,8 +147,8 @@ void ofApp::update(){
 void ofApp::draw(){
     ofBackground(0);
     
-    if (!headlessMode) drawMeatbags();
-    if (headlessMode) drawHelpText();
+    if (!isHelpMode) drawMeatbags();
+    if (isHelpMode) drawHelpText();
     
     drawSaveNotification();
     
@@ -172,24 +179,24 @@ void ofApp::drawHelpText() {
     ofSetColor(ofColor::thistle);
     
     titleFont.draw("meatbags " + (string)VERSION, 15, 20);
-    headlessFont.draw("headless mode", 15, 40);
+    helpFont.draw("headless mode", 15, 40);
     
-    headlessFont.draw("(h) toggle headless mode / help file", 15, 80);
-    headlessFont.draw("(m) hold and move mouse to translate grid", 15, 100);
-    headlessFont.draw("(f) press while over the center of a filter to toggle mask", 15, 120);
-    headlessFont.draw("(ctrl/cmd + s) press to save", 15, 140);
+    helpFont.draw("(h) toggle help file", 15, 80);
+    helpFont.draw("(m) hold and move mouse to translate grid", 15, 100);
+    helpFont.draw("(f) press while over the center of a filter to toggle mask", 15, 120);
+    helpFont.draw("(ctrl/cmd + s) press to save", 15, 140);
     
     titleFont.draw("blob OSC format", 15, 180);
-    headlessFont.draw("/blob index x y width height laserIntensity filterIndex1 filterIndex2 ...", 15, 200);
-    headlessFont.draw("/blobsActive index1 index2 ...", 15, 220);
+    helpFont.draw("/blob index x y width height laserIntensity filterIndex1 filterIndex2 ...", 15, 200);
+    helpFont.draw("/blobsActive index1 index2 ...", 15, 220);
     
     titleFont.draw("filter OSC format", 15, 260);
-    headlessFont.draw("/filter index isAnyBlobInside closestBlobDistanceToFilterCentroid", 15, 280);
+    helpFont.draw("/filter index isAnyBlobInside closestBlobDistanceToFilterCentroid", 15, 280);
     
     titleFont.draw("logging OSC format", 15, 320);
-    headlessFont.draw("/generalStatus sensorIndex status", 15, 340);
-    headlessFont.draw("/connectionStatus sensorIndex status", 15, 360);
-    headlessFont.draw("/laserStatus sensorIndex status", 15, 380);
+    helpFont.draw("/generalStatus sensorIndex status", 15, 340);
+    helpFont.draw("/connectionStatus sensorIndex status", 15, 360);
+    helpFont.draw("/laserStatus sensorIndex status", 15, 380);
 }
 
 void ofApp::drawSaveNotification() {
@@ -424,6 +431,19 @@ void ofApp::exit() {
     sensors.closeSensors();
 }
 
+void ofApp::hideWindow() {
+#ifdef _WIN32
+    // Get the native window handle (HWND)
+    HWND hwnd = (HWND)ofGetWin32Window();
+
+    // Minimize the window at startup
+    ShowWindow(hwnd, SW_MINIMIZE);
+#else
+    std::string applescript = "osascript -e 'tell application \"System Events\" to set visible of application process \"meatbags\" to false'";
+    ofSystem(applescript);
+#endif
+}
+
 void ofApp::save() {
     meatbagsGui.saveToFile("generalSettings.json");
     hiddenGui.saveToFile("hiddenSettings.json");
@@ -503,7 +523,7 @@ void ofApp::setAreaSize(float &areaSize) {
 
 void ofApp::keyPressed(int key) {
     if (key == 104) {
-        headlessMode = !headlessMode;
+        isHelpMode = !isHelpMode;
     }
     if (key == 109) {
         float x = ofGetMouseX();
@@ -531,4 +551,3 @@ void ofApp::keyReleased(int key) {
         moveActive = false;
     }
 }
-

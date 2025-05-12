@@ -3,8 +3,10 @@
 
 
 #ifdef _WIN32
+#include <windows.h>
+
 int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-	ofSetupOpenGL(1024, 768, OF_WINDOW);
+	ofSetupOpenGL(1200, 800, OF_WINDOW);
 	ofRunApp(new ofApp());
 	return 0;
 }
