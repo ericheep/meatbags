@@ -5,7 +5,7 @@ This project implements the Hokuyo UST-LX LiDAR protocol and clusters data to be
 
 ## installation
 
-You can download a built binary from the releases sidebar (Mac OS only) or you can compile the software using the [openFrameworks](https://openframeworks.cc/download/) architecture.
+You can download a built binary from the releases sidebar or you can compile the software using the [openFrameworks](https://openframeworks.cc/download/) architecture.
 
 If compiling from source code, I recommend using the [projectGenerator](https://openframeworks.cc/learning/01_basics/create_a_new_project/) software to import the project into your IDE of choice.
 
