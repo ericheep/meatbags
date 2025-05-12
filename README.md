@@ -27,7 +27,7 @@ Meatbags is meant to be used as companion software to creative coding applicatio
 
     /blob index x y width height laserIntensity filterIndex1 filterIndex2 ...
     /blobsActive index1 index2 ...
-    /filter index isAnyBlobInside closestBlobDistanceToFilterCentroid
+    /filter index isInhabited blobDistanceToCentroid
     /generalStatus sensorIndex status
     /laserStatus sensorIndex status
     /connectionStatus sensorIndex status
