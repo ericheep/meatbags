@@ -1,5 +1,5 @@
 # [meatbags](https://www.mit.edu/people/dpolicar/writing/prose/text/thinkingMeat.html)
-openFrameworks Hokuyo 2D LiDAR blob detection
+openFrameworks Hokuyo 2D LiDAR blob detection for macOS and Windows
 
 This project implements the Hokuyo UST-LX LiDAR protocol and clusters data to be used as blob detection for creative applications.
 
@@ -42,14 +42,16 @@ A C++11 implementation of C++20's std::span is by [tcbrindle](https://github.com
 ) also used to enable Eleobert's dbscan implementation.
 
 ## tested sensors
-
 - Hokuyo UST-10LX
 - Hokuyo UST-20LX
 
-## todo
+## tested operating systems
+- macOS Sequoia 15.4.1
+- Windows 10 Home
 
-- compile on Windows
+## todo
+- figure out polling for interfaces
 - add rectangle behind blob info
 - add circle shape to filter options
-
-![meatbags](https://github.com/user-attachments/assets/e2f610ac-3d7d-4581-a371-1cdfcdc1b13c)
+  
+<img width="1197" alt="meatbags" src="https://github.com/user-attachments/assets/dc32fad6-ec2a-4990-b48c-92b632bb3727" />
