@@ -49,10 +49,10 @@ void Viewer::drawGrid() {
     ofSetColor(ofColor::grey);
     float crossHalfLength = scale * 25;
 
-    for (int i = 0; i < (int) space.areaSize + 4; i++) {
-        int gridLineIndex = i + -( (int) space.areaSize + 4) / 2;
+    for (int i = -10; i < (int) space.areaSize + 10; i++) {
+        int gridLineIndex = i + -((int) space.areaSize / 2);
         
-        for (int j = -6; j < (int) space.areaSize + 6; j++) {
+        for (int j = -10; j < (int) space.areaSize + 10; j++) {
             float x = gridLineIndex * 1000.0 * scale + space.origin.x;
             float y = j * 1000.0 * scale + space.origin.y;
         
@@ -282,8 +282,11 @@ void Viewer::drawFilter(Filter * filter) {
     ofNoFill();
     
     ofColor filterColor = ofColor::magenta;
+
     if (!filter->isBlobInside) filterColor.a = 150;
     if (filter->mask) filterColor = ofColor::lightPink;
+    if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
+
     ofSetColor(filterColor);
     
     ofPolyline p;
@@ -313,7 +316,8 @@ void Viewer::drawDraggablePoints(Filter * filter) {
     ofColor filterColor = ofColor::magenta;
     if (!filter->isBlobInside) filterColor.a = 150;
     if (filter->mask) filterColor = ofColor::lightPink;
-    
+    if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
+
     for (auto position : filter->positions) {
         ofPoint point = position * 1000.0 * scale + space.origin;
         

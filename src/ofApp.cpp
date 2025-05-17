@@ -1,7 +1,26 @@
 #include "ofApp.h"
 
+string ofApp::getAppVersion() {
+    // Get the path to the app bundle's Info.plist
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    CFDictionaryRef infoDict = CFBundleGetInfoDictionary(mainBundle);
+
+    // Retrieve the version string
+    CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(infoDict, CFSTR("CFBundleShortVersionString"));
+    
+    // Convert the CFStringRef to a C++ string
+    char versionBuffer[256];
+    if (versionStr) {
+        CFStringGetCString(versionStr, versionBuffer, sizeof(versionBuffer), kCFStringEncodingUTF8);
+        return string(versionBuffer);
+    } else {
+        return "Unknown Version";
+    }
+}
+
 //--------------------------------------------------------------
 void ofApp::setup(){
+    version = getAppVersion();
     ofSetFrameRate(60);
     
     titleFont.setBold();
@@ -72,7 +91,7 @@ void ofApp::setupGui() {
     hiddenGui.add(buttonUI.numberSensors.set("number sensors", 1, 1, 8));
     hiddenGui.add(buttonUI.numberFilters.set("number filters", 1, 1, 15));
     hiddenGui.add(buttonUI.numberOscSenders.set("number osc senders", 1, 1, 5));
-    hiddenGui.add(areaSize.set( "area size (m)", 10.0, 0.5, 30.0));
+    hiddenGui.add(areaSize.set( "area size (m)", 10.0, 0.5, 50.0));
     hiddenGui.add(translation.set("translation", ofPoint(0.0, 0.0)));
     hiddenGui.loadFromFile("hiddenSettings.json");
     
@@ -178,25 +197,26 @@ void ofApp::drawMeatbags() {
 void ofApp::drawHelpText() {
     ofSetColor(ofColor::thistle);
     
-    titleFont.draw("meatbags " + (string)VERSION, 15, 20);
+    titleFont.draw("meatbags v" + version, 15, 20);
     helpFont.draw("headless mode", 15, 40);
     
     helpFont.draw("(h) toggle help file", 15, 80);
     helpFont.draw("(m) hold and move mouse to translate grid", 15, 100);
-    helpFont.draw("(f) press while over the center of a filter to toggle mask", 15, 120);
-    helpFont.draw("(ctrl/cmd + s) press to save", 15, 140);
+    helpFont.draw("(f) press while over the center of a filter to toggle mask/filter", 15, 120);
+    helpFont.draw("(t) press while over the center of a filter to toggle active/inactive", 15, 140);
+    helpFont.draw("(ctrl/cmd + s) press to save", 15, 160);
     
-    titleFont.draw("blob OSC format", 15, 180);
-    helpFont.draw("/blob index x y width height laserIntensity filterIndex1 filterIndex2 ...", 15, 200);
-    helpFont.draw("/blobsActive index1 index2 ...", 15, 220);
+    titleFont.draw("blob OSC format", 15, 200);
+    helpFont.draw("/blob index x y width height laserIntensity filterIndex1 filterIndex2 ...", 15, 220);
+    helpFont.draw("/blobsActive index1 index2 ...", 15, 240);
     
-    titleFont.draw("filter OSC format", 15, 260);
-    helpFont.draw("/filter index isAnyBlobInside closestBlobDistanceToFilterCentroid", 15, 280);
+    titleFont.draw("filter OSC format", 15, 280);
+    helpFont.draw("/filter index isAnyBlobInside closestBlobDistanceToFilterCentroid", 15, 300);
     
-    titleFont.draw("logging OSC format", 15, 320);
-    helpFont.draw("/generalStatus sensorIndex status", 15, 340);
-    helpFont.draw("/connectionStatus sensorIndex status", 15, 360);
-    helpFont.draw("/laserStatus sensorIndex status", 15, 380);
+    titleFont.draw("logging OSC format", 15, 340);
+    helpFont.draw("/generalStatus sensorIndex status", 15, 360);
+    helpFont.draw("/connectionStatus sensorIndex status", 15, 380);
+    helpFont.draw("/laserStatus sensorIndex status", 15, 400);
 }
 
 void ofApp::drawSaveNotification() {

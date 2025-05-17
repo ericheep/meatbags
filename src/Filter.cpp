@@ -10,6 +10,7 @@ Filter::Filter() {
     ofAddListener(ofEvents().mouseDragged, this, &Filter::onMouseDragged);
     ofAddListener(ofEvents().mouseReleased, this, &Filter::onMouseReleased);
     ofAddListener(ofEvents().keyPressed, this, &Filter::onKeyPressed);
+    isActive = true;
 }
 
 Filter::~Filter() {
@@ -175,5 +176,6 @@ void Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
 void Filter::onKeyPressed(ofKeyEventArgs& keyArgs) {
     if (centroid.isMouseOver) {
         if (keyArgs.key == 102) mask = !mask;
+        if (keyArgs.key == 116) isActive = !isActive;
     }
 }

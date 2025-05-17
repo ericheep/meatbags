@@ -138,7 +138,7 @@ bool Sensors::areNewCoordinatesAvailable() {
 bool Sensors::checkWithinFilters(float x, float y) {
     bool isWithinFilter = false;
     for (auto filter : filters.filters) {
-        if (!filter->mask) {
+        if (!filter->mask && filter->isActive) {
             if (filter->polyline.inside(x * 0.001, y * 0.001)) {
                 isWithinFilter = true;
             }
@@ -146,7 +146,7 @@ bool Sensors::checkWithinFilters(float x, float y) {
     }
     
     for (auto filter : filters.filters) {
-        if (filter->mask) {
+        if (filter->mask && filter->isActive) {
             if (filter->polyline.inside(x * 0.001, y * 0.001)) {
                 isWithinFilter = false;
             }

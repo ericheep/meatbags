@@ -1,7 +1,6 @@
 #include "ofMain.h"
 #include "ofApp.h"
 
-
 #ifdef _WIN32
 #include <windows.h>
 
@@ -11,6 +10,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	return 0;
 }
 #else
+
 int main() {
 	ofGLWindowSettings settings;
 	settings.setSize(1200, 800);

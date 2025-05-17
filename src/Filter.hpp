@@ -30,6 +30,7 @@ public:
     vector<DraggablePoint> positions;
     DraggablePoint centroid;
     ofParameter<bool> mask;
+    ofParameter<bool> isActive;
 
     float scale;
     int numberPoints;
