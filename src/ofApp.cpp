@@ -207,7 +207,7 @@ void ofApp::drawHelpText() {
     helpFont.draw("(ctrl/cmd + s) press to save", 15, 160);
     
     titleFont.draw("blob OSC format", 15, 200);
-    helpFont.draw("/blob index x y width height laserIntensity filterIndex1 filterIndex2 ...", 15, 220);
+    helpFont.draw("/blob index x y width length laserIntensity filterIndex1 filterIndex2 ...", 15, 220);
     helpFont.draw("/blobsActive index1 index2 ...", 15, 240);
     
     titleFont.draw("filter OSC format", 15, 280);

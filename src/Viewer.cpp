@@ -43,17 +43,12 @@ void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
 }
 
 void Viewer::drawGrid() {
-    ofFill();
-    ofSetCircleResolution(23);
-    
     ofSetColor(ofColor::grey);
-    float crossHalfLength = scale * 25;
-
-    for (int i = -10; i < (int) space.areaSize + 10; i++) {
-        int gridLineIndex = i + -((int) space.areaSize / 2);
-        
-        for (int j = -10; j < (int) space.areaSize + 10; j++) {
-            float x = gridLineIndex * 1000.0 * scale + space.origin.x;
+    
+    float crossHalfLength = scale * 50;
+    for (int i = -25; i < 25; i++) {
+        for (int j = -10; j < 50; j++) {
+            float x = i * 1000.0 * scale + space.origin.x;
             float y = j * 1000.0 * scale + space.origin.y;
         
             for (int k = 0; k < 3; k++) {
@@ -68,6 +63,9 @@ void Viewer::drawGrid() {
     
     ofColor originColor = ofColor::thistle;
     ofSetColor(originColor);
+    
+    ofFill();
+    ofSetCircleResolution(23);
     ofDrawCircle(space.origin, 4);
 }
 
