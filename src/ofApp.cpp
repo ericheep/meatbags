@@ -545,6 +545,7 @@ void ofApp::keyPressed(int key) {
     if (key == 104) {
         isHelpMode = !isHelpMode;
     }
+    
     if (key == 109) {
         float x = ofGetMouseX();
         float y = ofGetMouseY();

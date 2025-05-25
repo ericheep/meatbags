@@ -23,7 +23,7 @@ Sensors::~Sensors() {
 }
 
 void Sensors::update() {
-    for (auto& hokuyo : hokuyos) {
+    for (auto &hokuyo : hokuyos) {
         hokuyo->update();
     }
 }
@@ -38,19 +38,19 @@ void Sensors::setSpace(Space & _space) {
 }
 
 void Sensors::setLocalIpAddress(string & localIPAddress) {
-    for (auto& hokuyo : hokuyos) {
+    for (auto &hokuyo : hokuyos) {
         hokuyo->setLocalIPAddress(localIPAddress);
     }
 }
 
 void Sensors::setInterfaceAndIP(string interface, string localIP) {
-    for (auto& hokuyo : hokuyos) {
+    for (auto &hokuyo : hokuyos) {
         hokuyo->setInterfaceAndIP(interface, localIP);
     }
 }
 
 void Sensors::setInfoPositions(float x, float y) {
-    for (auto& hokuyo : hokuyos) {
+    for (auto &hokuyo : hokuyos) {
         hokuyo->setInfoPosition(x, y);
     }
 }
