@@ -39,7 +39,7 @@ Hokuyo::Hokuyo() {
     mirrorAngles.addListener(this, &Hokuyo::setMirrorAngles);
     sensorRotationDeg.addListener(this, &Hokuyo::setSensorRotation);
     alignSensorButton.addListener(this, &Hokuyo::alignSensor);
-
+    
     netmask = "255.255.255.0";
     gateway = "192.168.0.1";
     localIPAddress = "0.0.0.0";
@@ -77,6 +77,16 @@ Hokuyo::Hokuyo() {
     font.setSize(12);
 }
 
+Hokuyo::~Hokuyo() {
+    ipAddress.removeListener(this, &Hokuyo::setIPAddress);
+    positionX.removeListener(this, &Hokuyo::setPositionX);
+    positionY.removeListener(this, &Hokuyo::setPositionY);
+    mirrorAngles.removeListener(this, &Hokuyo::setMirrorAngles);
+    sensorRotationDeg.removeListener(this, &Hokuyo::setSensorRotation);
+    alignSensorButton.removeListener(this, &Hokuyo::alignSensor);
+    stopThread();
+}
+
 void Hokuyo::alignSensor() {
     alignRequested = true;
 }
@@ -92,7 +102,7 @@ void Hokuyo::threadedFunction() {
 
 void Hokuyo::connect() {
     if (ipAddress.get() == "0.0.0.0") return;
-
+    
     startThread();
 }
 
@@ -112,7 +122,7 @@ void Hokuyo::sendSetMotorSpeedCommand(int motorSpeed) {
     char motorSpeedChars[3];
     std::snprintf(motorSpeedChars, 3, "%02d", motorSpeed);
     string motorSpeedBytes = (string) motorSpeedChars;
-
+    
     send("CR" + motorSpeedBytes);
 }
 
@@ -124,7 +134,7 @@ void Hokuyo::sendSetIPAddressCommand() {
     string ipAddressBytes = formatIpv4String(ipAddress);
     string netmaskBytes = formatIpv4String(netmask);
     string gatewayBytes = formatIpv4String(gateway);
-
+    
     send("$IP" + ipAddress + netmask + gateway);
 }
 
@@ -182,7 +192,7 @@ string Hokuyo::formatIpv4String(string command) {
 
 void Hokuyo::checkStatus() {
     statusTimer += lastFrameTime;
-
+    
     if (statusTimer > statusInterval){
         sendStatusInfoCommand();
         sendVersionInfoCommand();
@@ -205,13 +215,13 @@ void Hokuyo::update() {
     if(tcpClient.isConnected()) {
         if (!isConnected) {
             connectionStatus = "CONNECTED";
-
+            
             status = "Connected at " + tcpClient.getIP() + " " + to_string(tcpClient.getPort());
             isConnected = true;
             sendStatusInfoCommand();
             sendVersionInfoCommand();
         }
-
+        
         string response = tcpClient.receive();
         if (response.length() > 0){
             parseResponse(response);
@@ -238,7 +248,7 @@ void Hokuyo::update() {
         
         if (isConnected) {
             connectionStatus = "DISCONNECTED";
-
+            
             status = "Disconnected";
             isConnected = false;
         }
@@ -282,14 +292,14 @@ void Hokuyo::setInfoPosition(float _x, float _y) {
 
 void Hokuyo::setMirrorAngles(bool &_mirrorAngles) {
     mirrorAngles = _mirrorAngles;
-
+    
     // -45 degrees offset
     float thetaOffset = -HALF_PI * 0.5;
     
     for (int i = 0; i < angularResolution; i++) {
         int index = i;
         float theta = (float) index / angularResolution * TWO_PI;
-
+        
         if (mirrorAngles) {
             index = angularResolution - 1;
             thetaOffset = -HALF_PI * 0.5 - HALF_PI;
@@ -378,7 +388,7 @@ void Hokuyo::parseResponse(string str) {
     
     string header = lines[0];
     string command = header.substr(0, 2);
-            
+    
     if (command == "GD") parseDistances(lines);
     if (command == "GE") parseDistancesAndIntensities(lines);
     if (command == "BM") parseActivate(lines);
@@ -461,7 +471,7 @@ void Hokuyo::createCoordinate(int index, float distance) {
     
     float x = cos(theta) * distance;
     float y = sin(theta) * distance;
-
+    
     coordinates[index].set(ofPoint(x, y) + ofPoint(position.x, position.y));
 }
 
@@ -498,7 +508,7 @@ void Hokuyo::parseVersionInfo(vector<string> packet) {
         if (checkedLine.size() > 5) {
             string name = checkedLine.substr(0, 4);
             string info = checkedLine.substr(5);
-                        
+            
             if (name == "VEND") vendorInfo = info;
             if (name == "PROD") productInfo = info;
             if (name == "FIRM") firmwareVersion = info;
@@ -515,7 +525,7 @@ void Hokuyo::parseParameterInfo(vector<string> packet) {
         if (checkedLine.size() > 5) {
             string name = checkedLine.substr(0, 4);
             string info = checkedLine.substr(5);
-
+            
             if (name == "MODL") model = info;
             if (name == "DMIN") minimumMeasurableDistance = info;
             if (name == "DMAX") maximumMeasureableDistance = info;
@@ -539,7 +549,7 @@ void Hokuyo::parseActivate(vector<string> packet) {
         } else if (checkedLine == "02") {
             laserState = "ON";
             status = "Laser is already on.";
-        
+            
         }
     }
 }

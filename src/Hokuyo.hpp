@@ -18,6 +18,7 @@
 class Hokuyo : public ofThread {
 public:
     Hokuyo();
+    ~Hokuyo();
     
     void draw();
     void update();

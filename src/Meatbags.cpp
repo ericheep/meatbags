@@ -21,7 +21,7 @@ void Meatbags::update() {
         oldBlob.updateLifetime(lastFrameTime);
     }
     
-    oldBlobs.erase(std::remove_if(oldBlobs.begin(), oldBlobs.end(), [](Blob blob) {
+    oldBlobs.erase(std::remove_if(oldBlobs.begin(), oldBlobs.end(), [](Blob& blob) {
         return !blob.isAlive();
     }), oldBlobs.end());
 }
@@ -176,7 +176,7 @@ int Meatbags::findFreeBlobIndex() {
     return freeIndex;
 }
 
-void::Meatbags::getBlobs(vector<Blob> &blobs) {
+void Meatbags::getBlobs(vector<Blob> &blobs) {
     blobs.clear();
     for (auto& oldBlob : oldBlobs) {
         blobs.push_back(oldBlob);

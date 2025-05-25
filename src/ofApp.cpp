@@ -105,7 +105,7 @@ void ofApp::setupGui() {
     meatbagsGui.add(& interfacesDropdown);
     meatbagsGui.add(headlessMode.set("start headless", false));
     meatbagsGui.add(autoSave.set("auto save", false));
-    meatbagsGui.setName("blob settings");
+    meatbagsGui.setName("settings");
     meatbagsGui.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
     meatbagsGui.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
     meatbagsGui.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));

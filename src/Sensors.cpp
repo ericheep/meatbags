@@ -137,18 +137,12 @@ bool Sensors::areNewCoordinatesAvailable() {
 
 bool Sensors::checkWithinFilters(float x, float y) {
     bool isWithinFilter = false;
-    for (auto filter : filters.filters) {
-        if (!filter->mask && filter->isActive) {
-            if (filter->polyline.inside(x * 0.001, y * 0.001)) {
+    for (const auto &filter : filters.filters) {
+        if (filter->polyline.inside(x * 0.001, y * 0.001)) {
+            if (filter->mask) {
+                return false;
+            } else {
                 isWithinFilter = true;
-            }
-        }
-    }
-    
-    for (auto filter : filters.filters) {
-        if (filter->mask && filter->isActive) {
-            if (filter->polyline.inside(x * 0.001, y * 0.001)) {
-                isWithinFilter = false;
             }
         }
     }
@@ -164,7 +158,7 @@ void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector 
             float x = coordinate.x;
             float y = coordinate.y;
             
-            if (coordinate.x != 0 && coordinate.x != 0) {
+            if (coordinate.x != 0 && coordinate.y != 0) {
                 if (checkWithinFilters(x, y)) {
                     coordinates[counter].set(x, y);
                     intensities[counter] = hokuyo->intensities[intensityIndex];

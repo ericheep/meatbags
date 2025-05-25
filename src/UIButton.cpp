@@ -18,7 +18,6 @@ void UIButton::setSize(float _size) {
     halfSize = _size * 0.5;
     
     buttonRectangle.setFromCenter(x, y, size, size);
-   
 }
 
 void UIButton::setPosition(float _x, float _y) {
@@ -61,7 +60,6 @@ void UIButton::draw() {
         buttonColor = ofColor::thistle;
         backgroundColor = ofColor::black;
     }
-    
    
     if (isAdd) {
         drawAdd();

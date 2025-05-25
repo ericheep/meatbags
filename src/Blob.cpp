@@ -35,7 +35,7 @@ bool Blob::isAlive() {
     return alive;
 }
 
-void Blob::become(Blob _blob) {
+void Blob::become(Blob &_blob) {
     centroid = _blob.centroid;
     center = _blob.center;
     intensity = _blob.intensity;
@@ -62,23 +62,23 @@ void Blob::setPotentialMatch(int _potentialMatchIndex, float _score) {
     potentialMatchScore = _score;
 }
 
-void Blob::calculateCentroid(vector<ofPoint>& coordinates) {
+void Blob::calculateCentroid(vector<ofPoint> &coordinates) {
     float totalX = 0.0;
     float totalY = 0.0;
     
-    for (int i = 0; i < coordinates.size(); i++) {
-        totalX += coordinates[i].x;
-        totalY += coordinates[i].y;
+    for (const auto& point : coordinates) {
+        totalX += point.x;
+        totalY += point.y;
     }
     
     centroid = ofPoint(totalX / coordinates.size(), totalY / coordinates.size());
 }
 
-void Blob::calculateBounds(vector<ofPoint>& coordinates) {
-    float minX = 10000;
-    float maxX = -10000;
-    float minY = 10000;
-    float maxY = -10000;
+void Blob::calculateBounds(vector<ofPoint> &coordinates) {
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::lowest();
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::lowest();
     
     for (int i = 0; i < coordinates.size(); i++) {
         float x = coordinates[i].x;
@@ -99,7 +99,7 @@ void Blob::calculateBounds(vector<ofPoint>& coordinates) {
     center = ofPoint(rX + rW * 0.5, rY + rH * 0.5);
 }
 
-void Blob::calculateIntensity(vector<int>& intensities) {
+void Blob::calculateIntensity(vector<int> &intensities) {
     int sum = 0;
     for (int i = 0; i < intensities.size(); i++) {
         sum += intensities[i];

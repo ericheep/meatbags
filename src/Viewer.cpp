@@ -35,7 +35,7 @@ void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
     drawSensors(sensors, filters);
     ofPopMatrix();
     
-    for (auto& sensor : sensors.hokuyos) {
+    for (const auto& sensor : sensors.hokuyos) {
         if (sensor->showSensorInformation) sensor->draw();
     }
     
@@ -70,7 +70,7 @@ void Viewer::drawGrid() {
 }
 
 void Viewer::drawBlobs(vector<Blob>& blobs) {
-    for (auto blob : blobs) {
+    for (const auto &blob : blobs) {
         ofRectangle blobBox = blob.bounds;
         blobBox.setX(blobBox.getX() * scale + space.origin.x);
         blobBox.setY(blobBox.getY() * scale + space.origin.y);
@@ -110,18 +110,12 @@ void Viewer::drawBlobs(vector<Blob>& blobs) {
 
 bool Viewer::checkWithinBounds(float x, float y, Filters & filters) {
     bool isWithinFilter = false;
-    for (auto filter : filters.filters) {
-        if (!filter->mask) {
-            if (filter->polyline.inside(x * 0.001, y * 0.001)) {
+    for (const auto &filter : filters.filters) {
+        if (filter->polyline.inside(x * 0.001, y * 0.001)) {
+            if (filter->mask) {
+                return false;
+            } else {
                 isWithinFilter = true;
-            }
-        }
-    }
-    
-    for (auto filter : filters.filters) {
-        if (filter->mask) {
-            if (filter->polyline.inside(x * 0.001, y * 0.001)) {
-                isWithinFilter = false;
             }
         }
     }
@@ -131,13 +125,13 @@ bool Viewer::checkWithinBounds(float x, float y, Filters & filters) {
 
 
 void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, Filters & filters) {
-    for (auto& coordinate : coordinates) {
+    for (const auto& coordinate : coordinates) {
         ofColor pointColor;
 
         float x = coordinate.x;
         float y = coordinate.y;
         
-        if (x == 0 && y == 0) break;
+        if (x == 0 && y == 0) continue;
 
         if (checkWithinBounds(x, y, filters)) {
             pointColor.set(color.r, color.g, color.b, 255);
@@ -158,7 +152,7 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, Filter
 }
 
 void Viewer::drawSensors(Sensors& sensors, Filters & filters) {
-    for (auto& sensor : sensors.hokuyos) {
+    for (const auto& sensor : sensors.hokuyos) {
         drawCoordinates(sensor->coordinates, sensor->sensorColor, filters);
         drawSensor(sensor);
     }
@@ -237,7 +231,7 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
 }
 
 void Viewer::drawDraggablePoints(Filter & bounds) {
-    for (auto position : bounds.positions) {
+    for (const auto &position : bounds.positions) {
         ofPoint point = position * 1000.0 * scale + space.origin;
 
         ofRectangle p;
@@ -300,7 +294,7 @@ void Viewer::drawFilter(Filter * filter) {
     ofFill();
     if (filter->mask) {
         ofBeginShape();
-        for(auto & position : filter->positions) {
+        for(const auto &position : filter->positions) {
             ofPoint p = position * scale * 1000.0 + space.origin;
             ofVertex(p);
         }
