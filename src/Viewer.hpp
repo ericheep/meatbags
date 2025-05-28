@@ -17,6 +17,7 @@
 class Viewer {
 public:
     Viewer();
+    ~Viewer();
     
     void draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors);
     void drawGrid();
@@ -28,6 +29,8 @@ public:
     void drawSensors(Sensors & sensors, Filters & filters);
     void drawConnections(Sensors & sensors);
     void drawCoordinates(vector<ofPoint> & coordinates, ofColor color, Filters & filters);
+    void drawCursorCoordinate();
+    
     void drawSensor(Hokuyo * hokuyo);
     void drawBlobs(vector<Blob> & blobs);
     void setSpace(Space & space);
@@ -39,8 +42,12 @@ public:
     float scale;
     ofPoint translation;
     
-    MemoryFont blobFont, sensorFont, filterFont;
+    MemoryFont blobFont, sensorFont, filterFont, cursorFont;
+    string cursorString;
     vector<ofColor> sensorColors;
+    
+protected:
+    void onMouseMoved(ofMouseEventArgs & mouseArgs);
 };
 
 #endif /* Viewer_hpp */

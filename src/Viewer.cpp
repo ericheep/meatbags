@@ -15,6 +15,14 @@ Viewer::Viewer() {
     sensorFont.setSize(13);
     filterFont.setBold();
     filterFont.setSize(12);
+    cursorFont.setBold();
+    cursorFont.setSize(12);
+    
+    ofAddListener(ofEvents().mouseMoved, this, &Viewer::onMouseMoved);
+}
+
+Viewer::~Viewer() {
+    ofRemoveListener(ofEvents().mouseMoved, this, &Viewer::onMouseMoved);
 }
 
 void Viewer::setSpace(Space & _space) {
@@ -40,6 +48,7 @@ void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
     }
     
     drawConnections(sensors);
+    drawCursorCoordinate();
 }
 
 void Viewer::drawGrid() {
@@ -67,6 +76,23 @@ void Viewer::drawGrid() {
     ofFill();
     ofSetCircleResolution(23);
     ofDrawCircle(space.origin, 4);
+}
+
+void Viewer::drawCursorCoordinate() {
+    float x = ofGetWidth() - 90;
+    float y = ofGetHeight() - 20;
+    float length = cursorFont.getStringWidth(cursorString);
+    float height = 20;
+    
+    ofColor cursorBackgroundColor = ofColor::black;
+    cursorBackgroundColor.a = 160;
+    ofFill();
+    ofSetColor(cursorBackgroundColor);
+    
+    ofDrawRectangle(x, y - 15, length, height);
+    
+    ofSetColor(ofColor::thistle);
+    cursorFont.draw(cursorString, x, y);
 }
 
 void Viewer::drawBlobs(vector<Blob>& blobs) {
@@ -347,4 +373,16 @@ void Viewer::drawDraggablePoints(Filter * filter) {
         ofSetColor(filterColor);
         ofDrawRectangle(p);
     }
+}
+
+void Viewer::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint = ofPoint(mouseArgs.x, mouseArgs.y);
+    
+    ofPoint point = (mousePoint - space.origin - translation) / scale * 0.001;
+    
+    std::stringstream x;
+    x << setprecision(3) << point.x;
+    std::stringstream y;
+    y << setprecision(3) << point.y;
+    cursorString = x.str() + " " + y.str();
 }
