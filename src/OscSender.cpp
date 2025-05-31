@@ -31,11 +31,13 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Filters & filters) {
     ofxOscMessage blobsActiveMsg;
     blobsActiveMsg.setAddress("/blobsActive");
     
+    ofxOscMessage blobsMsg;
+    blobsMsg.setAddress("/blobs");
+    
     for (auto & blob : blobs) {
         ofxOscMessage msg;
         msg.setAddress("/blob");
         msg.addIntArg(blob.index);
-        blobsActiveMsg.addIntArg(blob.index);
         
         // millimeters to meters
         float x = blob.centroid.x * 0.001;
@@ -55,8 +57,15 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Filters & filters) {
         }
     
         oscSender.sendMessage(msg);
+        
+        blobsMsg.addIntArg(blob.index);
+        blobsMsg.addFloatArg(x);
+        blobsMsg.addFloatArg(y);
+        
+        blobsActiveMsg.addIntArg(blob.index);
     }
     
+    oscSender.sendMessage(blobsMsg);
     oscSender.sendMessage(blobsActiveMsg);
 }
 
