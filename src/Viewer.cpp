@@ -19,10 +19,12 @@ Viewer::Viewer() {
     cursorFont.setSize(12);
     
     ofAddListener(ofEvents().mouseMoved, this, &Viewer::onMouseMoved);
+    ofAddListener(ofEvents().mouseDragged, this, &Viewer::onMouseDragged);
 }
 
 Viewer::~Viewer() {
     ofRemoveListener(ofEvents().mouseMoved, this, &Viewer::onMouseMoved);
+    ofRemoveListener(ofEvents().mouseDragged, this, &Viewer::onMouseDragged);
 }
 
 void Viewer::setSpace(Space & _space) {
@@ -375,14 +377,22 @@ void Viewer::drawDraggablePoints(Filter * filter) {
     }
 }
 
-void Viewer::onMouseMoved(ofMouseEventArgs& mouseArgs) {
-    ofPoint mousePoint = ofPoint(mouseArgs.x, mouseArgs.y);
-    
+void Viewer::setCursorString(ofPoint mousePoint) {
     ofPoint point = (mousePoint - space.origin - translation) / scale * 0.001;
-    
+
     std::stringstream x;
     x << setprecision(3) << point.x;
     std::stringstream y;
     y << setprecision(3) << point.y;
     cursorString = x.str() + " " + y.str();
+}
+
+void Viewer::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint = ofPoint(mouseArgs.x, mouseArgs.y);
+    setCursorString(mousePoint);
+}
+
+void Viewer::onMouseDragged(ofMouseEventArgs &mouseArgs) {
+    ofPoint mousePoint = ofPoint(mouseArgs.x, mouseArgs.y);
+    setCursorString(mousePoint);
 }

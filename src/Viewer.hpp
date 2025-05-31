@@ -35,6 +35,8 @@ public:
     void drawBlobs(vector<Blob> & blobs);
     void setSpace(Space & space);
     void setTranslation(ofPoint translation);
+    void setCursorString(ofPoint mousePoint);
+    
     bool checkWithinBounds(float x, float y, Filters & filters);
     
     Space space;
@@ -48,6 +50,7 @@ public:
     
 protected:
     void onMouseMoved(ofMouseEventArgs & mouseArgs);
+    void onMouseDragged(ofMouseEventArgs & mouseArgs);
 };
 
 #endif /* Viewer_hpp */
