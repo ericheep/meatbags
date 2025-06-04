@@ -28,6 +28,8 @@ public:
 
     vector<ofParameter<ofVec2f>> points;
     vector<DraggablePoint> positions;
+    vector<Blob> filterBlobs;
+    
     DraggablePoint centroid;
     ofParameter<bool> mask;
     ofParameter<bool> isActive;

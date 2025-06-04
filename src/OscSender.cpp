@@ -27,7 +27,7 @@ void OscSender::setOscSenderPort(int& oscSenderPort) {
     oscSender.setup(oscSenderAddress, oscSenderPort);
 }
 
-void OscSender::sendBlobOsc(vector<Blob> & blobs, Filters & filters) {
+void OscSender::sendBlobOsc(vector<Blob>& blobs, Filters& filters) {
     ofxOscMessage blobsActiveMsg;
     blobsActiveMsg.setAddress("/blobsActive");
     
@@ -65,11 +65,18 @@ void OscSender::sendBlobOsc(vector<Blob> & blobs, Filters & filters) {
         blobsActiveMsg.addIntArg(blob.index);
     }
     
-    oscSender.sendMessage(blobsMsg);
-    oscSender.sendMessage(blobsActiveMsg);
+    if (blobs.size() > 0) {
+        oscSender.sendMessage(blobsMsg);
+        oscSender.sendMessage(blobsActiveMsg);
+    }
 }
 
-void OscSender::sendFilterOsc(vector<Blob> & blobs, Filters & filters) {
+void OscSender::sendFilterOsc(Filters& filters) {
+    sendFilterStatus(filters);
+    sendFilterBlobs(filters);
+}
+
+void OscSender::sendFilterStatus(Filters& filters) {
     for (auto & filter : filters.filters) {
         ofxOscMessage msg;
         msg.setAddress("/filter");
@@ -83,8 +90,30 @@ void OscSender::sendFilterOsc(vector<Blob> & blobs, Filters & filters) {
     }
 }
 
+void OscSender::sendFilterBlobs(Filters& filters) {
+    for (auto & filter : filters.filters) {
+        if (!filter->isBlobInside) continue;
+        
+        ofxOscMessage msg;
+        msg.setAddress("/filterBlobs");
+        
+        msg.addIntArg(filter->index);
+        for (auto & blob : filter->filterBlobs) {
+            msg.addIntArg(filter->index);
 
-void OscSender::sendLogs(Sensors & sensors) {
+            // millimeters to meters
+            float x = blob.centroid.x * 0.001;
+            float y = blob.centroid.y * 0.001;
+            
+            msg.addFloatArg(x);
+            msg.addFloatArg(y);
+        }
+    
+        oscSender.sendMessage(msg);
+    }
+}
+
+void OscSender::sendLogs(Sensors& sensors) {
     for (auto & sensor : sensors.hokuyos) {
         string connectionStatus = sensor->connectionStatus;
         string generalStatus = sensor->status;

@@ -11,7 +11,7 @@ OscSenders::OscSenders() {
 void OscSenders::send(vector<Blob> & blobs, Meatbags & meatbags, Sensors & sensors, Filters & filters) {
     for (auto & oscSender : oscSenders) {
         if (oscSender->sendBlobsActive) oscSender->sendBlobOsc(blobs, filters);
-        if (oscSender->sendFiltersActive) oscSender->sendFilterOsc(blobs, filters);
+        if (oscSender->sendFiltersActive) oscSender->sendFilterOsc(filters);
         if (oscSender->sendLogsActive ) oscSender->sendLogs(sensors);
     }
 }

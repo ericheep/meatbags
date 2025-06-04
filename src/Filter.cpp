@@ -56,6 +56,7 @@ void Filter::update() {
 }
 
 void Filter::checkBlobs(vector<Blob> & blobs) {
+    filterBlobs.clear();
     isBlobInside = false;
     distanceOfClosestBlob = std::numeric_limits<float>::infinity();
     
@@ -65,6 +66,8 @@ void Filter::checkBlobs(vector<Blob> & blobs) {
         float y = blob.centroid.y * 0.001;
         
         if (polyline.inside(x, y)) {
+            filterBlobs.push_back(blob);
+            
             isBlobInside = true;
             float distance = centroid.distance(ofPoint(x, y));
             

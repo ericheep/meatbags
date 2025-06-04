@@ -19,9 +19,11 @@ public:
 
     void setOscSenderAddress(string& oscSenderAddress);
     void setOscSenderPort(int& oscSenderPort);
-    void sendBlobOsc(vector<Blob> & blobs, Filters & filters);
-    void sendFilterOsc(vector<Blob> & blobs, Filters & filtere);
-    void sendLogs(Sensors & sensors);
+    void sendBlobOsc(vector<Blob>& blobs, Filters& filters);
+    void sendFilterOsc(Filters& filtere);
+    void sendFilterStatus(Filters& filters);
+    void sendFilterBlobs(Filters& filters);
+    void sendLogs(Sensors& sensors);
     
     ofxOscSender oscSender;
 
