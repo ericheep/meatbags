@@ -21,7 +21,7 @@ string ofApp::getAppVersion() {
 //--------------------------------------------------------------
 void ofApp::setup(){
     version = getAppVersion();
-    ofSetFrameRate(60);
+    ofSetFrameRate(120);
     
     titleFont.setBold();
     titleFont.setSize(14);
