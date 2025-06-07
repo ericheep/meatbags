@@ -11,7 +11,7 @@ Hokuyo::Hokuyo() {
     statusInterval = 3.0;
     statusTimer = 0.0;
     
-    pollingInterval = 1.0 / 60;
+    pollingInterval = 1.0 / 30;
     pollingTimer = 0;
     
     lastFrameTime = 0;
