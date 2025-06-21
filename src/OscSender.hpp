@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "ofxOsc.h"
+#include "ofxOpenCv.h"
 #include "ofMain.h"
 #include "Blob.hpp"
 #include "Meatbags.hpp"

@@ -5,10 +5,6 @@
 #include "Sensors.hpp"
 
 Sensors::Sensors() {
-    // movingCoordinates.resize(1440);
-    // fixedCoordinates.resize(1440);
-    // rigid.normalize(false);
-    
     ofAddListener(ofEvents().mouseMoved, this, &Sensors::onMouseMoved);
     ofAddListener(ofEvents().mousePressed, this, &Sensors::onMousePressed);
     ofAddListener(ofEvents().mouseDragged, this, &Sensors::onMouseDragged);
@@ -55,57 +51,6 @@ void Sensors::setInfoPositions(float x, float y) {
     }
 }
 
-/*
-// auto alignment code, will revisit later
-void Sensors::applyCoherentPointDrift() {
-    cpd::Matrix fixed(1440, 2);
-    cpd::Matrix moving(1440, 2);
-    
-    for (int i = 0; i < 1440; i++) {
-        fixed(i, 0) = (double) hokuyos[0]->coordinates[i].x;
-        fixed(i, 1) = (double) hokuyos[0]->coordinates[i].y;
-        moving(i, 0) = (double) hokuyos[1]->coordinates[i].x;
-        moving(i, 1) = (double) hokuyos[1]->coordinates[i].y;
-    }
-
-    cpd::RigidResult result = rigid.run(fixed, moving);
-    
-    if (result.translation.size() == 2) {
-        float x = result.translation(0);
-        float y = result.translation(1);
-
-        float addx = hokuyos[1]->position.x + x;
-        float addy = hokuyos[1]->position.y + y;
-
-        hokuyos[1]->positionX = addx * 0.001;
-        hokuyos[1]->positionY = addy * 0.001;
-    }
-}
-
-void Sensors::applySuperpose3d() {
-    double **target;
-    double **source;
-    
-    Alloc2D(1440, 2, &target);
-    Alloc2D(1440, 2, &source);
-    
-    for (int i = 0; i < 1440; i++) {
-        target[i][0] = hokuyos[0]->coordinates[i].x;
-        target[i][1] = hokuyos[0]->coordinates[i].y;
-        
-        source[i][0] = hokuyos[1]->coordinates[i].x;
-        source[i][1] = hokuyos[1]->coordinates[i].y;
-    }
-    
-    double rmsd;
-    bool allowRescale = false;
-    rmsd = superposer.Superpose(target, source, allowRescale);
-
-    Dealloc2D(&target);
-    Dealloc2D(&source);
-}
-*/
-
 void Sensors::addSensor(Hokuyo* hokuyo) {
     hokuyos.push_back(hokuyo);
 }
@@ -150,8 +95,38 @@ bool Sensors::checkWithinFilters(float x, float y) {
     return isWithinFilter;
 }
 
+void Sensors::getCoordinatesAndIntensities(MeatbagsFactory& meatbags) {
+    for (auto& meatbag : meatbags.meatbags) {
+        int counter = 0;
+
+        for (auto& sensor : hokuyos) {
+            if (sensor->whichMeatbag == meatbag->index) {
+                int intensityIndex = 0;
+                
+                for (auto& coordinate : sensor->coordinates) {
+                    float x = coordinate.x;
+                    float y = coordinate.y;
+
+                    if (coordinate.x != 0 && coordinate.y != 0) {
+                        if (checkWithinFilters(x, y)) {
+                            meatbag->coordinates[counter].set(x, y);
+                            meatbag->intensities[counter] = sensor->intensities[intensityIndex];
+                            counter++;
+                        }
+                    }
+                    
+                    intensityIndex++;
+                }
+            }
+        }
+        
+        meatbag->numberCoordinates = counter;
+    }
+}
+
 void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector <int>& intensities, int &numberCoordinates) {
     int counter = 0;
+    
     for (auto& hokuyo : hokuyos) {
         int intensityIndex = 0;
         for (auto& coordinate : hokuyo->coordinates) {

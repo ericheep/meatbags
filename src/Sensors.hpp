@@ -10,11 +10,7 @@
 #include "Filters.hpp"
 #include "Space.h"
 #include "DraggablePoint.hpp"
-
-// #include "superpose3d/superpose3d.hpp"
-// using namespace superpose3d;
-// #include <cpd/rigid.hpp>
-// #include <cpd/gauss_transform_fgt.hpp>
+#include "MeatbagsFactory.hpp"
 
 class Sensors {
 public:
@@ -27,6 +23,7 @@ public:
     void removeSensor();
     void closeSensors();
 
+    void getCoordinatesAndIntensities(MeatbagsFactory& meatbags);
     void getCoordinatesAndIntensities(vector<ofPoint> &coordinates, vector <int> &intensities, int &numberCoordinates);
     bool areNewCoordinatesAvailable();
     bool checkWithinFilters(float x, float y);

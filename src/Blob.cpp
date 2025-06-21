@@ -9,6 +9,7 @@ Blob::Blob() {
     alive = true;
     lifetime = 0;
     numberPoints = 0;
+    whichMeatbag = 0;
 }
 
 Blob::Blob(vector<ofPoint> coordinates, vector<int> intensities, float blobPersistence, int _numberPoints) {

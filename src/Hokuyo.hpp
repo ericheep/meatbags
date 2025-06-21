@@ -80,6 +80,7 @@ public:
     ofParameter<float> sensorRotationDeg;
     ofParameter<bool> showSensorInformation;
     ofParameter<ofColor> sensorColor;
+    ofParameter<int> whichMeatbag;
     ofxButton alignSensorButton;
     
     void createCoordinate(int step, float distance);

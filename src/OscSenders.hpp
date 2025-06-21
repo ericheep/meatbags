@@ -17,7 +17,7 @@ public:
     
     void addOscSender(OscSender * oscSender);
     void removeOscSender();
-    void send(vector<Blob> & blobs, Meatbags & meatbags, Sensors & sensors, Filters & filters);
+    void send(vector<Blob>& blobs, Sensors& sensors, Filters& filters);
     
     vector <OscSender *> oscSenders;
 };

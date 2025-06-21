@@ -8,6 +8,7 @@
 #include "Hokuyo.hpp"
 #include "Blob.hpp"
 #include "Meatbags.hpp"
+#include "MeatbagsFactory.hpp"
 #include "Viewer.hpp"
 #include "Space.h"
 #include "Sensors.hpp"
@@ -48,7 +49,11 @@ public:
     void setupGui();
     void setupFilterGuis();
     void setupOscSenderGuis();
+    void setupMeatbagsGuis();
     void setupSensorGuis();
+    
+    // gui positions
+    void setLeftSideGuiPositions();
     void setRightSideGuiPositions();
     
     // hokuyo parameters
@@ -64,20 +69,24 @@ public:
     void setSpace();
     void setTranslation();
     
+    void addMeatbag();
+    void removeMeatbag();
+    void setNumberMeatbags(int& numberMeatbags);
+    
     // sensors
     void addSensor();
     void removeSensor();
-    void setNumberSensors(int & numberSensors);
+    void setNumberSensors(int& numberSensors);
     
     // filterss
     void addFilter(int numberPoints);
     void removeFilter();
-    void setNumberFilters(int & numberFilters);
+    void setNumberFilters(int& numberFilters);
     
     // osc senders
     void addOscSender();
     void removeOscSender();
-    void setNumberOscSenders(int & numberSenders);
+    void setNumberOscSenders(int& numberSenders);
     
     // view parameters
     void setAreaSize(float &areaSize);
@@ -86,17 +95,18 @@ public:
     Sensors sensors;
     Filters filters;
     vector<Blob> blobs;
-    Meatbags meatbags;
+    MeatbagsFactory meatbags;
     Space space;
     Viewer viewer;
     OscSenders oscSenders;
     InterfaceSelector interfaceSelector;
     
-    ofxPanel hiddenGui;;
-    ofxPanel meatbagsGui;
+    ofxPanel hiddenGui;
+    ofxPanel generalGui;
     ofxPanel filtersGui;
     ofxPanel oscSendersGui;
 
+    vector<ofxPanel*> meatbagsGuis;
     vector<ofxPanel*> sensorGuis;
     vector<ofxPanel*> filterGuis;
     vector<ofxPanel*> oscSenderGuis;
@@ -105,6 +115,7 @@ public:
     ofPoint origin, initialTranslation;
     
     // meatbags parameters
+    ofParameterGroup generalSettings;
     ofParameterGroup meatbagsSettings;
     ofParameter<float> epsilon;
     ofParameter<int> minPoints;

@@ -98,12 +98,21 @@ void OscSender::sendFilterBlobs(Filters& filters) {
         msg.setAddress("/filterBlobs");
         
         msg.addIntArg(filter->index);
+        
         for (auto & blob : filter->filterBlobs) {
-            msg.addIntArg(filter->index);
-
-            // millimeters to meters
+            msg.addIntArg(blob.index);
+            
             float x = blob.centroid.x * 0.001;
             float y = blob.centroid.y * 0.001;
+            
+            if (filter->normalize) {
+                cv::Point2f inputPoint(x, y);
+                vector<cv::Point2f> inputVec = { inputPoint }, outputVec;
+                cv::perspectiveTransform(inputVec, outputVec, filter->homography);
+                
+                x = outputVec[0].x;
+                y = outputVec[0].y;
+            }
             
             msg.addFloatArg(x);
             msg.addFloatArg(y);

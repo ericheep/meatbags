@@ -33,7 +33,7 @@ public:
     
     bool matched, alive;
     
-    int index;
+    int index, whichMeatbag;
 private:
     void calculateCentroid(vector<ofPoint> &coordinates);
     void calculateBounds(vector<ofPoint> &coordinates);

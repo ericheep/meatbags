@@ -11,6 +11,13 @@ Filter::Filter() {
     ofAddListener(ofEvents().mouseReleased, this, &Filter::onMouseReleased);
     ofAddListener(ofEvents().keyPressed, this, &Filter::onKeyPressed);
     isActive = true;
+    
+    normalizedQuad = {
+        { 1.0f, 1.0f },
+        { 0.0f, 1.0f },
+        { 0.0f, 0.0f },
+        { 1.0f, 0.0f }
+    };
 }
 
 Filter::~Filter() {
@@ -24,6 +31,7 @@ Filter::~Filter() {
 void Filter::setNumberPoints(int numberPoints) {
     points.resize(numberPoints);
     positions.resize(numberPoints);
+    quad.resize(numberPoints);
     
     for (int i = 0; i < numberPoints; i++) {
         positions[i].size = 10;
@@ -36,6 +44,8 @@ void Filter::setNumberPoints(int numberPoints) {
     centroid.halfSize = centroid.size * 0.5;
     centroid.isMouseOver = false;
     centroid.isMouseClicked = false;
+    
+    updateHomography();
 }
 
 void Filter::update() {
@@ -53,6 +63,15 @@ void Filter::update() {
         positions[i].x = points[i]->x;
         positions[i].y = points[i]->y;
     }
+}
+
+void Filter::updateHomography() {
+    for(int i = 0; i < positions.size(); i++) {
+        quad[i].x = positions[i].x;
+        quad[i].y = positions[i].y;
+    }
+    
+    homography = cv::getPerspectiveTransform(quad, normalizedQuad);
 }
 
 void Filter::checkBlobs(vector<Blob> & blobs) {
@@ -137,6 +156,8 @@ void Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
     } else {
         centroid.isMouseClicked = false;
     }
+    
+    updateHomography();
 }
 
 void Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
@@ -153,6 +174,8 @@ void Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
         ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
         translatePointsByCentroid(coordinate);
     }
+    
+    updateHomography();
 }
 
 void Filter::translatePointsByCentroid(ofPoint _centroid) {
@@ -174,6 +197,8 @@ void Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
         centroid.isMouseClicked = false;
         centroid.isMouseOver = false;
     }
+    
+    updateHomography();
 }
 
 void Filter::onKeyPressed(ofKeyEventArgs& keyArgs) {

@@ -38,6 +38,7 @@ void ofApp::setup(){
     areaSize.addListener(this, &ofApp::setAreaSize);
     interfacesDropdown.addListener(this, &ofApp::setInterface);
     
+    setupMeatbagsGuis();
     setupSensorGuis();
     setupFilterGuis();
     setupOscSenderGuis();
@@ -101,17 +102,23 @@ void ofApp::setupGui() {
     interfacesDropdown.setBackgroundColor(backgroundColor);
     interfacesDropdown.setTextColor(textColor);
     
-    meatbagsGui.setup();
-    meatbagsGui.add(& interfacesDropdown);
-    meatbagsGui.add(headlessMode.set("start headless", false));
-    meatbagsGui.add(autoSave.set("auto save", false));
-    meatbagsGui.setName("settings");
-    meatbagsGui.add(meatbags.epsilon.set( "cluster epsilon (mm)", 100, 1, 500));
-    meatbagsGui.add(meatbags.minPoints.set( "cluster min points", 10, 1, 150));
-    meatbagsGui.add(meatbags.blobPersistence.set("blob persistence (s)", 0.1, 0.0, 3.0));
+    generalGui.setup("settings");
+    generalGui.add(& interfacesDropdown);
+    generalGui.add(headlessMode.set("start headless", false));
+    generalGui.add(autoSave.set("auto save", false));
+    generalGui.setPosition(ofVec3f(15, 130, 0));
+    generalGui.loadFromFile("generalSettings.json");
+}
+
+void ofApp::setupMeatbagsGuis() {
+    // int n = meatbags.numberMeatbags;
+    int n = 2;
+    setNumberMeatbags(n);
     
-    meatbagsGui.setPosition(ofVec3f(15, 135, 0));
-    meatbagsGui.loadFromFile("generalSettings.json");
+    for (int i = 0; i < meatbagsGuis.size(); i++) {
+        string filename = "meatbags" + to_string(i + 1) + "Settings.json";
+        meatbagsGuis[i]->loadFromFile(filename);
+    }
 }
 
 void ofApp::setupSensorGuis() {
@@ -151,15 +158,14 @@ void ofApp::update(){
     meatbags.update();
     filters.update();
     
-    if (sensors.areNewCoordinatesAvailable()) {
-        sensors.getCoordinatesAndIntensities(meatbags.coordinates, meatbags.intensities, meatbags.numberCoordinates);
-        
-        meatbags.updateBlobs();
-        meatbags.getBlobs(blobs);
-    }
+    sensors.getCoordinatesAndIntensities(meatbags);
+    
+    meatbags.updateBlobs();
+    meatbags.getBlobs(blobs);
     
     filters.checkBlobs(blobs);
-    oscSenders.send(blobs, meatbags, sensors, filters);
+    
+    oscSenders.send(blobs, sensors, filters);
 }
 
 //--------------------------------------------------------------
@@ -170,16 +176,19 @@ void ofApp::draw(){
     if (isHelpMode) drawHelpText();
     
     drawSaveNotification();
-    
     drawFps();
 }
 
 void ofApp::drawMeatbags() {
-    viewer.draw(meatbags.oldBlobs, filters, sensors);
+    viewer.draw(blobs, filters, sensors);
     buttonUI.draw();
     
     // draw guis
-    meatbagsGui.draw();
+    generalGui.draw();
+      
+    for (int i = meatbagsGuis.size() - 1; i >= 0; i--) {
+        meatbagsGuis[i]->draw();
+    }
     
     for (int i = sensorGuis.size() - 1; i >= 0; i--) {
         sensorGuis[i]->draw();
@@ -242,7 +251,25 @@ void ofApp::setInterface(string & interfaceAndIP) {
     sensors.setInterfaceAndIP(interface, IP);
 }
 
-void ofApp::setNumberSensors(int & numberSensors) {
+
+void ofApp::setNumberMeatbags(int& numberMeatbags) {
+    int numberSensors = sensors.hokuyos.size();
+    meatbags.setMaxCoordinateSize(numberSensors * 1440);
+    
+    if (numberMeatbags > meatbags.meatbags.size()) {
+        while (meatbags.meatbags.size() < numberMeatbags) {
+            addMeatbag();
+        }
+    }
+    if (numberMeatbags < meatbags.meatbags.size()) {
+        while (meatbags.meatbags.size() > numberMeatbags) {
+            removeMeatbag();
+        }
+    }
+}
+
+
+void ofApp::setNumberSensors(int& numberSensors) {
     meatbags.setMaxCoordinateSize(numberSensors * 1440);
     
     if (numberSensors > sensors.hokuyos.size()) {
@@ -303,11 +330,11 @@ void ofApp::addSensor() {
     Hokuyo* hokuyo = new Hokuyo();
     hokuyo->index = onesIndex;
     
-    ofParameterGroup positionSettings;
+    /*ofParameterGroup positionSettings;
     positionSettings.setName("position");
     positionSettings.add(hokuyo->positionX.set("position x", sensorX, -15.0, 15.0));
     positionSettings.add(hokuyo->positionY.set("position y", sensorY, 0.0, 30.0));
-    positionSettings.add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
+    positionSettings.add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));*/
     
     ofxPanel * sensorGui = new ofxPanel();
     sensorGui->setDefaultWidth(190);
@@ -316,22 +343,19 @@ void ofApp::addSensor() {
     sensorGui->add(hokuyo->ipAddress.set("IP address", "0.0.0.0"));
     sensorGui->add(hokuyo->autoReconnectActive.set("auto reconnect", true));
     sensorGui->add(hokuyo->mirrorAngles.set("mirror angles", false));
+    sensorGui->add(hokuyo->whichMeatbag.set("which meatbag", 1, 1, 2));
+    sensorGui->add(hokuyo->positionX.set("position x", sensorX, -15.0, 15.0));
+    sensorGui->add(hokuyo->positionY.set("position y", sensorY, 0.0, 30.0));
+    sensorGui->add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
     sensorGui->add(hokuyo->showSensorInformation.set("show sensor info", false));
-    sensorGui->add(positionSettings);
-    sensorGui->getGroup("position").minimize();
+    
     hokuyo->setInfoPosition(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
     sensors.addSensor(hokuyo);
     sensorGuis.push_back(sensorGui);
     
-    float guiX = 15;
-    if (currentIndex >= 4) guiX = 210;
-    
-    float guiY = (currentIndex % 4) * 100;
-    
-    sensorGuis[currentIndex]->setPosition(ofVec3f(guiX, 254 + guiY));
-    
     setSpace();
     setTranslation();
+    setLeftSideGuiPositions();
 }
 
 void ofApp::addFilter(int numberPoints) {
@@ -355,6 +379,7 @@ void ofApp::addFilter(int numberPoints) {
     filterGui->setDefaultWidth(130 - 14);
     filterGui->setup("filter " + to_string(onesIndex));
     filterGui->add(filter->mask.set("mask", false));
+    filterGui->add(filter->normalize.set("normalize", false));
     
     ofParameterGroup coordinatesSettings;
     coordinatesSettings.setName("coordinates");
@@ -362,6 +387,7 @@ void ofApp::addFilter(int numberPoints) {
         float ratio = float(i) / numberPoints;
         float x = cos(ratio * TWO_PI + HALF_PI * 0.5) * 0.5 + center.x;
         float y = sin(ratio * TWO_PI + HALF_PI * 0.5) * 0.5 + center.y;
+        cout << x << " " << y << endl;
         coordinatesSettings.add(filter->points[i].set("p" + to_string(i), ofVec2f(x, y), ofVec2f(-10, 10), ofVec2f(-10, 10)));
     }
     
@@ -380,10 +406,10 @@ void ofApp::addOscSender() {
     
     OscSender* oscSender = new OscSender();
     
-    ofxPanel * oscSenderGui =  NULL;
+    ofxPanel * oscSenderGui = NULL;
     oscSenderGui = new ofxPanel();
     
-    ofParameterGroup coordinatesSettings;
+    // ofParameterGroup coordinatesSettings;
     oscSenderGui->setDefaultWidth(190);
     oscSenderGui->setup("osc sender " + to_string(onesIndex));
     oscSenderGui->add(oscSender->oscSenderAddress.set("ip address", "127.0.0.1"));
@@ -394,6 +420,48 @@ void ofApp::addOscSender() {
     
     oscSenders.addOscSender(oscSender);
     oscSenderGuis.push_back(oscSenderGui);
+}
+
+void ofApp::addMeatbag() {
+    int onesIndex = meatbags.meatbags.size() + 1;
+    int currentIndex = meatbags.meatbags.size();
+    
+    Meatbags* meatbag = new Meatbags();
+    meatbag->index = onesIndex;
+    
+    ofxPanel * meatbagGui = NULL;
+    meatbagGui = new ofxPanel();
+    meatbagGui = new ofxPanel();
+    
+    meatbagGui->setup("meatbags " + to_string(onesIndex));
+    meatbagGui->add(meatbag->epsilon.set( "cluster epsilon (mm)", 100, 1, 1000));
+    meatbagGui->add(meatbag->minPoints.set( "cluster min points", 10, 1, 150));
+    meatbagGui->add(meatbag->blobPersistence.set("blob persistence (s)", 0.25, 0.0, 3.0));
+    
+    meatbags.addMeatbag(meatbag);
+    meatbagsGuis.push_back(meatbagGui);
+    setLeftSideGuiPositions();
+}
+
+void ofApp::setLeftSideGuiPositions() {
+    float x = 15;
+    float y = 210;
+    
+    for (int i = 0; i < meatbagsGuis.size(); i++) {
+        meatbagsGuis[i]->setPosition(ofVec3f(x, y));
+        y += 55;
+    }
+    
+    for (int i = 0; i < sensorGuis.size(); i++) {
+        if (i < 3) {
+            sensorGuis[i]->setPosition(ofVec3f(x, y));
+            y += 135;
+        } else {
+            float offset = 135 * 3;
+            sensorGuis[i]->setPosition(ofVec3f(x + 195, y - offset));
+            y += 135;
+        }
+    }
 }
 
 void ofApp::setRightSideGuiPositions() {
@@ -411,13 +479,19 @@ void ofApp::setRightSideGuiPositions() {
     for (int i = 0; i < filterGuis.size(); i++) {
         if (i < 8) {
             filterGuis[i]->setPosition(ofVec3f(filterGuiX1, y));
-            y += 46;
+            y += 56;
         } else {
-            float offset = 46 * 8;
+            float offset = 56 * 8;
             filterGuis[i]->setPosition(ofVec3f(filterGuiX2, y - offset));
-            y += 46;
+            y += 56;
         }
     }
+}
+
+void ofApp::removeMeatbag() {
+    int index = meatbags.meatbags.size() - 1;
+    meatbagsGuis.pop_back();
+    meatbags.removeMeatbag();
 }
 
 
@@ -465,8 +539,13 @@ void ofApp::hideWindow() {
 }
 
 void ofApp::save() {
-    meatbagsGui.saveToFile("generalSettings.json");
+    generalGui.saveToFile("generalSettings.json");
     hiddenGui.saveToFile("hiddenSettings.json");
+    
+    for (int i = 0; i < meatbagsGuis.size(); i++) {
+        string filename = "meatbags" + to_string(i + 1) + "Settings.json";
+        meatbagsGuis[i]->saveToFile(filename);
+    }
     
     for (int i = 0; i < sensorGuis.size(); i++) {
         string filename = "sensor" + to_string(i + 1) + "Settings.json";
@@ -496,6 +575,7 @@ void ofApp::windowResized(int width, int height) {
     
     setSpace();
     sensors.setInfoPositions(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+    setLeftSideGuiPositions();
     setRightSideGuiPositions();
 }
 

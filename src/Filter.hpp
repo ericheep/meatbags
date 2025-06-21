@@ -6,6 +6,7 @@
 #define Filter_hpp
 
 #include <stdio.h>
+#include "ofxOpenCv.h"
 #include "ofMain.h"
 #include "DraggablePoint.hpp"
 #include "Space.h"
@@ -17,6 +18,7 @@ public:
     ~Filter();
         
     void update();
+    void updateHomography();
     void checkBlobs(vector<Blob> & blobs);
     void setNumberPoints(int numberPoints);
     void setSpace(Space & space);
@@ -30,15 +32,20 @@ public:
     vector<DraggablePoint> positions;
     vector<Blob> filterBlobs;
     
+    vector<cv::Point2f> quad;
+    vector<cv::Point2f> normalizedQuad;
+    
     DraggablePoint centroid;
     ofParameter<bool> mask;
     ofParameter<bool> isActive;
+    ofParameter<bool> normalize;
 
     float scale;
     int numberPoints;
     int index;
     bool isBlobInside;
     float distanceOfClosestBlob;
+    cv::Mat homography;
     
     ofPoint translation;
     Space space;

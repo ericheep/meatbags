@@ -49,6 +49,7 @@ public:
     
     float lastFrameTime;
     int numberCoordinates;
+    int index;
 };
 
 #endif /* Viz_hpp */
