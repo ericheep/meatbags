@@ -11,13 +11,14 @@ Hokuyo::Hokuyo() {
     statusInterval = 3.0;
     statusTimer = 0.0;
     
-    pollingInterval = 1.0 / 30;
-    pollingTimer = 0;
+    streamingPollingInterval = 3.0;
+    streamingPollingTimer = 0.0;
     
-    lastFrameTime = 0;
+    threadInactiveTime = 0.0;
+    threadInactiveInterval = 10.0;
     
+    lastFrameTime = 0.0;
     isConnected = false;
-    laserActive = true;
     
     // 180 degrees, front facing range
     startStep = 0;
@@ -25,7 +26,6 @@ Hokuyo::Hokuyo() {
     angularResolution = 1440;
     sensorRotationDeg = 0;
     sensorRotationRad = 0;
-    clusterCount = 0;
     
     status = "";
     lastStatus = status;
@@ -38,7 +38,6 @@ Hokuyo::Hokuyo() {
     positionY.addListener(this, &Hokuyo::setPositionY);
     mirrorAngles.addListener(this, &Hokuyo::setMirrorAngles);
     sensorRotationDeg.addListener(this, &Hokuyo::setSensorRotation);
-    alignSensorButton.addListener(this, &Hokuyo::alignSensor);
     
     netmask = "255.255.255.0";
     gateway = "192.168.0.1";
@@ -71,7 +70,6 @@ Hokuyo::Hokuyo() {
     position.isMouseClicked = false;
     
     mirrorAngles = false;
-    alignRequested = false;
     
     font.setMedium();
     font.setSize(12);
@@ -83,27 +81,62 @@ Hokuyo::~Hokuyo() {
     positionY.removeListener(this, &Hokuyo::setPositionY);
     mirrorAngles.removeListener(this, &Hokuyo::setMirrorAngles);
     sensorRotationDeg.removeListener(this, &Hokuyo::setSensorRotation);
-    alignSensorButton.removeListener(this, &Hokuyo::alignSensor);
     stopThread();
-}
-
-void Hokuyo::alignSensor() {
-    alignRequested = true;
 }
 
 void Hokuyo::setSensorRotation(float &_sensorRotationDeg) {
     sensorRotationRad = _sensorRotationDeg / 360.0 * TWO_PI;
 }
 
-void Hokuyo::threadedFunction() {
-    tcpClient.setup(ipAddress, port, false, interface, localIPAddress);
-    tcpClient.setMessageDelimiter("\012\012");
+void Hokuyo::setInterfaceAndIP(string _interface, string _localIP) {
+    interface = _interface;
+    localIPAddress = _localIP;
+}
+
+void Hokuyo::setLocalIPAddress(string & _localIPAddress) {
+    localIPAddress = _localIPAddress;
+}
+
+void Hokuyo::setIPAddress(string &ipAddress) {
+    tcpClient.close();
+    if (isThreadRunning()) {
+        stopThread();
+    }
+    connect();
 }
 
 void Hokuyo::connect() {
     if (ipAddress.get() == "0.0.0.0") return;
     
-    startThread();
+    if (!isThreadRunning()) {
+        startThread();
+    } else {
+        ofLogWarning("Hokuyo") << "Thread already running; ignoring connect() call.";
+    }
+}
+
+void Hokuyo::threadedFunction() {
+    tcpClient.setup(ipAddress, port, false, interface, localIPAddress);
+    tcpClient.setMessageDelimiter("\012\012");
+    sendStreamDistancesCommand();
+    
+    while(tcpClient.isConnected()) {
+        streamingPollingTimer += ofGetLastFrameTime();;
+        
+        string response = tcpClient.receive();
+        
+        if (response.length() > 0){
+            parseResponse(response);
+        }
+        
+        if (streamingPollingTimer > streamingPollingInterval) {
+            sendStreamDistancesCommand();
+            streamingPollingTimer = 0;
+        }
+        
+        threadInactiveTime = 0;
+        sleep(1);
+    }
 }
 
 void Hokuyo::sendRebootCommand() {
@@ -126,6 +159,7 @@ void Hokuyo::sendSetMotorSpeedCommand(int motorSpeed) {
     send("CR" + motorSpeedBytes);
 }
 
+// not implemented, not working
 void Hokuyo::sendSetIPAddressCommand() {
     string ipAddress;
     string netmask;
@@ -163,6 +197,12 @@ void Hokuyo::sendGetDistancesCommand() {
     send(msg);
 }
 
+void Hokuyo::sendStreamDistancesCommand() {
+    cout << "!!!!!!" << endl;
+    string msg = formatStreamDistancesMessage("MD");
+    send(msg);
+}
+
 void Hokuyo::sendGetDistancesAndIntensitiesCommand() {
     string msg = formatDistanceMessage("GE");
     send(msg);
@@ -173,20 +213,31 @@ void Hokuyo::send(string msg) {
 }
 
 string Hokuyo::formatDistanceMessage(string command) {
-    char startStepChars[5];
-    std::snprintf(startStepChars, 5, "%04d", startStep);
+    string startStepString = zeroPad(startStep, 4);
+    string endStepString = zeroPad(endStep, 4);
+    string clusterCountString = zeroPad(1, 2);
     
-    char endStepChars[5];
-    std::snprintf(endStepChars, 5, "%04d", endStep);
+    return command + startStepString + endStepString + clusterCountString;
+}
+
+string Hokuyo::formatStreamDistancesMessage(string command) {
+    string startStepString = zeroPad(startStep, 4);
+    string endStepString = zeroPad(endStep, 4);
+    string clusterCountString = zeroPad(1, 2);
+    string scanIntervalString = zeroPad(0, 2);
+    string numberOfScansString = zeroPad(0, 1);
     
-    char clusterCountChars[3];
-    std::snprintf(clusterCountChars, 3, "%02d", clusterCount);
+    return command + startStepString + endStepString + clusterCountString + scanIntervalString + numberOfScansString;
+}
+
+string Hokuyo::zeroPad(int value, int width) {
+    std::ostringstream ss;
+    ss << std::setw(width) << std::setfill('0') << value;
     
-    return command + (string)startStepChars + (string)endStepChars + (string)clusterCountChars;
+    return ss.str();
 }
 
 string Hokuyo::formatIpv4String(string command) {
-    
     return command;
 }
 
@@ -199,20 +250,20 @@ void Hokuyo::checkStatus() {
         sendParameterInfoCommand();
         statusTimer = 0.0;
     }
-    
-    if (laserActive && laserState == "OFF") {
-        sendMeasurementModeOnCommand();
-    }
-    
-    if (!laserActive && laserState == "ON") {
-        sendMeasurementModeOffCommand();
-    }
 }
 
 void Hokuyo::update() {
     lastFrameTime = ofGetLastFrameTime();
     
+    threadInactiveTime += lastFrameTime;
+    if (threadInactiveTime > threadInactiveInterval) {
+        startThread();
+        threadInactiveTime = 0;
+    }
+        
     if(tcpClient.isConnected()) {
+ 
+        
         if (!isConnected) {
             connectionStatus = "CONNECTED";
             
@@ -222,24 +273,7 @@ void Hokuyo::update() {
             sendVersionInfoCommand();
         }
         
-        string response = tcpClient.receive();
-        if (response.length() > 0){
-            parseResponse(response);
-        }
-        
         checkStatus();
-        
-        if (laserState == "ON") {
-            pollingTimer += lastFrameTime;
-            if (pollingTimer > pollingInterval) {
-                if (callIntensitiesActive) {
-                    sendGetDistancesAndIntensitiesCommand();
-                } else {
-                    sendGetDistancesCommand();
-                }
-                pollingTimer = 0;
-            }
-        }
     } else {
         for (int i = 0; i < angularResolution; i++) {
             coordinates[i] = ofPoint::zero();
@@ -248,7 +282,6 @@ void Hokuyo::update() {
         
         if (isConnected) {
             connectionStatus = "DISCONNECTED";
-            
             status = "Disconnected";
             isConnected = false;
         }
@@ -259,22 +292,6 @@ void Hokuyo::update() {
     if (status != lastStatus) {
         lastStatus = status;
     }
-}
-
-// event listeners
-void Hokuyo::setInterfaceAndIP(string _interface, string _localIP) {
-    interface = _interface;
-    localIPAddress = _localIP;
-}
-
-void Hokuyo::setLocalIPAddress(string & _localIPAddress) {
-    localIPAddress = _localIPAddress;
-}
-
-// event listeners
-void Hokuyo::setIPAddress(string &ipAddress) {
-    tcpClient.close();
-    connect();
 }
 
 void Hokuyo::setPositionX(float &positionX) {
@@ -312,7 +329,6 @@ void Hokuyo::setMirrorAngles(bool &_mirrorAngles) {
 
 void Hokuyo::draw() {
     ofSetColor(ofColor::grey);
-    
     
     vector<string> sensorInfoLines;
     
@@ -365,64 +381,112 @@ void Hokuyo::draw() {
 }
 
 string Hokuyo::checkSum(string str, int fromEnd) {
-    string msg = str.substr(0, str.size() - fromEnd);
-    int sum = str.back();
+    if (str.size() <= static_cast<size_t>(fromEnd)) return "";
     
-    int checkSum = 0;
-    for (int i = 0 ; i < msg.length(); i++) {
-        int decimal = msg[i];
-        checkSum += decimal;
+    size_t payloadLen = str.size() - fromEnd;
+    int sum = 0;
+    
+    for (size_t i = 0; i < payloadLen; ++i) {
+        sum += static_cast<unsigned char>(str[i]);
     }
     
-    checkSum = (checkSum & 0x3f) + 0x30;
-    if (checkSum == sum) {
-        return msg;
+    int expected = ((sum & 0x3F) + 0x30);
+    int received = static_cast<unsigned char>(str.back());
+    
+    if (expected == received) {
+        return str.substr(0, payloadLen);
     } else {
         return "";
     }
 }
 
-void Hokuyo::parseResponse(string str) {
+void Hokuyo::parseResponse(const string& str) {
     vector<string> lines = splitStringByNewline(str);
-    if (lines.size() == 0) return;
+    if (lines.size() == 0 || lines.empty()) return;
     
-    string header = lines[0];
+    string& header = lines[0];
     string command = header.substr(0, 2);
     
-    if (command == "GD") parseDistances(lines);
-    if (command == "GE") parseDistancesAndIntensities(lines);
-    if (command == "BM") parseActivate(lines);
-    if (command == "QT") parseQuiet(lines);
-    if (command == "II") parseStatusInfo(lines);
-    if (command == "VV") parseVersionInfo(lines);
-    if (command == "PP") parseParameterInfo(lines);
-    if (command == "CR") parseMotorSpeed(lines);
+    if (command == "MD") parseStreamingDistances(lines);
+    else if (command == "GD") parseDistances(lines);
+    else if (command == "GE") parseDistancesAndIntensities(lines);
+    else if (command == "BM") parseActivate(lines);
+    else if (command == "QT") parseQuiet(lines);
+    else if (command == "II") parseStatusInfo(lines);
+    else if (command == "VV") parseVersionInfo(lines);
+    else if (command == "PP") parseParameterInfo(lines);
+    else if (command == "CR") parseMotorSpeed(lines);
+}
+
+void Hokuyo::parseStreamingDistances(vector<string> packet) {
+    if (packet.size() < 2) return;
+    
+    const string& header = packet[0];
+    int startStep = stoi(header.substr(2, 4));
+    int endStep = stoi(header.substr(6, 4));
+    int clusterCount = stoi(header.substr(10, 2));
+    
+    // validate status and timestamp
+    if (checkSum(packet[1], 1).empty()) return;
+    if (checkSum(packet[2], 1).empty()) return;
+    
+    const int expectedDataPoints = (endStep - startStep + 1);
+    const int expectedChars = expectedDataPoints * 3;
+    
+    string concatenatedData;
+    concatenatedData.reserve(expectedChars);
+    
+    for (int i = 3; i < packet.size(); i++) {
+        string decoded = checkSum(packet[i], 1);
+        if (decoded.empty()) continue;
+        concatenatedData += decoded;
+    }
+    
+    if (concatenatedData.length() < expectedChars) return;
+    const char* raw = concatenatedData.c_str();
+    size_t numSteps = endStep - startStep + 1;
+    
+    int step = startStep;
+    for (int i = 0; i < numSteps; i++) {
+        int distance = sixBitCharDecode(raw + (i * 3), 3);
+        createCoordinate(step, distance);
+        step += 1;
+    }
+    
+    newCoordinatesAvailable = true;
+    streamingPollingTimer = 0;
 }
 
 void Hokuyo::parseDistances(vector<string> packet) {
-    if (packet.size() <= 2) return;
+    if (packet.size() < 2) return;
     
-    int startStep = stoi(packet[0].substr(2, 4));
-    int endStep = stoi(packet[0].substr(6, 4));
-    int clusterCount = stoi(packet[0].substr(10, 2));
+    const string& header = packet[0];
+    int startStep = stoi(header.substr(2, 4));
+    int endStep = stoi(header.substr(6, 4));
+    int clusterCount = stoi(header.substr(10, 2));
     
-    string status = checkSum(packet[1], 1);
-    int timeStamp = char2int6bitDecode(checkSum(packet[2], 1));
+    // validate status and timestamp
+    if (checkSum(packet[1], 1).empty()) return;
+    if (checkSum(packet[2], 1).empty()) return;
     
-    string concatenatedData = "";
+    const int expectedDataPoints = (endStep - startStep + 1);
+    const int expectedChars = expectedDataPoints * 3;
+    
+    string concatenatedData;
+    concatenatedData.reserve(expectedChars);
+
     for (int i = 3; i < packet.size(); i++) {
-        string encodedData = checkSum(packet[i], 1);
-        concatenatedData += encodedData;
+        string decoded = checkSum(packet[i], 1);
+        if (decoded.empty()) continue;
+        concatenatedData += decoded;
     }
     
-    if (concatenatedData.size() % 6 != 0) return;
-    if (concatenatedData.size() / 6 != (endStep - startStep) + 1) return;
+    const char* raw = concatenatedData.c_str();
+    size_t numSteps = endStep - startStep + 1;
     
     int step = startStep;
-    for (int i = 0; i < concatenatedData.size(); i+=3) {
-        string threeChars = concatenatedData.substr(i, 3);
-        int distance = char2int6bitDecode(threeChars);
-        
+    for (int i = 0; i < numSteps; i++) {
+        int distance = sixBitCharDecode(raw + (i * 3), 3);
         createCoordinate(step, distance);
         step += 1;
     }
@@ -437,31 +501,38 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
     int endStep = stoi(packet[0].substr(6, 4));
     int clusterCount = stoi(packet[0].substr(10, 2));
     
-    string status = checkSum(packet[1], 1);
-    int timeStamp = char2int6bitDecode(checkSum(packet[2], 1));
+    // validate status and timestamp
+    if (checkSum(packet[1], 1).empty()) return;
+    if (checkSum(packet[2], 1).empty()) return;
     
-    string concatenatedData = "";
+    const int expectedDataPoints = (endStep - startStep + 1);
+    const int expectedChars = expectedDataPoints * 3;
+    
+    string concatenatedData;
+    concatenatedData.reserve(expectedChars);
+
     for (int i = 3; i < packet.size(); i++) {
-        string encodedData = checkSum(packet[i], 1);
-        concatenatedData += encodedData;
+        string decoded = checkSum(packet[i], 1);
+        if (decoded.empty()) continue;
+        concatenatedData += decoded;
     }
-    
-    if (concatenatedData.size() % 6 != 0) return;
-    if (concatenatedData.size() / 6 != (endStep - startStep) + 1) return;
     
     int step = startStep;
-    for (int i = 0; i < concatenatedData.size(); i+=6) {
-        string distanceChars = concatenatedData.substr(i, 3);
-        string intensityChars = concatenatedData.substr(i + 3, 3);
-        
-        int distance = char2int6bitDecode(distanceChars);
-        int intensity = char2int6bitDecode(intensityChars);
-        
-        createCoordinate(step, distance);
-        intensities[step] = intensity;
-        
-        step += 1;
-    }
+    
+    // will revisit later
+    // so far intensities aren't useful for people tracking
+    /*for (int i = 0; i < concatenatedData.size(); i+=6) {
+     string distanceChars = concatenatedData.substr(i, 3);
+     string intensityChars = concatenatedData.substr(i + 3, 3);
+     
+     int distance = sixBitCharDecode(distanceChars);
+     int intensity = sixBitCharDecode(intensityChars);
+     
+     createCoordinate(step, distance);
+     intensities[step] = intensity;
+     
+     step += 1;
+     }*/
     
     newCoordinatesAvailable = true;
 }
@@ -475,21 +546,24 @@ void Hokuyo::createCoordinate(int index, float distance) {
     coordinates[index].set(ofPoint(x, y) + ofPoint(position.x, position.y));
 }
 
-void Hokuyo::parseStatusInfo(vector<string> packet) {
-    for (int i = 1; i < packet.size(); i++) {
-        string checkedLine = checkSum(packet[i], 2);
+void Hokuyo::parseStatusInfo(vector<string>& packet) {
+    for (size_t i = 1; i < packet.size(); i++) {
+        const string& rawLine = packet[i];
+        string checkedLine = checkSum(rawLine, 2);
         
-        if (checkedLine.size() > 5) {
-            string name = checkedLine.substr(0, 4);
-            string info = checkedLine.substr(5);
-            
-            if (name == "MODL") model = info;
-            if (name == "LASR") laserState = info;
-            if (name == "MESM") measurementMode = info;
-            if (name == "SBPS") bitRate = info;
-            if (name == "TIME") timeStamp = char2int6bitDecode(info);
-            if (name == "STAT") sensorDiagnostic = info;
+        if (checkedLine.empty() || checkedLine.size() <= 5) continue;
+        
+        string name = checkedLine.substr(0, 4);
+        string info = checkedLine.substr(5);
+        
+        if (name == "MODL") { model = info; }
+        else if (name == "LASR") { laserState = info; }
+        else if (name == "MESM") { measurementMode = info; }
+        else if (name == "SBPS") { bitRate = info; }
+        else if (name == "TIME" && info.size() >= 3) {
+            timeStamp = sixBitCharDecode(info.c_str(), 3);
         }
+        else if (name == "STAT") { sensorDiagnostic = info; }
     }
 }
 
@@ -510,10 +584,10 @@ void Hokuyo::parseVersionInfo(vector<string> packet) {
             string info = checkedLine.substr(5);
             
             if (name == "VEND") vendorInfo = info;
-            if (name == "PROD") productInfo = info;
-            if (name == "FIRM") firmwareVersion = info;
-            if (name == "PROT") protocolVersion = info;
-            if (name == "SERI") serialNumber = info;
+            else if (name == "PROD") productInfo = info;
+            else if (name == "FIRM") firmwareVersion = info;
+            else if (name == "PROT") protocolVersion = info;
+            else if (name == "SERI") serialNumber = info;
         }
     }
 }
@@ -527,13 +601,13 @@ void Hokuyo::parseParameterInfo(vector<string> packet) {
             string info = checkedLine.substr(5);
             
             if (name == "MODL") model = info;
-            if (name == "DMIN") minimumMeasurableDistance = info;
-            if (name == "DMAX") maximumMeasureableDistance = info;
-            if (name == "ARES") angularResolutionInfo = info;
-            if (name == "AMIN") startingStep = info;
-            if (name == "AMAX") endingStep = info;
-            if (name == "AFRT") stepNumberOfFrontDirection = info;
-            if (name == "SCAN") scanningSpeed = info;
+            else if (name == "DMIN") minimumMeasurableDistance = info;
+            else if (name == "DMAX") maximumMeasureableDistance = info;
+            else if (name == "ARES") angularResolutionInfo = info;
+            else if (name == "AMIN") startingStep = info;
+            else if (name == "AMAX") endingStep = info;
+            else if (name == "AFRT") stepNumberOfFrontDirection = info;
+            else if (name == "SCAN") scanningSpeed = info;
         }
     }
 }
@@ -547,7 +621,7 @@ void Hokuyo::parseActivate(vector<string> packet) {
         } else if (checkedLine == "01") {
             status = "Unable to control due to laser malfunction";
         } else if (checkedLine == "02") {
-            laserState = "ON";
+            // laserState = "ON";
             status = "Laser is already on.";
             
         }
@@ -561,16 +635,17 @@ void Hokuyo::parseQuiet(vector<string> packet) {
     }
 }
 
-int Hokuyo::char2int6bitDecode(string str) {
-    int sum = 0;
-    for (int i = 0; i < str.size(); i++) {
-        int decimal = str[i];
-        decimal -= 0x30;
-        decimal = decimal << (6 * (str.size() - i - 1));
-        sum += decimal;
+int Hokuyo::sixBitCharDecode(const char* data, int length) {
+    if (length == 2) {
+        return ((data[0] - 0x30) << 6) |
+        ((data[1] - 0x30));
+    } else if (length == 3) {
+        return ((data[0] - 0x30) << 12) |
+        ((data[1] - 0x30) << 6)  |
+        ((data[2] - 0x30));
+    } else {
+        return 0;
     }
-    
-    return sum;
 }
 
 void Hokuyo::reconnect() {
@@ -588,11 +663,19 @@ void Hokuyo::close() {
 }
 
 vector<string> Hokuyo::splitStringByNewline(const string& str) {
-    auto result = std::vector<std::string>{};
-    auto ss = std::stringstream{str};
+    std::vector<std::string> result;
+    size_t start = 0;
     
-    for (std::string line; std::getline(ss, line, '\n');)
-        result.push_back(line);
+    while (start < str.length()) {
+        size_t end = str.find('\n', start);
+        if (end == std::string::npos) {
+            result.emplace_back(str.substr(start));
+            break;
+        } else {
+            result.emplace_back(str.substr(start, end - start));
+            start = end + 1;
+        }
+    }
     
     return result;
 }

@@ -12,7 +12,6 @@
 #include "ofxNetwork.h"
 #include "DraggablePoint.hpp"
 #include "MemoryFont.hpp"
-
 #include "sstream"
 
 class Hokuyo : public ofThread {
@@ -38,26 +37,31 @@ public:
     void sendStatusInfoCommand();
     void sendParameterInfoCommand();
     void sendGetDistancesCommand();
+    void sendStreamDistancesCommand();
     void sendGetDistancesAndIntensitiesCommand();
     void send(string msg);
 
-    void parseResponse(string str);
-    void parseStatusInfo(vector<string> packet);
+    void parseResponse(const string& str);
+    void parseStatusInfo(vector<string>& packet);
     void parseVersionInfo(vector<string> packet);
     void parseParameterInfo(vector<string> packet);
     void parseActivate(vector<string> packet);
     void parseQuiet(vector<string> packet);
+    void parseStreamingDistances(vector<string> packet);
     void parseDistances(vector<string> packet);
     void parseDistancesAndIntensities(vector<string> packet);
     void parseMotorSpeed(vector<string> packet);
+    
+    string zeroPad(int value, int numberChars);
     
     string checkSum(string str, int fromEnd);
     
     void checkStatus();
     string formatDistanceMessage(string command);
+    string formatStreamDistancesMessage(string command);
     string formatIpv4String(string command);
     
-    int char2int6bitDecode(string str);
+    int sixBitCharDecode(const char* data, int length);
     vector<string> splitStringByNewline(const string& str);
     
     void setInfoPosition(float x, float y);
@@ -70,7 +74,6 @@ public:
     void setPositionY(float &positionY);
     void setMirrorAngles(bool &mirrorX);
     void setSensorRotation(float &sensorRotationDeg);
-    void alignSensor();
     
     ofParameter<string> ipAddress;
     ofParameter<float> positionX;
@@ -81,7 +84,6 @@ public:
     ofParameter<bool> showSensorInformation;
     ofParameter<ofColor> sensorColor;
     ofParameter<int> whichMeatbag;
-    ofxButton alignSensorButton;
     
     void createCoordinate(int step, float distance);
     vector<float> angles;
@@ -94,27 +96,24 @@ public:
     float mouseBoxSize, mouseBoxHalfSize, noseRadius;
     float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
     bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
-    bool isConnected, alignRequested;
-    string model;
+    bool isConnected, threadActive;
     
     int index;
-    string status, connectionStatus, laserState;
+    float streamingPollingTimer, streamingPollingInterval;
+    string model, status, connectionStatus, laserState;
 private:
     ofxTCPClient tcpClient;
        
     string netmask, gateway, localIPAddress, interface;
     int port;
     
-    bool laserActive;
-    float pollingTimer, pollingInterval;
     float reconnectionTimer, reconnectionTimeout;
     float statusTimer, statusInterval;
+    float threadInactiveTime, threadInactiveInterval;
     float lastFrameTime;
     
     bool callIntensitiesActive;
-    
     int startStep, endStep, clusterCount, angularResolution;
-    
     int timeStamp;
     
     MemoryFont font;
