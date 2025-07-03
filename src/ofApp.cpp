@@ -21,7 +21,7 @@ string ofApp::getAppVersion() {
 //--------------------------------------------------------------
 void ofApp::setup(){
     version = getAppVersion();
-    ofSetFrameRate(60);
+    // ofSetFrameRate(120);
     
     titleFont.setBold();
     titleFont.setSize(14);
@@ -158,9 +158,11 @@ void ofApp::update(){
     meatbags.update();
     filters.update();
     
-    sensors.getCoordinatesAndIntensities(meatbags);
+    if (sensors.areNewCoordinatesAvailable()) {
+        sensors.getCoordinates(meatbags);
+        meatbags.updateBlobs();
+    }
     
-    meatbags.updateBlobs();
     meatbags.getBlobs(blobs);
     
     filters.checkBlobs(blobs);
@@ -220,12 +222,13 @@ void ofApp::drawHelpText() {
     helpFont.draw("/blobsActive index1 index2 ...", 15, 240);
     
     titleFont.draw("filter OSC format", 15, 280);
-    helpFont.draw("/filter index isAnyBlobInside closestBlobDistanceToFilterCentroid", 15, 300);
+    helpFont.draw("/filter index isAnyBlobInside blobDistanceToCentroid", 15, 300);
+    helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 320);
     
-    titleFont.draw("logging OSC format", 15, 340);
-    helpFont.draw("/generalStatus sensorIndex status", 15, 360);
-    helpFont.draw("/connectionStatus sensorIndex status", 15, 380);
-    helpFont.draw("/laserStatus sensorIndex status", 15, 400);
+    titleFont.draw("logging OSC format", 15, 360);
+    helpFont.draw("/generalStatus sensorIndex status", 15, 380);
+    helpFont.draw("/connectionStatus sensorIndex status", 15, 400);
+    helpFont.draw("/laserStatus sensorIndex status", 15, 420);
 }
 
 void ofApp::drawSaveNotification() {
@@ -387,7 +390,7 @@ void ofApp::addFilter(int numberPoints) {
         float ratio = float(i) / numberPoints;
         float x = cos(ratio * TWO_PI + HALF_PI * 0.5) * 0.5 + center.x;
         float y = sin(ratio * TWO_PI + HALF_PI * 0.5) * 0.5 + center.y;
-        cout << x << " " << y << endl;
+
         coordinatesSettings.add(filter->points[i].set("p" + to_string(i), ofVec2f(x, y), ofVec2f(-10, 10), ofVec2f(-10, 10)));
     }
     

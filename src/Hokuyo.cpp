@@ -198,7 +198,6 @@ void Hokuyo::sendGetDistancesCommand() {
 }
 
 void Hokuyo::sendStreamDistancesCommand() {
-    cout << "!!!!!!" << endl;
     string msg = formatStreamDistancesMessage("MD");
     send(msg);
 }
