@@ -23,6 +23,7 @@ public:
     void removeSensor();
     void closeSensors();
 
+    void getCoordinates(MeatbagsFactory& meatbags);
     void getCoordinatesAndIntensities(MeatbagsFactory& meatbags);
     void getCoordinatesAndIntensities(vector<ofPoint> &coordinates, vector <int> &intensities, int &numberCoordinates);
     bool areNewCoordinatesAvailable();
@@ -45,6 +46,7 @@ public:
     Space space;
     int numberCoordinates;
     float scale;
+    float lastTimeRecorded;
     
     // vector<vector<double>> fixedCoordinates;
     // vector<vector<double>> movingCoordinates;

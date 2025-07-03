@@ -75,6 +75,7 @@ bool Sensors::areNewCoordinatesAvailable() {
         if (hokuyo->newCoordinatesAvailable) {
             newCoordinatesAvalable = true;
             hokuyo->newCoordinatesAvailable = false;
+            break;
         }
     }
     return newCoordinatesAvalable;
@@ -95,18 +96,44 @@ bool Sensors::checkWithinFilters(float x, float y) {
     return isWithinFilter;
 }
 
-void Sensors::getCoordinatesAndIntensities(MeatbagsFactory& meatbags) {
+void Sensors::getCoordinates(MeatbagsFactory& meatbags) {
     for (auto& meatbag : meatbags.meatbags) {
         int counter = 0;
 
         for (auto& sensor : hokuyos) {
             if (sensor->whichMeatbag == meatbag->index) {
-                int intensityIndex = 0;
-                
                 for (auto& coordinate : sensor->coordinates) {
                     float x = coordinate.x;
                     float y = coordinate.y;
+                        
+                    if (coordinate.x != 0 && coordinate.y != 0) {
+                        if (checkWithinFilters(x, y)) {
+                            meatbag->coordinates[counter].set(x, y);
+                            counter++;
+                        }
+                    }
+                }
+                
+                sensor->newCoordinatesAvailable = false;
+            }
+        }
+        
+        meatbag->numberCoordinates = counter;
+    }
+}
 
+void Sensors::getCoordinatesAndIntensities(MeatbagsFactory& meatbags) {
+    for (auto& meatbag : meatbags.meatbags) {
+        int counter = 0;
+
+        for (auto& sensor : hokuyos) {
+            if (sensor->newCoordinatesAvailable && (sensor->whichMeatbag == meatbag->index)) {
+                int intensityIndex = 0;
+                    
+                for (auto& coordinate : sensor->coordinates) {
+                    float x = coordinate.x;
+                    float y = coordinate.y;
+                        
                     if (coordinate.x != 0 && coordinate.y != 0) {
                         if (checkWithinFilters(x, y)) {
                             meatbag->coordinates[counter].set(x, y);
@@ -114,9 +141,11 @@ void Sensors::getCoordinatesAndIntensities(MeatbagsFactory& meatbags) {
                             counter++;
                         }
                     }
-                    
+                        
                     intensityIndex++;
                 }
+                
+                sensor->newCoordinatesAvailable = false;
             }
         }
         
