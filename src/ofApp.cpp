@@ -1,21 +1,58 @@
 #include "ofApp.h"
 
 string ofApp::getAppVersion() {
-    // Get the path to the app bundle's Info.plist
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+
     CFBundleRef mainBundle = CFBundleGetMainBundle();
     CFDictionaryRef infoDict = CFBundleGetInfoDictionary(mainBundle);
 
-    // Retrieve the version string
     CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(infoDict, CFSTR("CFBundleShortVersionString"));
-    
-    // Convert the CFStringRef to a C++ string
+
     char versionBuffer[256];
     if (versionStr) {
         CFStringGetCString(versionStr, versionBuffer, sizeof(versionBuffer), kCFStringEncodingUTF8);
-        return string(versionBuffer);
-    } else {
+        return std::string(versionBuffer);
+    }
+    else {
         return "Unknown Version";
     }
+
+#elif defined(_WIN32)
+#include <windows.h>
+#include <vector>
+
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(NULL, exePath, MAX_PATH);
+
+    DWORD dummy;
+    DWORD size = GetFileVersionInfoSizeA(exePath, &dummy);
+    if (size == 0) return "Unknown Version";
+
+    std::vector<char> buffer(size);
+    if (!GetFileVersionInfoA(exePath, 0, size, buffer.data())) return "Unknown Version";
+
+    VS_FIXEDFILEINFO* fileInfo = nullptr;
+    UINT len = 0;
+    if (!VerQueryValueA(buffer.data(), "\\", reinterpret_cast<LPVOID*>(&fileInfo), &len)) return "Unknown Version";
+
+    if (fileInfo) {
+        WORD major = HIWORD(fileInfo->dwFileVersionMS);
+        WORD minor = LOWORD(fileInfo->dwFileVersionMS);
+        WORD patch = HIWORD(fileInfo->dwFileVersionLS);
+        WORD build = LOWORD(fileInfo->dwFileVersionLS);
+
+        char versionStr[64];
+        snprintf(versionStr, sizeof(versionStr), "%d.%d.%d.%d", major, minor, patch, build);
+        return std::string(versionStr);
+    }
+
+    return "Unknown Version";
+
+#else
+    // For Linux or other platforms, you can hardcode or read from a config
+    return "Unknown Version";
+#endif
 }
 
 //--------------------------------------------------------------

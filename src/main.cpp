@@ -3,6 +3,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#pragma comment(lib, "Version.lib")
 
 int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ofSetupOpenGL(1200, 800, OF_WINDOW);
