@@ -68,18 +68,21 @@ public:
 
     // event functions
     void setInterfaceAndIP(string interface, string localIP);
-    void setLocalIPAddress(string &localIPAddress);
-    void setIPAddress(string &ipAddress);
-    void setPositionX(float &positionX);
-    void setPositionY(float &positionY);
-    void setMirrorAngles(bool &mirrorX);
-    void setSensorRotation(float &sensorRotationDeg);
-    
+    void setLocalIPAddress(string& localIPAddress);
+    void setIPAddress(string& ipAddress);
+    void setPositionX(float& positionX);
+    void setPositionY(float& positionY);
+    void setMirrorAngles(bool& mirrorX);
+    void setSensorRotation(float& sensorRotationDeg);
+    void setSleep(bool& isSleeping);
+
     ofParameter<string> ipAddress;
     ofParameter<float> positionX;
     ofParameter<float> positionY;
     ofParameter<bool> autoReconnectActive;
     ofParameter<bool> mirrorAngles;
+    ofParameter<bool> isSleeping;
+
     ofParameter<float> sensorRotationDeg;
     ofParameter<bool> showSensorInformation;
     ofParameter<ofColor> sensorColor;

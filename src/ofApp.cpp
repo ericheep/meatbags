@@ -370,18 +370,13 @@ void ofApp::addSensor() {
     Hokuyo* hokuyo = new Hokuyo();
     hokuyo->index = onesIndex;
     
-    /*ofParameterGroup positionSettings;
-    positionSettings.setName("position");
-    positionSettings.add(hokuyo->positionX.set("position x", sensorX, -15.0, 15.0));
-    positionSettings.add(hokuyo->positionY.set("position y", sensorY, 0.0, 30.0));
-    positionSettings.add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));*/
-    
     ofxPanel * sensorGui = new ofxPanel();
     sensorGui->setDefaultWidth(190);
     sensorGui->setup("sensor " + to_string(onesIndex));
     sensorGui->add(hokuyo->sensorColor.set("color", randomColor));
     sensorGui->add(hokuyo->ipAddress.set("IP address", "0.0.0.0"));
     sensorGui->add(hokuyo->autoReconnectActive.set("auto reconnect", true));
+    sensorGui->add(hokuyo->isSleeping.set("sleep", false));
     sensorGui->add(hokuyo->mirrorAngles.set("mirror angles", false));
     sensorGui->add(hokuyo->whichMeatbag.set("which meatbag", 1, 1, 2));
     sensorGui->add(hokuyo->positionX.set("position x", sensorX, -15.0, 15.0));
@@ -495,11 +490,11 @@ void ofApp::setLeftSideGuiPositions() {
     for (int i = 0; i < sensorGuis.size(); i++) {
         if (i < 3) {
             sensorGuis[i]->setPosition(ofVec3f(x, y));
-            y += 135;
+            y += 150;
         } else {
-            float offset = 135 * 3;
+            float offset = 150 * 3;
             sensorGuis[i]->setPosition(ofVec3f(x + 195, y - offset));
-            y += 135;
+            y += 150;
         }
     }
 }
