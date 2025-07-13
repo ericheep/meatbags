@@ -38,6 +38,7 @@ Hokuyo::Hokuyo() {
     positionY.addListener(this, &Hokuyo::setPositionY);
     mirrorAngles.addListener(this, &Hokuyo::setMirrorAngles);
     sensorRotationDeg.addListener(this, &Hokuyo::setSensorRotation);
+    isSleeping.addListener(this, &Hokuyo::setSleep);
     
     netmask = "255.255.255.0";
     gateway = "192.168.0.1";
@@ -84,7 +85,16 @@ Hokuyo::~Hokuyo() {
     stopThread();
 }
 
-void Hokuyo::setSensorRotation(float &_sensorRotationDeg) {
+void Hokuyo::setSleep(bool& isSleeping) {
+    if (isSleeping) {
+        sendMeasurementModeOffCommand();
+    } else {
+        sendMeasurementModeOnCommand();
+        sendStreamDistancesCommand();
+    }
+}
+
+void Hokuyo::setSensorRotation(float& _sensorRotationDeg) {
     sensorRotationRad = _sensorRotationDeg / 360.0 * TWO_PI;
 }
 
@@ -130,7 +140,7 @@ void Hokuyo::threadedFunction() {
         }
         
         if (streamingPollingTimer > streamingPollingInterval) {
-            sendStreamDistancesCommand();
+            if (!isSleeping) sendStreamDistancesCommand();
             streamingPollingTimer = 0;
         }
         
@@ -261,8 +271,6 @@ void Hokuyo::update() {
     }
         
     if(tcpClient.isConnected()) {
- 
-        
         if (!isConnected) {
             connectionStatus = "CONNECTED";
             
