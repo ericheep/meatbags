@@ -30,11 +30,11 @@ string ofApp::getAppVersion() {
     if (size == 0) return "Unknown Version";
 
     std::vector<char> buffer(size);
-    if (!GetFileVersionInfoA(exePath, 0, size, buffer.data())) return "Unknown Version";
+    if (!GetFileVersionInfoA(exePath, 0, size, buffer.data())) return " Unknown Version";
 
     VS_FIXEDFILEINFO* fileInfo = nullptr;
     UINT len = 0;
-    if (!VerQueryValueA(buffer.data(), "\\", reinterpret_cast<LPVOID*>(&fileInfo), &len)) return "Unknown Version";
+    if (!VerQueryValueA(buffer.data(), "\\", reinterpret_cast<LPVOID*>(&fileInfo), &len)) return " Unknown Version";
 
     if (fileInfo) {
         WORD major = HIWORD(fileInfo->dwFileVersionMS);
