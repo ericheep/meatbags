@@ -123,7 +123,7 @@ void OscSender::sendFilterBlobs(Filters& filters) {
 }
 
 void OscSender::sendLogs(Sensors& sensors) {
-    for (auto & sensor : sensors.hokuyos) {
+    for (auto & sensor : sensors.sensors) {
         string connectionStatus = sensor->connectionStatus;
         string generalStatus = sensor->status;
         string laserStatus = sensor->laserState;

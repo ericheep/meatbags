@@ -6,10 +6,6 @@
 #include <functional>
 
 UI::UI() {
-    ofAddListener(ofEvents().mouseMoved, this, &UI::onMouseMoved);
-    ofAddListener(ofEvents().mousePressed, this, &UI::onMousePressed);
-    ofAddListener(ofEvents().mouseReleased, this, &UI::onMouseReleased);
-    
     size = 16;
     offset = 5;
 
@@ -57,11 +53,7 @@ UI::UI() {
     titleFont.setSize(15);
 }
 
-UI::~UI() {
-    ofRemoveListener(ofEvents().mouseMoved, this, &UI::onMouseMoved);
-    ofRemoveListener(ofEvents().mousePressed, this, &UI::onMousePressed);
-    ofRemoveListener(ofEvents().mouseReleased, this, &UI::onMouseReleased);
-}
+UI::~UI() {}
 
 void UI::draw() {
     ofPushMatrix();

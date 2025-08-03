@@ -30,6 +30,10 @@ public:
     void checkIfMouseClicked(UIButton & button, ofPoint mousePoint);
     void checkIfMouseReleased(UIButton & button);
 
+    void onMouseMoved(ofMouseEventArgs & mouseArgs);
+    void onMousePressed(ofMouseEventArgs & mouseArgs);
+    void onMouseReleased(ofMouseEventArgs & mouseArgs);
+    
     UIButton saveButton;
     UIButton addSensorButton;
     UIButton removeSensorButton;
@@ -48,10 +52,7 @@ public:
     
     float size, offset;
     
-protected:
-    void onMouseMoved(ofMouseEventArgs & mouseArgs);
-    void onMousePressed(ofMouseEventArgs & mouseArgs);
-    void onMouseReleased(ofMouseEventArgs & mouseArgs);
+
 };
 
 #endif /* UI_hpp */

@@ -45,7 +45,7 @@ void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
     drawSensors(sensors, filters);
     ofPopMatrix();
     
-    for (const auto& sensor : sensors.hokuyos) {
+    for (const auto& sensor : sensors.sensors) {
         if (sensor->showSensorInformation) sensor->draw();
     }
     
@@ -180,22 +180,22 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, Filter
 }
 
 void Viewer::drawSensors(Sensors& sensors, Filters & filters) {
-    for (const auto& sensor : sensors.hokuyos) {
+    for (const auto& sensor : sensors.sensors) {
         drawCoordinates(sensor->coordinates, sensor->sensorColor, filters);
         drawSensor(sensor);
     }
 }
 
 void Viewer::drawConnections(Sensors& sensors) {
-    int numberSensors = sensors.hokuyos.size();
+    int numberSensors = sensors.sensors.size();
     
     float connectionsBoxHeight = numberSensors * 20;
     float y = space.height - connectionsBoxHeight + 8;
     float x = 10;
     
     for (int i = 0; i < numberSensors; i++) {
-        bool connected = sensors.hokuyos[i]->isConnected;
-        string model = sensors.hokuyos[i]->model;
+        bool connected = sensors.sensors[i]->isConnected;
+        string model = sensors.sensors[i]->model;
 
         ofFill();
         if (connected) {
@@ -203,26 +203,27 @@ void Viewer::drawConnections(Sensors& sensors) {
         } else {
             ofSetColor(255, 0, 0, 130);
         }
+        
         string sensorString = "Sensor " + to_string(i + 1) + ": " + model;
         ofDrawRectangle(x, y + i * 20 - 8, 7, 7);
-        ofSetColor(sensors.hokuyos[i]->sensorColor);
+        ofSetColor(sensors.sensors[i]->sensorColor);
         sensorFont.draw(sensorString, x + 15, y + i * 20 - 1);
     }
 }
 
-void Viewer::drawSensor(Hokuyo* hokuyo) {
-    ofPoint point = ofPoint(hokuyo->position.x, hokuyo->position.y);
-    
+void Viewer::drawSensor(Sensor* sensor) {
+    ofPoint point = ofPoint(sensor->position.x, sensor->position.y);
+        
     point *= scale;
     point += space.origin;
     
-    float size = hokuyo->position.size;
-    float halfSize = hokuyo->position.halfSize;
-    float noseRadius = hokuyo->noseRadius;
-    float noseSize = hokuyo->nosePosition.size;
+    float size = sensor->position.size;
+    float halfSize = sensor->position.halfSize;
+    float noseRadius = sensor->noseRadius;
+    float noseSize = sensor->nosePosition.size;
 
-    ofSetColor(hokuyo->sensorColor);
-    if (hokuyo->position.isMouseOver) {
+    ofSetColor(sensor->sensorColor);
+    if (sensor->position.isMouseOver) {
         ofFill();
     } else {
         ofNoFill();
@@ -230,10 +231,10 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
     
     ofPushMatrix();
     ofTranslate(point.x, point.y);
-    ofRotateRad(hokuyo->sensorRotationRad);
+    ofRotateRad(sensor->sensorRotationRad);
     ofDrawRectangle(-halfSize, -halfSize, size, size);
     
-    if (hokuyo->isConnected) {
+    if (sensor->isConnected) {
         float time = fmod(ofGetElapsedTimef(), 1.0);
         for (int i = 0; i < 3; i++) {
             float t = 1.0 / 3.0 * i;
@@ -244,7 +245,7 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
         }
     }
     
-    if (hokuyo->nosePosition.isMouseOver) {
+    if (sensor->nosePosition.isMouseOver) {
         ofFill();
     } else {
         ofNoFill();

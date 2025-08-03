@@ -5,6 +5,7 @@
 #include "ofxGui.h"
 #include "ofxDropdown.h"
 
+#include "OrbbecPulsar.hpp"
 #include "Hokuyo.hpp"
 #include "Blob.hpp"
 #include "Meatbags.hpp"
@@ -27,15 +28,24 @@ public:
     void draw() override;
     void exit() override;
     void windowResized(int width, int height) override;
-    void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
-    void mouseDragged(int x, int y, int button) override;
-    void mouseMoved(int x, int y) override;
-    void mousePressed(int x, int y, int button) override;
+    
+    void onMouseMoved(ofMouseEventArgs & mouseArgs);
+    void onMousePressed(ofMouseEventArgs & mouseArgs);
+    void onMouseDragged(ofMouseEventArgs & mouseArgs);
+    void onMouseReleased(ofMouseEventArgs & mouseArgs);
+    void onMouseScrolled(ofMouseEventArgs & mouseArgs);
+    void onKeyPressed(ofKeyEventArgs & keyArgs);
+    void onKeyReleased(ofKeyEventArgs & keyArgs);
+    
+   // void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
+   // void mouseDragged(int x, int y, int button) override;
+   // void mouseMoved(int x, int y) override;
+   // void mousePressed(int x, int y, int button) override;
     
     string getAppVersion();
 
-    void keyPressed(int key) override;
-    void keyReleased(int key) override;
+    //void keyPressed(int key) override;
+    //void keyReleased(int key) override;
 
     void drawMeatbags();
     void drawHelpText();
@@ -101,6 +111,7 @@ public:
     OscSenders oscSenders;
     InterfaceSelector interfaceSelector;
     
+    ofColor guiBackgroundColor, guiBarColor, guiHeaderColor, guiTextColor;
     ofxPanel hiddenGui;
     ofxPanel generalGui;
     ofxPanel filtersGui;

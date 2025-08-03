@@ -1,26 +1,18 @@
 //
 //  Sensors.cpp
-//
+//  meatbags
 
 #include "Sensors.hpp"
 
-Sensors::Sensors() {
-    ofAddListener(ofEvents().mouseMoved, this, &Sensors::onMouseMoved);
-    ofAddListener(ofEvents().mousePressed, this, &Sensors::onMousePressed);
-    ofAddListener(ofEvents().mouseDragged, this, &Sensors::onMouseDragged);
-    ofAddListener(ofEvents().mouseReleased, this, &Sensors::onMouseReleased);
-}
+Sensors::Sensors() {}
 
-Sensors::~Sensors() {
-    ofRemoveListener(ofEvents().mouseMoved, this, &Sensors::onMouseMoved);
-    ofRemoveListener(ofEvents().mousePressed, this, &Sensors::onMousePressed);
-    ofRemoveListener(ofEvents().mouseDragged, this, &Sensors::onMouseDragged);
-    ofRemoveListener(ofEvents().mouseReleased, this, &Sensors::onMouseReleased);
-}
+Sensors::~Sensors() {}
 
 void Sensors::update() {
-    for (auto &hokuyo : hokuyos) {
-        hokuyo->update();
+    lastFrameTime = ofGetLastFrameTime();
+    for (auto &sensor : sensors) {
+        sensor->lastFrameTime = lastFrameTime;
+        sensor->update();
     }
 }
 
@@ -34,34 +26,34 @@ void Sensors::setSpace(Space & _space) {
 }
 
 void Sensors::setLocalIpAddress(string & localIPAddress) {
-    for (auto &hokuyo : hokuyos) {
-        hokuyo->setLocalIPAddress(localIPAddress);
+    for (auto &sensor : sensors) {
+        sensor->setLocalIPAddress(localIPAddress);
     }
 }
 
 void Sensors::setInterfaceAndIP(string interface, string localIP) {
-    for (auto &hokuyo : hokuyos) {
-        hokuyo->setInterfaceAndIP(interface, localIP);
+    for (auto &sensor : sensors) {
+        sensor->setInterfaceAndIP(interface, localIP);
     }
 }
 
 void Sensors::setInfoPositions(float x, float y) {
-    for (auto &hokuyo : hokuyos) {
-        hokuyo->setInfoPosition(x, y);
+    for (auto &sensor : sensors) {
+        sensor->setInfoPosition(x, y);
     }
 }
 
-void Sensors::addSensor(Hokuyo* hokuyo) {
-    hokuyos.push_back(hokuyo);
+void Sensors::addSensor(Sensor* sensor) {
+    sensors.push_back(sensor);
 }
 
 void Sensors::removeSensor() {
-    hokuyos.pop_back();
+    sensors.pop_back();
 }
 
 void Sensors::closeSensors() {
-    for (auto& hokuyo : hokuyos) {
-        hokuyo->close();
+    for (auto& sensor : sensors) {
+        sensor->close();
     }
 }
 
@@ -71,10 +63,10 @@ void Sensors::setFilters(Filters & _filters) {
 
 bool Sensors::areNewCoordinatesAvailable() {
     bool newCoordinatesAvalable = false;
-    for (auto& hokuyo : hokuyos) {
-        if (hokuyo->newCoordinatesAvailable) {
+    for (auto& sensor : sensors) {
+        if (sensor->newCoordinatesAvailable) {
             newCoordinatesAvalable = true;
-            hokuyo->newCoordinatesAvailable = false;
+            sensor->newCoordinatesAvailable = false;
             break;
         }
     }
@@ -100,7 +92,7 @@ void Sensors::getCoordinates(MeatbagsFactory& meatbags) {
     for (auto& meatbag : meatbags.meatbags) {
         int counter = 0;
 
-        for (auto& sensor : hokuyos) {
+        for (auto& sensor : sensors) {
             if (sensor->whichMeatbag == meatbag->index) {
                 for (auto& coordinate : sensor->coordinates) {
                     float x = coordinate.x;
@@ -126,7 +118,7 @@ void Sensors::getCoordinatesAndIntensities(MeatbagsFactory& meatbags) {
     for (auto& meatbag : meatbags.meatbags) {
         int counter = 0;
 
-        for (auto& sensor : hokuyos) {
+        for (auto& sensor : sensors) {
             if (sensor->newCoordinatesAvailable && (sensor->whichMeatbag == meatbag->index)) {
                 int intensityIndex = 0;
                     
@@ -156,16 +148,16 @@ void Sensors::getCoordinatesAndIntensities(MeatbagsFactory& meatbags) {
 void Sensors::getCoordinatesAndIntensities(vector<ofPoint>& coordinates, vector <int>& intensities, int &numberCoordinates) {
     int counter = 0;
     
-    for (auto& hokuyo : hokuyos) {
+    for (auto& sensor : sensors) {
         int intensityIndex = 0;
-        for (auto& coordinate : hokuyo->coordinates) {
+        for (auto& coordinate : sensor->coordinates) {
             float x = coordinate.x;
             float y = coordinate.y;
             
             if (coordinate.x != 0 && coordinate.y != 0) {
                 if (checkWithinFilters(x, y)) {
                     coordinates[counter].set(x, y);
-                    intensities[counter] = hokuyo->intensities[intensityIndex];
+                    intensities[counter] = sensor->intensities[intensityIndex];
                     counter++;
                 }
             }
@@ -188,26 +180,26 @@ ofPoint Sensors::convertScreenPointToCoordinate(ofPoint screenPoint) {
 void Sensors::onMouseMoved(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
     
-    for(int i = 0; i < hokuyos.size(); i++) {
-        ofPoint screenPoint = convertCoordinateToScreenPoint(hokuyos[i]->position);
+    for(int i = 0; i < sensors.size(); i++) {
+        ofPoint screenPoint = convertCoordinateToScreenPoint(sensors[i]->position);
         float distance = mousePoint.distance(screenPoint);
 
-        if(distance <= hokuyos[i]->position.halfSize) {
-            hokuyos[i]->position.isMouseOver = true;
+        if(distance <= sensors[i]->position.halfSize) {
+            sensors[i]->position.isMouseOver = true;
         } else {
-            hokuyos[i]->position.isMouseOver = false;
+            sensors[i]->position.isMouseOver = false;
         }
 
-        float noseX = cos(hokuyos[i]->sensorRotationRad - HALF_PI);
-        float noseY = sin(hokuyos[i]->sensorRotationRad - HALF_PI);
+        float noseX = cos(sensors[i]->sensorRotationRad - HALF_PI);
+        float noseY = sin(sensors[i]->sensorRotationRad - HALF_PI);
         
-        ofPoint offsetPoint = ofPoint(noseX, noseY) * hokuyos[i]->noseRadius;
+        ofPoint offsetPoint = ofPoint(noseX, noseY) * sensors[i]->noseRadius;
         ofPoint nosePoint = screenPoint - offsetPoint;
 
-        if (mousePoint.distance(nosePoint) < hokuyos[i]->nosePosition.halfSize) {
-            hokuyos[i]->nosePosition.isMouseOver = true;
+        if (mousePoint.distance(nosePoint) < sensors[i]->nosePosition.halfSize) {
+            sensors[i]->nosePosition.isMouseOver = true;
         } else {
-            hokuyos[i]->nosePosition.isMouseOver = false;
+            sensors[i]->nosePosition.isMouseOver = false;
         }
     }
 }
@@ -215,17 +207,17 @@ void Sensors::onMouseMoved(ofMouseEventArgs& mouseArgs) {
 void Sensors::onMousePressed(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
 
-    for(int i = 0; i < hokuyos.size(); i++) {
-        if (hokuyos[i]->position.isMouseOver) {
-            hokuyos[i]->position.isMouseClicked = true;
+    for(int i = 0; i < sensors.size(); i++) {
+        if (sensors[i]->position.isMouseOver) {
+            sensors[i]->position.isMouseClicked = true;
         } else {
-            hokuyos[i]->position.isMouseClicked = false;
+            sensors[i]->position.isMouseClicked = false;
         }
         
-        if (hokuyos[i]->nosePosition.isMouseOver) {
-            hokuyos[i]->nosePosition.isMouseClicked = true;
+        if (sensors[i]->nosePosition.isMouseOver) {
+            sensors[i]->nosePosition.isMouseClicked = true;
         } else {
-            hokuyos[i]->nosePosition.isMouseClicked = false;
+            sensors[i]->nosePosition.isMouseClicked = false;
         }
     }
 }
@@ -233,27 +225,26 @@ void Sensors::onMousePressed(ofMouseEventArgs& mouseArgs) {
 void Sensors::onMouseDragged(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
     
-    for(int i = 0; i < hokuyos.size(); i++) {
-        if (hokuyos[i]->position.isMouseClicked) {
+    for(int i = 0; i < sensors.size(); i++) {
+        if (sensors[i]->position.isMouseClicked) {
+            
             ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
-            hokuyos[i]->positionX = coordinate.x;
-            hokuyos[i]->positionY = coordinate.y;
+            sensors[i]->positionX = coordinate.x;
+            sensors[i]->positionY = coordinate.y;
         }
         
-        if (hokuyos[i]->nosePosition.isMouseClicked) {
-            ofPoint screenPoint = convertCoordinateToScreenPoint(hokuyos[i]->position);
+        if (sensors[i]->nosePosition.isMouseClicked) {
+            ofPoint screenPoint = convertCoordinateToScreenPoint(sensors[i]->position);
             float angle = atan2(screenPoint.y - mousePoint.y, screenPoint.x - mousePoint.x);
-            hokuyos[i]->sensorRotationDeg = (angle + HALF_PI) * 180.0 / PI;
+            sensors[i]->sensorRotationDeg = (angle + HALF_PI) * 180.0 / PI;
         }
     }
 }
 
 void Sensors::onMouseReleased(ofMouseEventArgs& mouseArgs) {
-    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
-    
-    for(int i = 0; i < hokuyos.size(); i++) {
-        if (hokuyos[i]->position.isMouseClicked) {
-            hokuyos[i]->position.isMouseClicked = false;
+    for(int i = 0; i < sensors.size(); i++) {
+        if (sensors[i]->position.isMouseClicked) {
+            sensors[i]->position.isMouseClicked = false;
         }
     }
 }

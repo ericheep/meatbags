@@ -25,6 +25,12 @@ public:
     void setTranslation(ofPoint translation);
     void translatePointsByCentroid(ofPoint centroid);
     
+    bool onMouseMoved(ofMouseEventArgs & mouseArgs);
+    bool onMousePressed(ofMouseEventArgs & mouseArgs);
+    bool onMouseDragged(ofMouseEventArgs & mouseArgs);
+    bool onMouseReleased(ofMouseEventArgs & mouseArgs);
+    bool onKeyPressed(ofKeyEventArgs & keyArgs);
+    
     ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
     ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
 
@@ -50,12 +56,7 @@ public:
     ofPoint translation;
     Space space;
     ofPolyline polyline;
-protected:
-    void onMouseMoved(ofMouseEventArgs & mouseArgs);
-    void onMousePressed(ofMouseEventArgs & mouseArgs);
-    void onMouseDragged(ofMouseEventArgs & mouseArgs);
-    void onMouseReleased(ofMouseEventArgs & mouseArgs);
-    void onKeyPressed(ofKeyEventArgs & keyArgs);
+
 };
 
 #endif /* Filter_hpp */

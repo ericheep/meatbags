@@ -5,11 +5,6 @@
 #include "Filter.hpp"
 
 Filter::Filter() {
-    ofAddListener(ofEvents().mouseMoved, this, &Filter::onMouseMoved);
-    ofAddListener(ofEvents().mousePressed, this, &Filter::onMousePressed);
-    ofAddListener(ofEvents().mouseDragged, this, &Filter::onMouseDragged);
-    ofAddListener(ofEvents().mouseReleased, this, &Filter::onMouseReleased);
-    ofAddListener(ofEvents().keyPressed, this, &Filter::onKeyPressed);
     isActive = true;
     
     normalizedQuad = {
@@ -21,11 +16,6 @@ Filter::Filter() {
 }
 
 Filter::~Filter() {
-    ofRemoveListener(ofEvents().mouseMoved, this, &Filter::onMouseMoved);
-    ofRemoveListener(ofEvents().mousePressed, this, &Filter::onMousePressed);
-    ofRemoveListener(ofEvents().mouseDragged, this, &Filter::onMouseDragged);
-    ofRemoveListener(ofEvents().mouseReleased, this, &Filter::onMouseReleased);
-    ofRemoveListener(ofEvents().keyPressed, this, &Filter::onKeyPressed);
 }
 
 void Filter::setNumberPoints(int numberPoints) {
@@ -114,7 +104,7 @@ ofPoint Filter::convertScreenPointToCoordinate(ofPoint screenPoint) {
     return (screenPoint - space.origin - translation) / scale * 0.001;
 }
 
-void Filter::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+bool Filter::onMouseMoved(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
     
     for(int i = 0; i < positions.size(); i++) {
@@ -122,6 +112,7 @@ void Filter::onMouseMoved(ofMouseEventArgs& mouseArgs) {
 
         if(mousePoint.distance(screenPoint) <= positions[i].halfSize) {
             positions[i].isMouseOver = true;
+            return true;
         } else {
             positions[i].isMouseOver = false;
         }
@@ -131,12 +122,15 @@ void Filter::onMouseMoved(ofMouseEventArgs& mouseArgs) {
     
     if (mousePoint.distance(screenCentroid) < centroid.halfSize) {
         centroid.isMouseOver = true;
+        return true;
     } else {
         centroid.isMouseOver = false;
     }
+    
+    return false;
 }
 
-void Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
+bool Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
 
     for(int i = 0; i < positions.size(); i++) {
@@ -144,38 +138,46 @@ void Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
 
         if(mousePoint.distance(screenPoint) <= positions[i].halfSize) {
             positions[i].isMouseClicked = true;
+            return true;
         } else {
             positions[i].isMouseClicked = false;
         }
+        
     }
     
     ofPoint screenCentroid = convertCoordinateToScreenPoint(centroid);
     
     if (mousePoint.distance(screenCentroid) < centroid.halfSize) {
         centroid.isMouseClicked = true;
+        return true;
     } else {
         centroid.isMouseClicked = false;
     }
     
     updateHomography();
+    
+    return false;
 }
 
-void Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
+bool Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
     
     for(int i = 0; i < positions.size(); i++) {
         if(positions[i].isMouseClicked) {
             ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
             points[i] = coordinate;
+            return true;
         }
     }
     
     if (centroid.isMouseClicked) {
         ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
         translatePointsByCentroid(coordinate);
+        updateHomography();
+        return true;
     }
     
-    updateHomography();
+    return false;
 }
 
 void Filter::translatePointsByCentroid(ofPoint _centroid) {
@@ -186,7 +188,7 @@ void Filter::translatePointsByCentroid(ofPoint _centroid) {
     }
 }
 
-void Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
+bool Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
     for(int i = 0; i < positions.size(); i++) {
         if (positions[i].isMouseClicked) {
            positions[i].isMouseClicked = false;
@@ -199,11 +201,15 @@ void Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
     }
     
     updateHomography();
+    
+    return false;
 }
 
-void Filter::onKeyPressed(ofKeyEventArgs& keyArgs) {
+bool Filter::onKeyPressed(ofKeyEventArgs& keyArgs) {
     if (centroid.isMouseOver) {
         if (keyArgs.key == 102) mask = !mask;
         if (keyArgs.key == 116) isActive = !isActive;
     }
+    
+    return false;
 }

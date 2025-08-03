@@ -1,60 +1,5 @@
 #include "ofApp.h"
 
-string ofApp::getAppVersion() {
-#ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
-
-    CFBundleRef mainBundle = CFBundleGetMainBundle();
-    CFDictionaryRef infoDict = CFBundleGetInfoDictionary(mainBundle);
-
-    CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(infoDict, CFSTR("CFBundleShortVersionString"));
-
-    char versionBuffer[256];
-    if (versionStr) {
-        CFStringGetCString(versionStr, versionBuffer, sizeof(versionBuffer), kCFStringEncodingUTF8);
-        return std::string(versionBuffer);
-    }
-    else {
-        return "Unknown Version";
-    }
-
-#elif defined(_WIN32)
-#include <windows.h>
-#include <vector>
-
-    char exePath[MAX_PATH];
-    GetModuleFileNameA(NULL, exePath, MAX_PATH);
-
-    DWORD dummy;
-    DWORD size = GetFileVersionInfoSizeA(exePath, &dummy);
-    if (size == 0) return "Unknown Version";
-
-    std::vector<char> buffer(size);
-    if (!GetFileVersionInfoA(exePath, 0, size, buffer.data())) return " Unknown Version";
-
-    VS_FIXEDFILEINFO* fileInfo = nullptr;
-    UINT len = 0;
-    if (!VerQueryValueA(buffer.data(), "\\", reinterpret_cast<LPVOID*>(&fileInfo), &len)) return " Unknown Version";
-
-    if (fileInfo) {
-        WORD major = HIWORD(fileInfo->dwFileVersionMS);
-        WORD minor = LOWORD(fileInfo->dwFileVersionMS);
-        WORD patch = HIWORD(fileInfo->dwFileVersionLS);
-        WORD build = LOWORD(fileInfo->dwFileVersionLS);
-
-        char versionStr[64];
-        snprintf(versionStr, sizeof(versionStr), "%d.%d.%d.%d", major, minor, patch, build);
-        return std::string(versionStr);
-    }
-
-    return "Unknown Version";
-
-#else
-    // For Linux or other platforms, you can hardcode or read from a config
-    return "Unknown Version";
-#endif
-}
-
 //--------------------------------------------------------------
 void ofApp::setup(){
     version = getAppVersion();
@@ -66,6 +11,14 @@ void ofApp::setup(){
     helpFont.setSize(14);
     saveFont.setBold();
     saveFont.setSize(18);
+    
+    guiBackgroundColor = ofColor::snow;
+    guiBackgroundColor.a = 210;
+    
+    guiBarColor = ofColor::snow;
+    guiBarColor.a = 160;
+    
+    guiTextColor = ofColor::black;
     
     setupGui();
     
@@ -91,6 +44,7 @@ void ofApp::setup(){
     
     moveActive = false;
     setTranslation();
+    
     interfacesDropdown.disableMultipleSelection();
     if (interfacesDropdown.getAllSelected().size() > 0) {
         string selection = interfacesDropdown.getAllSelected()[0];
@@ -104,26 +58,27 @@ void ofApp::setup(){
         isHelpMode = true;
         hideWindow();
     }
+    
+    ofAddListener(ofEvents().mouseMoved, this, &ofApp::onMouseMoved);
+    ofAddListener(ofEvents().mousePressed, this, &ofApp::onMousePressed);
+    ofAddListener(ofEvents().mouseDragged, this, &ofApp::onMouseDragged);
+    ofAddListener(ofEvents().mouseReleased, this, &ofApp::onMouseReleased);
+    ofAddListener(ofEvents().mouseScrolled, this, &ofApp::onMouseScrolled);
+    ofAddListener(ofEvents().keyPressed, this, &ofApp::onKeyPressed);
+    ofAddListener(ofEvents().keyReleased, this, &ofApp::onKeyReleased);
 }
 
 void ofApp::setupGui() {
-    ofColor backgroundColor = ofColor::snow;
-    backgroundColor.a = 210;
-    
-    ofColor barColor = ofColor::snow;
-    barColor.a = 160;
-    
     ofColor headerColor = ofColor::thistle;
     ofColor borderColor = ofColor::black;
-    ofColor textColor = ofColor::black;
     
     ofxGuiSetDefaultHeight(12);
     ofxGuiSetDefaultWidth(230);
     ofxGuiSetBorderColor(borderColor);
     ofxGuiSetHeaderColor(headerColor);
-    ofxGuiSetTextColor(textColor);
-    ofxGuiSetBackgroundColor(backgroundColor);
-    ofxGuiSetFillColor(barColor);
+    ofxGuiSetTextColor(guiTextColor);
+    ofxGuiSetBackgroundColor(guiBackgroundColor);
+    ofxGuiSetFillColor(guiBarColor);
     
     hiddenGui.setup();
     hiddenGui.add(buttonUI.numberSensors.set("number sensors", 1, 1, 8));
@@ -136,8 +91,8 @@ void ofApp::setupGui() {
     interfaceSelector.listInterfaces();
     interfacesDropdown.add(interfaceSelector.interfacesStrings);
     interfacesDropdown.setFillColor(ofColor::thistle);
-    interfacesDropdown.setBackgroundColor(backgroundColor);
-    interfacesDropdown.setTextColor(textColor);
+    interfacesDropdown.setBackgroundColor(guiBackgroundColor);
+    interfacesDropdown.setTextColor(guiTextColor);
     
     generalGui.setup("settings");
     generalGui.add(& interfacesDropdown);
@@ -199,7 +154,7 @@ void ofApp::update(){
         sensors.getCoordinates(meatbags);
         meatbags.updateBlobs();
     }
-    
+
     meatbags.getBlobs(blobs);
     
     filters.checkBlobs(blobs);
@@ -293,7 +248,7 @@ void ofApp::setInterface(string & interfaceAndIP) {
 
 
 void ofApp::setNumberMeatbags(int& numberMeatbags) {
-    int numberSensors = sensors.hokuyos.size();
+    int numberSensors = sensors.sensors.size();
     meatbags.setMaxCoordinateSize(numberSensors * 1440);
     
     if (numberMeatbags > meatbags.meatbags.size()) {
@@ -312,13 +267,13 @@ void ofApp::setNumberMeatbags(int& numberMeatbags) {
 void ofApp::setNumberSensors(int& numberSensors) {
     meatbags.setMaxCoordinateSize(numberSensors * 1440);
     
-    if (numberSensors > sensors.hokuyos.size()) {
-        while (sensors.hokuyos.size() < numberSensors) {
+    if (numberSensors > sensors.sensors.size()) {
+        while (sensors.sensors.size() < numberSensors) {
             addSensor();
         }
     }
-    if (numberSensors < sensors.hokuyos.size()) {
-        while (sensors.hokuyos.size() > numberSensors) {
+    if (numberSensors < sensors.sensors.size()) {
+        while (sensors.sensors.size() > numberSensors) {
             removeSensor();
         }
     }
@@ -355,8 +310,8 @@ void ofApp::setNumberOscSenders(int & numberOscSenders) {
 }
 
 void ofApp::addSensor() {
-    int onesIndex = sensors.hokuyos.size() + 1;
-    int currentIndex = sensors.hokuyos.size();
+    int onesIndex = sensors.sensors.size() + 1;
+    int currentIndex = sensors.sensors.size();
     
     float hue = fmod(currentIndex * 31.875 + 140.0, 255);
     ofColor randomColor = ofColor::fromHsb(hue, 125.0, 255.0);
@@ -367,16 +322,20 @@ void ofApp::addSensor() {
     float sensorX = cos(centerRatio * TWO_PI - HALF_PI) * 1.25 + center.x;
     float sensorY = sin(centerRatio * TWO_PI - HALF_PI) * 1.25 + center.y;
     
-    Hokuyo* hokuyo = new Hokuyo();
+    OrbbecPulsar* hokuyo = new OrbbecPulsar();
     hokuyo->index = onesIndex;
     
     ofxPanel * sensorGui = new ofxPanel();
+    sensorGui->setFillColor(ofColor::thistle);
+    sensorGui->setBackgroundColor(guiBackgroundColor);
+    sensorGui->setTextColor(guiTextColor);
+    
     sensorGui->setDefaultWidth(190);
     sensorGui->setup("sensor " + to_string(onesIndex));
     sensorGui->add(hokuyo->sensorColor.set("color", randomColor));
+    sensorGui->add(& hokuyo->typesDropdown);
     sensorGui->add(hokuyo->ipAddress.set("IP address", "0.0.0.0"));
     sensorGui->add(hokuyo->autoReconnectActive.set("auto reconnect", true));
-    sensorGui->add(hokuyo->isSleeping.set("sleep", false));
     sensorGui->add(hokuyo->mirrorAngles.set("mirror angles", false));
     sensorGui->add(hokuyo->whichMeatbag.set("which meatbag", 1, 1, 2));
     sensorGui->add(hokuyo->positionX.set("position x", sensorX, -15.0, 15.0));
@@ -531,7 +490,7 @@ void ofApp::removeMeatbag() {
 
 
 void ofApp::removeSensor() {
-    int index = sensors.hokuyos.size() - 1;
+    int index = sensors.sensors.size() - 1;
     sensorGuis.pop_back();
     sensors.removeSensor();
 }
@@ -601,7 +560,7 @@ void ofApp::save() {
 }
 
 void ofApp::windowResized(int width, int height) {
-    for (auto& sensor : sensors.hokuyos) {
+    for (auto& sensor : sensors.sensors) {
         sensor->setInfoPosition(10, height - 10);
     }
     space.width = width;
@@ -626,42 +585,54 @@ void ofApp::setSpace() {
     filters.setSpace(space);
 }
 
-void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
-    areaSize -= scrollY * 0.15;
+void ofApp::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+    buttonUI.onMouseMoved(mouseArgs);
+    filters.onMouseMoved(mouseArgs);
+    sensors.onMouseMoved(mouseArgs);
+   
+    if (moveActive) {
+        translation = initialTranslation - ofPoint(-mouseArgs.x, -mouseArgs.y);
+        setTranslation();
+    }
+}
+
+void ofApp::onMousePressed(ofMouseEventArgs& mouseArgs) {
+    buttonUI.onMousePressed(mouseArgs);
+    if (mouseArgs.button == 1) {
+        initialTranslation = ofPoint(-mouseArgs.x, -mouseArgs.y) + translation;
+    }
+    filters.onMousePressed(mouseArgs);
+    sensors.onMousePressed(mouseArgs);
+}
+
+void ofApp::onMouseDragged(ofMouseEventArgs& mouseArgs) {
+    if (mouseArgs.button == 1) {
+        translation = initialTranslation - ofPoint(-mouseArgs.x, -mouseArgs.y);
+        setTranslation();
+    }
+    if (filters.onMouseDragged(mouseArgs)) return;
+    sensors.onMouseDragged(mouseArgs);
+}
+
+void ofApp::onMouseReleased(ofMouseEventArgs&  mouseArgs) {
+    buttonUI.onMouseReleased(mouseArgs);
+    filters.onMouseReleased(mouseArgs);
+    sensors.onMouseReleased(mouseArgs);
+}
+
+void ofApp::onMouseScrolled(ofMouseEventArgs& mouseArgs) {
+    areaSize -= mouseArgs.scrollY * 0.15;
     areaSize = ofClamp(areaSize, areaSize.getMin(), areaSize.getMax());
 }
 
-void ofApp::mousePressed(int x, int y, int button) {
-    if (button == 1) {
-        initialTranslation = ofPoint(-x, -y) + translation;
-    }
-}
-
-void ofApp::mouseMoved(int x, int y){
-    if (moveActive) {
-        translation = initialTranslation - ofPoint(-x, -y);
-        setTranslation();
-    }
-}
-
-void ofApp::mouseDragged(int x, int y, int button){
-    if (button == 1) {
-        translation = initialTranslation - ofPoint(-x, -y);
-        setTranslation();
-    }
-}
-
-void ofApp::setAreaSize(float &areaSize) {
-    space.areaSize = areaSize;
-    setSpace();
-}
-
-void ofApp::keyPressed(int key) {
-    if (key == 104) {
+void ofApp::onKeyPressed(ofKeyEventArgs& keyArgs) {
+    filters.onKeyPressed(keyArgs);
+    
+    if (keyArgs.key == 104) {
         isHelpMode = !isHelpMode;
     }
     
-    if (key == 109) {
+    if (keyArgs.key == 109) {
         float x = ofGetMouseX();
         float y = ofGetMouseY();
         initialTranslation = ofPoint(-x, -y) + translation;
@@ -669,21 +640,76 @@ void ofApp::keyPressed(int key) {
         moveActive = true;
     }
     
-    if (key == 2) {
+    if (keyArgs.key == 2) {
         ctrlKeyActive = true;
     }
     
-    if ((ctrlKeyActive && key == 19) || key == 115) {
+    if ((ctrlKeyActive && keyArgs.key == 19) || keyArgs.key == 115) {
         save();
     }
 }
 
-void ofApp::keyReleased(int key) {
-    if (key == 2) {
-        ctrlKeyActive = false;
+void ofApp::onKeyReleased(ofKeyEventArgs& keyArgs) {
+    if (keyArgs.key == 2) ctrlKeyActive = false;
+    if (keyArgs.key == 109) moveActive = false;
+}
+
+void ofApp::setAreaSize(float &areaSize) {
+    space.areaSize = areaSize;
+    setSpace();
+}
+
+string ofApp::getAppVersion() {
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    CFDictionaryRef infoDict = CFBundleGetInfoDictionary(mainBundle);
+
+    CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(infoDict, CFSTR("CFBundleShortVersionString"));
+
+    char versionBuffer[256];
+    if (versionStr) {
+        CFStringGetCString(versionStr, versionBuffer, sizeof(versionBuffer), kCFStringEncodingUTF8);
+        return std::string(versionBuffer);
     }
-    
-    if (key == 109) {
-        moveActive = false;
+    else {
+        return "Unknown Version";
     }
+
+#elif defined(_WIN32)
+#include <windows.h>
+#include <vector>
+
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(NULL, exePath, MAX_PATH);
+
+    DWORD dummy;
+    DWORD size = GetFileVersionInfoSizeA(exePath, &dummy);
+    if (size == 0) return "Unknown Version";
+
+    std::vector<char> buffer(size);
+    if (!GetFileVersionInfoA(exePath, 0, size, buffer.data())) return " Unknown Version";
+
+    VS_FIXEDFILEINFO* fileInfo = nullptr;
+    UINT len = 0;
+    if (!VerQueryValueA(buffer.data(), "\\", reinterpret_cast<LPVOID*>(&fileInfo), &len)) return " Unknown Version";
+
+    if (fileInfo) {
+        WORD major = HIWORD(fileInfo->dwFileVersionMS);
+        WORD minor = LOWORD(fileInfo->dwFileVersionMS);
+        WORD patch = HIWORD(fileInfo->dwFileVersionLS);
+        WORD build = LOWORD(fileInfo->dwFileVersionLS);
+
+        char versionStr[64];
+        snprintf(versionStr, sizeof(versionStr), "%d.%d.%d.%d", major, minor, patch, build);
+        return std::string(versionStr);
+    }
+
+    return "Unknown Version";
+
+#else
+    // For Linux or other platforms, you can hardcode or read from a config
+    return "Unknown Version";
+#endif
 }

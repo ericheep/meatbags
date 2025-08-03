@@ -1,118 +1,74 @@
 //
 //  Hokuyo.cpp
-//
+//  meatbags
 
 #include "Hokuyo.hpp"
 
 Hokuyo::Hokuyo() {
-    reconnectionTimeout = 5.0;
-    reconnectionTimer = 0.0;
-    
-    statusInterval = 3.0;
-    statusTimer = 0.0;
-    
-    streamingPollingInterval = 3.0;
-    streamingPollingTimer = 0.0;
-    
-    threadInactiveTime = 0.0;
-    threadInactiveInterval = 10.0;
-    
-    lastFrameTime = 0.0;
-    isConnected = false;
-    
-    // 180 degrees, front facing range
+    // Hokuyo specific settings, 180 degrees, front facing range
+    angularResolution = 1440;
     startStep = 0;
     endStep = 1079;
-    angularResolution = 1440;
-    sensorRotationDeg = 0;
-    sensorRotationRad = 0;
-    
-    status = "";
-    lastStatus = status;
-    connectionStatus = "DISCONNECTED";
     
     port = 10940;
-    autoReconnectActive = true;
-    ipAddress.addListener(this, &Hokuyo::setIPAddress);
-    positionX.addListener(this, &Hokuyo::setPositionX);
-    positionY.addListener(this, &Hokuyo::setPositionY);
-    mirrorAngles.addListener(this, &Hokuyo::setMirrorAngles);
-    sensorRotationDeg.addListener(this, &Hokuyo::setSensorRotation);
-    isSleeping.addListener(this, &Hokuyo::setSleep);
     
     netmask = "255.255.255.0";
     gateway = "192.168.0.1";
     localIPAddress = "0.0.0.0";
     interface = "";
     
-    // containers
-    angles.resize(angularResolution);
-    coordinates.resize(angularResolution);
-    intensities.resize(angularResolution);
-    
     callIntensitiesActive = true;
-    newCoordinatesAvailable = false;
-    
-    x = 0;
-    y = 0;
-    width = 0;
-    height = 0;
-    
-    position = DraggablePoint();
-    position.size = 15;
-    position.halfSize = position.size * 0.5;
-    nosePosition.size = 12;
-    nosePosition.halfSize = nosePosition.size * 0.5;
-    noseRadius = position.size + position.halfSize;
-    
-    position.x = 0.0;
-    position.y = 0.0;
-    position.isMouseOver = false;
-    position.isMouseClicked = false;
-    
-    mirrorAngles = false;
-    
+        
     font.setMedium();
     font.setSize(12);
+    
+    initializeVectors();
+    setupParameters();
+    
+    reconnectionTimer = 0;
+    reconnectionTimeout = 5.0;
 }
 
 Hokuyo::~Hokuyo() {
-    ipAddress.removeListener(this, &Hokuyo::setIPAddress);
-    positionX.removeListener(this, &Hokuyo::setPositionX);
-    positionY.removeListener(this, &Hokuyo::setPositionY);
-    mirrorAngles.removeListener(this, &Hokuyo::setMirrorAngles);
-    sensorRotationDeg.removeListener(this, &Hokuyo::setSensorRotation);
     stopThread();
 }
 
-void Hokuyo::setSleep(bool& isSleeping) {
-    if (isSleeping) {
-        sendMeasurementModeOffCommand();
+void Hokuyo::update() {    
+    threadInactiveTime += lastFrameTime;
+    if (threadInactiveTime > threadInactiveInterval) {
+        startThread();
+        threadInactiveTime = 0;
+    }
+        
+    if(tcpClient.isConnected()) {
+        if (!isConnected) {
+            connectionStatus = "CONNECTED";
+            
+            status = "Connected at " + tcpClient.getIP() + " " + to_string(tcpClient.getPort());
+            isConnected = true;
+            sendStatusInfoCommand();
+            sendVersionInfoCommand();
+        }
+        
+        checkStatus();
     } else {
-        sendMeasurementModeOnCommand();
-        sendStreamDistancesCommand();
+        for (int i = 0; i < angularResolution; i++) {
+            coordinates[i] = ofPoint::zero();
+            intensities[i] = 0;
+        }
+        
+        if (isConnected) {
+            connectionStatus = "DISCONNECTED";
+            status = "Disconnected";
+            isConnected = false;
+        }
+        
+        if (autoReconnectActive) reconnect();
     }
-}
-
-void Hokuyo::setSensorRotation(float& _sensorRotationDeg) {
-    sensorRotationRad = _sensorRotationDeg / 360.0 * TWO_PI;
-}
-
-void Hokuyo::setInterfaceAndIP(string _interface, string _localIP) {
-    interface = _interface;
-    localIPAddress = _localIP;
-}
-
-void Hokuyo::setLocalIPAddress(string & _localIPAddress) {
-    localIPAddress = _localIPAddress;
-}
-
-void Hokuyo::setIPAddress(string &ipAddress) {
-    tcpClient.close();
-    if (isThreadRunning()) {
-        stopThread();
+    
+    if (status != lastStatus) {
+        lastStatus = status;
     }
-    connect();
 }
 
 void Hokuyo::connect() {
@@ -125,16 +81,46 @@ void Hokuyo::connect() {
     }
 }
 
+void Hokuyo::reconnect() {
+    reconnectionTimer += lastFrameTime;
+    
+    if (reconnectionTimer > reconnectionTimeout){
+        connectionStatus = "Attempting to reconnect";
+        reconnectionTimer = 0;
+        connect();
+    }
+}
+
+void Hokuyo::close() {
+    tcpClient.close();
+}
+
+void Hokuyo::setIPAddress(string &ipAddress) {
+    tcpClient.close();
+    if (isThreadRunning()) {
+        stopThread();
+    }
+    connect();
+}
+
+void Hokuyo::setSleep(bool& isSleeping) {
+    if (isSleeping) {
+        sendMeasurementModeOffCommand();
+    } else {
+        sendMeasurementModeOnCommand();
+        sendStreamDistancesCommand();
+    }
+}
+
 void Hokuyo::threadedFunction() {
     tcpClient.setup(ipAddress, port, false, interface, localIPAddress);
     tcpClient.setMessageDelimiter("\012\012");
     sendStreamDistancesCommand();
     
     while(tcpClient.isConnected()) {
-        streamingPollingTimer += ofGetLastFrameTime();;
+        streamingPollingTimer += lastFrameTime;
         
         string response = tcpClient.receive();
-        
         if (response.length() > 0){
             parseResponse(response);
         }
@@ -258,79 +244,6 @@ void Hokuyo::checkStatus() {
         sendVersionInfoCommand();
         sendParameterInfoCommand();
         statusTimer = 0.0;
-    }
-}
-
-void Hokuyo::update() {
-    lastFrameTime = ofGetLastFrameTime();
-    
-    threadInactiveTime += lastFrameTime;
-    if (threadInactiveTime > threadInactiveInterval) {
-        startThread();
-        threadInactiveTime = 0;
-    }
-        
-    if(tcpClient.isConnected()) {
-        if (!isConnected) {
-            connectionStatus = "CONNECTED";
-            
-            status = "Connected at " + tcpClient.getIP() + " " + to_string(tcpClient.getPort());
-            isConnected = true;
-            sendStatusInfoCommand();
-            sendVersionInfoCommand();
-        }
-        
-        checkStatus();
-    } else {
-        for (int i = 0; i < angularResolution; i++) {
-            coordinates[i] = ofPoint::zero();
-            intensities[i] = 0;
-        }
-        
-        if (isConnected) {
-            connectionStatus = "DISCONNECTED";
-            status = "Disconnected";
-            isConnected = false;
-        }
-        
-        if (autoReconnectActive) reconnect();
-    }
-    
-    if (status != lastStatus) {
-        lastStatus = status;
-    }
-}
-
-void Hokuyo::setPositionX(float &positionX) {
-    position.x = positionX * 1000.0;
-}
-
-void Hokuyo::setPositionY(float &positionY) {
-    position.y = positionY * 1000.0;
-}
-
-void Hokuyo::setInfoPosition(float _x, float _y) {
-    x = _x;
-    y = _y;
-}
-
-void Hokuyo::setMirrorAngles(bool &_mirrorAngles) {
-    mirrorAngles = _mirrorAngles;
-    
-    // -45 degrees offset
-    float thetaOffset = -HALF_PI * 0.5;
-    
-    for (int i = 0; i < angularResolution; i++) {
-        int index = i;
-        float theta = (float) index / angularResolution * TWO_PI;
-        
-        if (mirrorAngles) {
-            index = angularResolution - 1;
-            thetaOffset = -HALF_PI * 0.5 - HALF_PI;
-            theta *= -1.0;
-        }
-        
-        angles[i] = theta + thetaOffset;
     }
 }
 
@@ -544,15 +457,6 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
     newCoordinatesAvailable = true;
 }
 
-void Hokuyo::createCoordinate(int index, float distance) {
-    float theta = angles[index] + sensorRotationRad;
-    
-    float x = cos(theta) * distance;
-    float y = sin(theta) * distance;
-    
-    coordinates[index].set(ofPoint(x, y) + ofPoint(position.x, position.y));
-}
-
 void Hokuyo::parseStatusInfo(vector<string>& packet) {
     for (size_t i = 1; i < packet.size(); i++) {
         const string& rawLine = packet[i];
@@ -653,20 +557,6 @@ int Hokuyo::sixBitCharDecode(const char* data, int length) {
     } else {
         return 0;
     }
-}
-
-void Hokuyo::reconnect() {
-    reconnectionTimer += lastFrameTime;
-    
-    if (reconnectionTimer > reconnectionTimeout){
-        status = "Attempting to reconnect";
-        reconnectionTimer = 0;
-        connect();
-    }
-}
-
-void Hokuyo::close() {
-    tcpClient.close();
 }
 
 vector<string> Hokuyo::splitStringByNewline(const string& str) {

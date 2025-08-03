@@ -6,26 +6,29 @@
 #define Hokuyo_hpp
 
 #include <stdio.h>
-
-#include "ofMain.h"
-#include "ofxGui.h"
-#include "ofxNetwork.h"
-#include "DraggablePoint.hpp"
-#include "MemoryFont.hpp"
 #include "sstream"
+#include "ofMain.h"
+#include "ofxNetwork.h"
 
-class Hokuyo : public ofThread {
+#include "MemoryFont.hpp"
+#include "Sensor.hpp"
+
+class Hokuyo : public ofThread, public Sensor {
 public:
     Hokuyo();
     ~Hokuyo();
     
-    void draw();
-    void update();
+    void draw() override;
+    void update() override;
+    void connect() override;
+    void reconnect() override;
+    void close() override;
+    
+    virtual void setIPAddress(string& ipAddress) override;
+    virtual void setSleep(bool& isSleeping) override;
     
     void threadedFunction() override;
-    void connect();
-    void reconnect();
-    void close();
+    void checkConnection();
     
     void sendResetStatusCommand();
     void sendSetMotorSpeedCommand(int motorSpeed);
@@ -53,7 +56,6 @@ public:
     void parseMotorSpeed(vector<string> packet);
     
     string zeroPad(int value, int numberChars);
-    
     string checkSum(string str, int fromEnd);
     
     void checkStatus();
@@ -64,70 +66,21 @@ public:
     int sixBitCharDecode(const char* data, int length);
     vector<string> splitStringByNewline(const string& str);
     
-    void setInfoPosition(float x, float y);
-
-    // event functions
-    void setInterfaceAndIP(string interface, string localIP);
-    void setLocalIPAddress(string& localIPAddress);
-    void setIPAddress(string& ipAddress);
-    void setPositionX(float& positionX);
-    void setPositionY(float& positionY);
-    void setMirrorAngles(bool& mirrorX);
-    void setSensorRotation(float& sensorRotationDeg);
-    void setSleep(bool& isSleeping);
-
-    ofParameter<string> ipAddress;
-    ofParameter<float> positionX;
-    ofParameter<float> positionY;
-    ofParameter<bool> autoReconnectActive;
-    ofParameter<bool> mirrorAngles;
-    ofParameter<bool> isSleeping;
-
-    ofParameter<float> sensorRotationDeg;
-    ofParameter<bool> showSensorInformation;
-    ofParameter<ofColor> sensorColor;
-    ofParameter<int> whichMeatbag;
-    
-    void createCoordinate(int step, float distance);
-    vector<float> angles;
-    vector<ofPoint> coordinates;
-    vector<int> intensities;
-    float sensorRotationRad;
-    bool newCoordinatesAvailable;
-    
-    DraggablePoint position, nosePosition;
-    float mouseBoxSize, mouseBoxHalfSize, noseRadius;
-    float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
-    bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
-    bool isConnected, threadActive;
-    
-    int index;
-    float streamingPollingTimer, streamingPollingInterval;
-    string model, status, connectionStatus, laserState;
-private:
     ofxTCPClient tcpClient;
-       
-    string netmask, gateway, localIPAddress, interface;
-    int port;
     
-    float reconnectionTimer, reconnectionTimeout;
-    float statusTimer, statusInterval;
-    float threadInactiveTime, threadInactiveInterval;
-    float lastFrameTime;
-    
+private:
     bool callIntensitiesActive;
-    int startStep, endStep, clusterCount, angularResolution;
-    int timeStamp;
+    int startStep, endStep, clusterCount, timeStamp;
     
     MemoryFont font;
-    string motorSpeed, lastStatus;
+    string motorSpeed;
     string measurementMode, bitRate, sensorDiagnostic;
     string vendorInfo, productInfo, firmwareVersion, protocolVersion, serialNumber;
     string minimumMeasurableDistance, maximumMeasureableDistance, angularResolutionInfo;
     string startingStep, endingStep, stepNumberOfFrontDirection, scanningSpeed;
     string scanDirection;
     
-    float x, y, width, height;
+    float reconnectionTimer, reconnectionTimeout;
 };
 
 #endif /* Hokuyo_hpp */

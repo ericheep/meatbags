@@ -31,7 +31,7 @@ public:
     void drawCoordinates(vector<ofPoint> & coordinates, ofColor color, Filters & filters);
     void drawCursorCoordinate();
     
-    void drawSensor(Hokuyo * hokuyo);
+    void drawSensor(Sensor* sensor);
     void drawBlobs(vector<Blob> & blobs);
     void setSpace(Space & space);
     void setTranslation(ofPoint translation);

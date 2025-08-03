@@ -22,6 +22,12 @@ public:
     void setTranslation(ofPoint translation);
     void setSpace(Space & space);
     
+    bool onMouseMoved(ofMouseEventArgs & mouseArgs);
+    bool onMousePressed(ofMouseEventArgs & mouseArgs);
+    bool onMouseDragged(ofMouseEventArgs & mouseArgs);
+    bool onMouseReleased(ofMouseEventArgs & mouseArgs);
+    bool onKeyPressed(ofKeyEventArgs & keyArgs);
+    
     vector <Filter *> filters;
 };
 

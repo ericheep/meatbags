@@ -1,6 +1,6 @@
 //
 //  Sensors.hpp
-//
+//  meatbags
 
 #ifndef Sensors_hpp
 #define Sensors_hpp
@@ -19,7 +19,7 @@ public:
     
     void update();
     
-    void addSensor(Hokuyo* hokuyo);
+    void addSensor(Sensor* sensor);
     void removeSensor();
     void closeSensors();
 
@@ -36,32 +36,23 @@ public:
     void setTranslation(ofPoint translation);
     void setInfoPositions(float x, float y);
     
-    ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
-    ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
-    
-    vector <Hokuyo *> hokuyos;
-    Filters filters;
-    
-    ofPoint translation;
-    Space space;
-    int numberCoordinates;
-    float scale;
-    float lastTimeRecorded;
-    
-    // vector<vector<double>> fixedCoordinates;
-    // vector<vector<double>> movingCoordinates;
-    // void alignSensor(Hokuyo* hokuyo);
-    // void applySuperpose3d();
-    // void applyCoherentPointDrift();
-    // Superpose3D<double, double **> superposer;
-    // cpd::Rigid rigid;
-    // cpd::Matrix fixed;
-    // cpd::Matrix moving;
-protected:
     void onMouseMoved(ofMouseEventArgs & mouseArgs);
     void onMousePressed(ofMouseEventArgs & mouseArgs);
     void onMouseDragged(ofMouseEventArgs & mouseArgs);
     void onMouseReleased(ofMouseEventArgs & mouseArgs);
+    
+    ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
+    ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
+    
+    vector <Sensor *> sensors;
+    Filters filters;
+    
+    ofPoint translation;
+    Space space;
+    
+    int numberCoordinates;
+    float scale;
+    float lastTimeRecorded, lastFrameTime;
 };
 
 #endif /* Sensors_hpp */
