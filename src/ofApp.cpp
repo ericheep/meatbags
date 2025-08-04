@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     version = getAppVersion();
-    // ofSetFrameRate(120);
+    ofSetFrameRate(60);
     
     titleFont.setBold();
     titleFont.setSize(14);
@@ -338,10 +338,14 @@ void ofApp::addSensor() {
     sensorGui->add(hokuyo->autoReconnectActive.set("auto reconnect", true));
     sensorGui->add(hokuyo->mirrorAngles.set("mirror angles", false));
     sensorGui->add(hokuyo->whichMeatbag.set("which meatbag", 1, 1, 2));
+    sensorGui->add(hokuyo->guiMotorSpeed.set("motor speed", 1, 1, 5));
+    sensorGui->add(hokuyo->isSleeping.set("sleeping", false));
     sensorGui->add(hokuyo->positionX.set("position x", sensorX, -15.0, 15.0));
     sensorGui->add(hokuyo->positionY.set("position y", sensorY, 0.0, 30.0));
     sensorGui->add(hokuyo->sensorRotationDeg.set( "sensor rotation (deg)", 0, -180.0, 180.0));
     sensorGui->add(hokuyo->showSensorInformation.set("show sensor info", false));
+    sensorGui->add(hokuyo->guiSpecialWorkingMode.set("fog mode", false));
+
     
     hokuyo->setInfoPosition(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
     sensors.addSensor(hokuyo);

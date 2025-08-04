@@ -16,21 +16,39 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
     initializeVectors();
     setupParameters();
     
-    dataStreamTimer = 0.0;
-    dataStreamTimeout = 1.0;
+    threadInactiveTimer = 0.0;
+    threadInactiveTimeInterval = 5.0;
     
-    threadInactiveInterval = 5.0;
-    
-    reconnectionTimeout = 5.0;
     reconnectionTimer = 0.0;
+    reconnectionTimeInterval = 5.0;
     
     statusTimer = 0.0;
-    statusInterval = 3.0;
+    statusTimeInterval = 0.2;
     
-    ipAddress = "192.168.1.100";
-    
+    checkTimer = 0.0;
+    checkTimeInterval = 0.5;
+        
     stopThread();
     sleep(1000);
+    
+    statusCommands.clear();
+    statusCommands.push_back([this]() { sendGetMotorSpeedCommand(); });
+    statusCommands.push_back([this]() { sendGetTransmissionProtocolCommand(); });
+    statusCommands.push_back([this]() { sendGetWorkingModeCommand(); });
+    statusCommands.push_back([this]() { sendGetSerialNumberCommand(); });
+    statusCommands.push_back([this]() { sendGetDeviceModelCommand(); });
+    statusCommands.push_back([this]() { sendGetFirmwareVersionCommand(); });
+    statusCommands.push_back([this]() { sendGetLidarWarningCommand(); });
+    statusCommands.push_back([this]() { sendGetSpecialWorkingModeCommand(); });
+    
+    checkCommands.clear();
+    checkCommands.push_back([this]() { checkMotorSpeed(); });
+    checkCommands.push_back([this]() { checkTransmissionProtocol(); });
+    checkCommands.push_back([this]() { checkWorkingMode(); });
+    checkCommands.push_back([this]() { checkSpecialWorkingMode(); });
+     
+    currentStatusCommandIndex = 0;
+    currentCheckCommandIndex = 0;
 }
 
 OrbbecPulsar::~OrbbecPulsar() {
@@ -47,7 +65,7 @@ void OrbbecPulsar::connect() {
         return;
     }
     
-    connectionStatus = "Connecting to Orbbec at " + ipAddress.get();
+    connectionStatus = "Connecting at " + ipAddress.get();
     
     if (!isThreadRunning()) {
         startThread();
@@ -63,15 +81,15 @@ void OrbbecPulsar::threadedFunction() {
         connectionStatus = "Failed to connect TCP control";
         return;
     }
-    
+    connectionStatus = "Connected";
+
     sendConnectCommand();
     
-    while (isThreadRunning() && tcpClient.isConnected()) {
+    while (tcpClient.isConnected()) {
         uint8_t data[1024];
         int bytesRead = tcpClient.receiveRawBytes((char*)data, sizeof(data));
          
         if (bytesRead > 0) {
-            // cout << "BYTES READ " << bytesRead << endl;
             if (isControlResponse(data, bytesRead)) {
                 parseControlResponse(data, bytesRead);
             } else if (isPointCloudData(data, bytesRead)){
@@ -79,9 +97,11 @@ void OrbbecPulsar::threadedFunction() {
             }
         }
         
-        threadInactiveTime = 0;
+        threadInactiveTimer = 0;
         sleep(1);
     }
+    
+    connectionStatus = "Disconnected";
 }
 
 bool OrbbecPulsar::isPointCloudData(const uint8_t* data,  int bytesRead) {
@@ -98,59 +118,66 @@ bool OrbbecPulsar::isControlResponse(const uint8_t* data, int bytesRead) {
 
 void OrbbecPulsar::update() {
     statusTimer += lastFrameTime;
+    threadInactiveTimer += lastFrameTime ;
+    checkTimer += lastFrameTime;
     
-    // Check thread activity
-    threadInactiveTime += lastFrameTime ;
-    if (threadInactiveTime > threadInactiveInterval ) {
+    if (threadInactiveTimer > threadInactiveTimeInterval ) {
         if (isThreadRunning()) {
             stopThread();
         }
-        cout << threadInactiveTime << endl;
         startThread();
-        threadInactiveTime = 0;
+        threadInactiveTimer = 0;
     }
     
-    if (statusTimer > statusInterval) {
-        sendGetDeviceModelCommand();
-        sendGetWorkingModeCommand();
+    if (statusTimer > statusTimeInterval) {
+        sendNextStatusCommand();
         statusTimer = 0;
+    }
+    
+    if (checkTimer > checkTimeInterval) {
+        checkNextSetting();
+        checkTimer = 0;
     }
     
     isConnected = tcpClient.isConnected();
     if (!tcpClient.isConnected()) {
+        connectionStatus = "Disconnected";
         reconnectionTimer += lastFrameTime;
         
-        connectionStatus = "Disconnected";
-        status = "Orbbec sensor disconnected";
-        if (reconnectionTimer > reconnectionTimeout) {
+        if (reconnectionTimer > reconnectionTimeInterval) {
             reconnect();
             reconnectionTimer = 0;
             ofLogNotice() << "Attemping reconnect";
         }
     }
+    
+    logStatus = lidarState;
+    logConnectionStatus = connectionStatus;
+    logMode = workingMode;
 }
 
 void OrbbecPulsar::draw() {
-    // Sensor::draw();
-    
     if (!showSensorInformation) return;
     
-    // Add Orbbec-specific information display
     ofSetColor(ofColor::grey);
     
     vector<string> sensorInfoLines;
-    sensorInfoLines.push_back("Model: " + deviceModel);
+    sensorInfoLines.push_back("Model: " + model);
     sensorInfoLines.push_back("Firmware: " + firmwareVersion);
     sensorInfoLines.push_back("Serial: " + serialNumber);
-    sensorInfoLines.push_back("Rotation Speed: " + to_string(currentRotationSpeed) + " RPM");
+    sensorInfoLines.push_back("LiDAR state: " + lidarState);
+    sensorInfoLines.push_back("Transmission Protocol: " + transmissionProtocol);
+    sensorInfoLines.push_back("Set Motor Speed: " + to_string(motorSpeed) + " RPM");
+    sensorInfoLines.push_back("Real Time Motor Speed: " + to_string(currentRotationSpeed) + " RPM");
     sensorInfoLines.push_back("Temperature: " + to_string(temperature) + "°C");
     sensorInfoLines.push_back("IP Address: " + ipAddress.get());
     sensorInfoLines.push_back("Port: " + to_string(port));
     sensorInfoLines.push_back("Connection: " + connectionStatus);
-    sensorInfoLines.push_back("Status: " + status);
     sensorInfoLines.push_back("Timestamp: " + to_string(timestamp));
-    
-    // Draw info box (similar to Hokuyo implementation)
+    sensorInfoLines.push_back("Working Mode: " + workingMode);
+    sensorInfoLines.push_back("Warning: " + lidarWarning);
+    sensorInfoLines.push_back("Special Working Mode: " + specialWorkingMode);
+
     float textBoxHeight = sensorInfoLines.size() * 16;
     float textBoxWidth = 300;
     
@@ -169,7 +196,6 @@ void OrbbecPulsar::draw() {
     
     for (int i = 0; i < sensorInfoLines.size(); i++) {
         float yPos = textY + 16 * i;
-        // You might need to adjust this based on your font setup
         ofDrawBitmapString(sensorInfoLines[i], textX + 6, yPos + 10);
     }
 }
@@ -192,33 +218,88 @@ void OrbbecPulsar::setIPAddress(string &ipAddress) {
     connect();
 }
 
-void OrbbecPulsar::setSleep(bool& isSleeping) {
-    if (isSleeping) {
-       // sendMeasurementModeOffCommand();
-    } else {
-       // sendMeasurementModeOnCommand();
-       // sendStreamDistancesCommand();
+void OrbbecPulsar::checkNextSetting() {
+    if (checkCommands.empty()) return;
+    checkCommands[currentCheckCommandIndex]();
+    currentCheckCommandIndex = (currentCheckCommandIndex + 1) % checkCommands.size();
+}
+
+void OrbbecPulsar::checkMotorSpeed() {
+    uint32_t speedValue;
+    switch(guiMotorSpeed) {
+        case 1: speedValue = 900; break;   // 900 RPM for 15Hz
+        case 2: speedValue = 1200; break;  // 1200 RPM for 20Hz
+        case 3: speedValue = 1500; break;  // 1500 RPM for 25Hz
+        case 4: speedValue = 1800; break;  // 1800 RPM for 30Hz
+        case 5: speedValue = 2400; break;  // 2400 RPM for 40Hz
+        default: speedValue = 900; break;   // Default to 15Hz
+    }
+    
+    if (speedValue != motorSpeed) {
+        sendSetMotorSpeedCommand(speedValue);
     }
 }
 
-void OrbbecPulsar::sendGetDeviceModelCommand() {
-    sendGetCommand(GET_DEVICE_MODEL);
+void OrbbecPulsar::checkWorkingMode() {
+    if (isSleeping && workingMode != "standby") {
+        sendSetStandbyMode();
+    }
+    if (!isSleeping && workingMode != "ranging") {
+        sendSetRangingMode();
+    }
 }
 
-void OrbbecPulsar::sendGetWorkingModeCommand() {
-    sendGetCommand(GET_WORKING_MODE);
+void OrbbecPulsar::checkTransmissionProtocol() {
+    if (transmissionProtocol != "TCP") {
+        sendSetTCPModeCommand();
+    }
 }
 
-void OrbbecPulsar::sendGetWarningInformationCommand() {
-    sendGetCommand(GET_WARN_INFO);
+void OrbbecPulsar::checkSpecialWorkingMode() {
+    if (!guiSpecialWorkingMode && specialWorkingMode != "normal") {
+        sendSetNormalModeCommand();
+    }
+    if (guiSpecialWorkingMode && specialWorkingMode != "fog") {
+        sendSetFogModeCommand();
+    }
+}
+
+void OrbbecPulsar::sendGetMotorSpeedCommand() {
+    sendGetCommand(GET_MOTOR_SPEED);
 }
 
 void OrbbecPulsar::sendGetTransmissionProtocolCommand() {
     sendGetCommand(GET_TRANS_PROTOCOL);
 }
 
+void OrbbecPulsar::sendGetWorkingModeCommand() {
+    sendGetCommand(GET_WORKING_MODE);
+}
+
+void OrbbecPulsar::sendGetSerialNumberCommand() {
+    sendGetCommand(GET_DEVICE_SERIAL);
+}
+
+void OrbbecPulsar::sendGetDeviceModelCommand() {
+    sendGetCommand(GET_DEVICE_MODEL);
+}
+
+void OrbbecPulsar::sendGetFirmwareVersionCommand() {
+    sendGetCommand(GET_FIRMWARE_VERSION);
+}
+
+void OrbbecPulsar::sendGetLidarWarningCommand() {
+    sendGetCommand(GET_LIDAR_WARNING);
+}
+
 void OrbbecPulsar::sendGetSpecialWorkingModeCommand() {
     sendGetCommand(GET_SPECIFIC_MODE);
+}
+
+void OrbbecPulsar::sendNextStatusCommand() {
+    if (statusCommands.empty()) return;
+    statusCommands[currentStatusCommandIndex]();
+    currentStatusCommandIndex = (currentStatusCommandIndex + 1) % statusCommands.size();
 }
 
 void OrbbecPulsar::sendGetCommand(uint16_t getCommand) {
@@ -237,48 +318,67 @@ void OrbbecPulsar::sendGetCommand(uint16_t getCommand) {
     sendControlCommand(command);
 }
 
-// Control command methods
+// control command methods
 void OrbbecPulsar::sendConnectCommand() {
-    // Connect Device: Register 0x0109 with data 0x12345678
-    vector<uint8_t> data = {0x12, 0x34, 0x56, 0x78}; // big endian
+    vector<uint8_t> data = {0x12, 0x34, 0x56, 0x78};
     vector<uint8_t> command = createControlMessage(REG_CONNECT_DEVICE, data);
     sendControlCommand(command);
 }
 
 void OrbbecPulsar::sendEnableDataStreamCommand() {
-    // Enable Data Stream: Register 0x010F with data 0x00000001
-    vector<uint8_t> data = {0x00, 0x00, 0x00, 0x01}; // big endian
-    vector<uint8_t> command = createControlMessage(REG_ENABLE_DATA_STREAM, data);
+    vector<uint8_t> data = {0x00, 0x00, 0x00, 0x01};
+    vector<uint8_t> command = createControlMessage(REG_SET_DATA_STREAM, data);
     sendControlCommand(command);
 }
 
 void OrbbecPulsar::sendDisableDataStreamCommand() {
-    // Disable Data Stream: Register 0x010F with data 0x00000000
-    vector<uint8_t> data = {0x00, 0x00, 0x00, 0x00}; // big endian
-    vector<uint8_t> command = createControlMessage(REG_ENABLE_DATA_STREAM, data);
+    vector<uint8_t> data = {0x00, 0x00, 0x00, 0x00};
+    vector<uint8_t> command = createControlMessage(REG_SET_DATA_STREAM, data);
     sendControlCommand(command);
 }
 
-void OrbbecPulsar::sendSetRotationSpeedCommand(int speed) {
-    // map frequency to register values based on documentation
-    uint32_t speedValue;
+void OrbbecPulsar::sendSetStandbyMode() {
+    vector<uint8_t> data = {0x00, 0x00, 0x00, 0x01};
+    vector<uint8_t> command = createControlMessage(REG_SET_WORKING_MODE, data);
+    sendControlCommand(command);
+}
+
+void OrbbecPulsar::sendSetRangingMode() {
+    vector<uint8_t> data = {0x00, 0x00, 0x00, 0x00};
+    vector<uint8_t> command = createControlMessage(REG_SET_WORKING_MODE, data);
+    sendControlCommand(command);
+}
+
+void OrbbecPulsar::sendSetNormalModeCommand() {
+    vector<uint8_t> data = {0x00, 0x00, 0x00, 0x00};
+    vector<uint8_t> command = createControlMessage(REG_SET_SPECIAL_WORKING_MODE, data);
+    sendControlCommand(command);
+}
+
+void OrbbecPulsar::sendSetFogModeCommand() {
+    vector<uint8_t> data = {0x00, 0x00, 0x00, 0x01};
+    vector<uint8_t> command = createControlMessage(REG_SET_SPECIAL_WORKING_MODE, data);
+    sendControlCommand(command);
+}
+
+void OrbbecPulsar::sendSetMotorSpeedCommand(int speed) {
     switch(speed) {
-        case 15: speedValue = 900; break;   // 900 RPM for 15Hz
-        case 20: speedValue = 1200; break;  // 1200 RPM for 20Hz
-        case 25: speedValue = 1500; break;  // 1500 RPM for 25Hz
-        case 30: speedValue = 1800; break;  // 1800 RPM for 30Hz
-        case 40: speedValue = 2400; break;  // 2400 RPM for 40Hz
-        default: speedValue = 900; break;   // Default to 15Hz
+        case 900: break;
+        case 1200: break;
+        case 1500: break;
+        case 1800: break;
+        case 2400: break;
+        default: return; break;
     }
     
     vector<uint8_t> data = {
-        (uint8_t)((speedValue >> 24) & 0xFF),
-        (uint8_t)((speedValue >> 16) & 0xFF),
-        (uint8_t)((speedValue >> 8) & 0xFF),
-        (uint8_t)(speedValue & 0xFF)
+        (uint8_t)((speed >> 24) & 0xFF),
+        (uint8_t)((speed >> 16) & 0xFF),
+        (uint8_t)((speed >> 8) & 0xFF),
+        (uint8_t)(speed & 0xFF)
     };
     
-    vector<uint8_t> command = createControlMessage(REG_SET_ROTATION_SPEED, data);
+    vector<uint8_t> command = createControlMessage(REG_SET_MOTOR_SPEED, data);
     sendControlCommand(command);
 }
 
@@ -335,39 +435,124 @@ void OrbbecPulsar::parseControlResponse(const uint8_t* data,  int bytesRead) {
     if (success) {
         switch(controlCode) {
             case REG_CONNECT_DEVICE: {
-                cout << "PARSE CONNECT DEVICE" << endl;
                 sendSetTCPModeCommand();
                 break;
             }
             case REG_SET_TCP_MODE: {
-                cout << "PARSE TCP MODE" << endl;
                 sendEnableDataStreamCommand();
-                sendSetRotationSpeedCommand(15);
                 break;
             }
-            case REG_ENABLE_DATA_STREAM: {
-                cout << "PARSE ENABLE DATA STREAM" << endl;
+            case REG_SET_DATA_STREAM: {
                 break;
             }
-            case REG_SET_ROTATION_SPEED: {
+            case REG_SET_MOTOR_SPEED: {
                 sendEnableDataStreamCommand();
-                cout << "PARSE SET ROTATION STREAM" << endl;
                 break;
             }
-            case GET_DEVICE_MODEL: {
-                cout << "PARSE GET DEVICE MODEL" << endl;
-                parseDeviceModel(data, bytesRead);
+            case REG_SET_WORKING_MODE: {
+                break;
+            }
+            case GET_MOTOR_SPEED: {
+                parseMotorSpeed(data, bytesRead);
+                break;
+            }
+            case GET_TRANS_PROTOCOL: {
+                parseTransmissionProtocol(data, bytesRead);
                 break;
             }
             case GET_WORKING_MODE: {
-                cout << "PARSE GET WORKING MODE" << endl;
-                // parseWorkingMode(data, bytesRead);
+                parseWorkingMode(data, bytesRead);
                 break;
             }
-            case REG_SET_WORK_MODE: break;
+            case GET_DEVICE_SERIAL: {
+                parseSerialNumber(data, bytesRead);
+                break;
+            }
+            case GET_DEVICE_MODEL: {
+                parseDeviceModel(data, bytesRead);
+                break;
+            }
+            case GET_FIRMWARE_VERSION: {
+                parseFirmwareVersion(data, bytesRead);
+                break;
+            }
+            case GET_LIDAR_WARNING: {
+                parseLidarWarning(data, bytesRead);
+                break;
+            }
+            case GET_SPECIFIC_MODE: {
+                parseSpecialWorkingMode(data, bytesRead);
+                break;
+            }
             default:  break;
         }
     }
+}
+
+string OrbbecPulsar::parseString(const uint8_t* data, int bytesRead) {
+    uint16_t dataLength = bytesToUint16(data[3], data[4]);
+
+    if (dataLength == 0 || bytesRead < (9 + dataLength)) {
+        ofLogWarning("OrbbecPulsar") << "Invalid response length";
+        return "NULL";
+    }
+    
+    string str = "";
+    for (int i = 9; i < 9 + dataLength && i < bytesRead; i++) {
+        if (data[i] != 0) {
+            str += char(data[i]);
+        }
+    }
+    
+    str.erase(std::find_if(str.rbegin(), str.rend(),
+                   [](unsigned char ch) { return !std::isspace(ch); }).base(),
+              str.end());
+    
+    return str;
+}
+
+void OrbbecPulsar::parseTransmissionProtocol(const uint8_t* data, int bytesRead) {
+    uint16_t dataLength = bytesToUint16(data[3], data[4]);
+    
+    if (dataLength == 0 || bytesRead < (9 + dataLength)) {
+        ofLogWarning("OrbbecPulsar") << "Invalid motor speed response length";
+        return;
+    }
+    
+    if (dataLength < 4) {
+        ofLogWarning("OrbbecPulsar") << "Motor speed data too short: " << dataLength << " bytes";
+        return;
+    }
+    
+    uint32_t modeValue = bytesToUint32(data[9], data[10], data[11], data[12]);
+    
+    switch (modeValue) {
+        case 0:
+            transmissionProtocol = "UDP";
+            break;
+        case 1:
+            transmissionProtocol = "TCP";
+            break;
+        default:
+            workingMode = "unknown";
+            break;
+    }
+}
+
+void OrbbecPulsar::parseLidarWarning(const uint8_t* data, int bytesRead) {
+    lidarWarning = parseString(data, bytesRead);
+}
+
+void OrbbecPulsar::parseSerialNumber(const uint8_t* data, int bytesRead) {
+    serialNumber = parseString(data, bytesRead);
+}
+
+void OrbbecPulsar::parseFirmwareVersion(const uint8_t* data, int bytesRead) {
+    firmwareVersion = parseString(data, bytesRead);
+}
+
+void OrbbecPulsar::parseDeviceModel(const uint8_t* data, int bytesRead) {
+    model = parseString(data, bytesRead);
 }
 
 void OrbbecPulsar::parseWorkingMode(const uint8_t* data, int bytesRead) {
@@ -384,58 +569,73 @@ void OrbbecPulsar::parseWorkingMode(const uint8_t* data, int bytesRead) {
     }
     
     uint32_t modeValue = bytesToUint32(data[9], data[10], data[11], data[12]);
-        
-    string modeStr = "";
     switch (modeValue) {
         case 0:
-            modeStr = "Ranging Mode";
             workingMode = "ranging";
             break;
         case 1:
-            modeStr = "Standby Mode";
             workingMode = "standby";
             break;
         default:
-            modeStr = "Unknown Mode (" + to_string(modeValue) + ")";
             workingMode = "unknown";
             break;
     }
-    
-    cout << workingMode << endl;
 }
 
-void OrbbecPulsar::parseDeviceModel(const uint8_t* data, int bytesRead) {
+void OrbbecPulsar::parseSpecialWorkingMode(const uint8_t* data, int bytesRead) {
     uint16_t dataLength = bytesToUint16(data[3], data[4]);
     
     if (dataLength == 0 || bytesRead < (9 + dataLength)) {
-        ofLogWarning("OrbbecPulsar") << "Invalid device model response length";
+        ofLogWarning("OrbbecPulsar") << "Invalid working mode response length";
         return;
     }
     
-    string modelStr = "";
-    for (int i = 9; i < 9 + dataLength && i < bytesRead; i++) {
-        if (data[i] != 0) {
-            modelStr += char(data[i]);
-        }
+    if (dataLength < 4) {
+        ofLogWarning("OrbbecPulsar") << "Working mode data too short: " << dataLength << " bytes";
+        return;
     }
     
-    modelStr.erase(std::find_if(modelStr.rbegin(), modelStr.rend(),
-                   [](unsigned char ch) { return !std::isspace(ch); }).base(),
-                   modelStr.end());
+    uint32_t modeValue = bytesToUint32(data[9], data[10], data[11], data[12]);
+        
+    switch (modeValue) {
+        case 0:
+            specialWorkingMode = "normal";
+            break;
+        case 1:
+            specialWorkingMode = "fog";
+            break;
+        default:
+            specialWorkingMode = "unknown";
+            break;
+    }
+}
+
+void OrbbecPulsar::parseMotorSpeed(const uint8_t* data, int bytesRead) {
+    uint16_t dataLength = bytesToUint16(data[3], data[4]);
     
-    //replace(modelStr.begin(), modelStr.end(), '\\', ' ');
-    model = modelStr;
+    if (dataLength == 0 || bytesRead < (9 + dataLength)) {
+        ofLogWarning("OrbbecPulsar") << "Invalid motor speed response length";
+        return;
+    }
+    
+    if (dataLength < 4) {
+        ofLogWarning("OrbbecPulsar") << "Motor speed data too short: " << dataLength << " bytes";
+        return;
+    }
+    
+    uint32_t speedValue = bytesToUint32(data[9], data[10], data[11], data[12]);
+
+    motorSpeed = speedValue;
 }
 
 void OrbbecPulsar::parsePointCloudData(const uint8_t* data, int length) {
-    // extract frame length (bytes 6-7)
     uint16_t frameLength = bytesToUint16(data[6], data[7]);
     if (length < frameLength) return; // incomplete frame
     
     // Extract angle information (bytes 8-13)
-    uint16_t startAngle = bytesToUint16(data[8], data[9]);    // Unit: 0.01°
-    uint16_t endAngle = bytesToUint16(data[10], data[11]);    // Unit: 0.01°
-    uint16_t angularRes = bytesToUint16(data[12], data[13]);  // Unit: 0.001°
+    uint16_t startAngle = bytesToUint16(data[8], data[9]);    // unit: 0.01°
+    uint16_t endAngle = bytesToUint16(data[10], data[11]);    // unit: 0.01°
+    uint16_t angularRes = bytesToUint16(data[12], data[13]);  // unit: 0.001°
     
     uint8_t infoType = data[14];      // 1=15Hz, 2=20Hz, 3=25Hz, 4=30Hz, 5=40Hz
     uint8_t blockNumber = data[15];   // 1-18
@@ -443,6 +643,16 @@ void OrbbecPulsar::parsePointCloudData(const uint8_t* data, int length) {
     
     // extract timestamp (bytes 18-21)
     timestamp = bytesToUint32(data[18], data[19], data[20], data[21]);
+    
+    // get lidar state
+    int lidarStateInt = data[24];
+    switch(lidarStateInt) {
+        case 0: lidarState = "initial"; break;
+        case 1: lidarState = "normal"; break;
+        case 2: lidarState = "warning"; break;
+        case 3: lidarState = "error"; break;
+        default: break;
+    }
     
     // extract temperature (bytes 31-32)
     uint16_t tempRaw = bytesToUint16(data[31], data[32]);
@@ -465,7 +675,6 @@ void OrbbecPulsar::parsePointCloudData(const uint8_t* data, int length) {
     // extract point cloud data (starts at byte 40)
     extractPointCloudPoints(data + 40, pointCount, startAngle, angularRes * 0.001f);
     newCoordinatesAvailable = true;
-    threadInactiveTime = 0;
 }
 
 void OrbbecPulsar::extractPointCloudPoints(const uint8_t* data, int pointCount, int startAngle, float angularRes) {
@@ -518,6 +727,6 @@ uint16_t OrbbecPulsar::bytesToUint16(uint8_t high, uint8_t low) {
     return (high << 8) | low;
 }
 
-uint32_t OrbbecPulsar::bytesToUint32(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3) {
+uint32_t OrbbecPulsar::bytesToUint32(uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) {
     return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
 }

@@ -26,7 +26,7 @@ Hokuyo::Hokuyo() {
     setupParameters();
     
     reconnectionTimer = 0;
-    reconnectionTimeout = 5.0;
+    reconnectionTimeInterval = 5.0;
 }
 
 Hokuyo::~Hokuyo() {
@@ -35,7 +35,7 @@ Hokuyo::~Hokuyo() {
 
 void Hokuyo::update() {    
     threadInactiveTime += lastFrameTime;
-    if (threadInactiveTime > threadInactiveInterval) {
+    if (threadInactiveTime > threadInactiveTimeInterval) {
         startThread();
         threadInactiveTime = 0;
     }
@@ -59,15 +59,10 @@ void Hokuyo::update() {
         
         if (isConnected) {
             connectionStatus = "DISCONNECTED";
-            status = "Disconnected";
             isConnected = false;
         }
         
         if (autoReconnectActive) reconnect();
-    }
-    
-    if (status != lastStatus) {
-        lastStatus = status;
     }
 }
 
@@ -84,7 +79,7 @@ void Hokuyo::connect() {
 void Hokuyo::reconnect() {
     reconnectionTimer += lastFrameTime;
     
-    if (reconnectionTimer > reconnectionTimeout){
+    if (reconnectionTimer > reconnectionTimeInterval){
         connectionStatus = "Attempting to reconnect";
         reconnectionTimer = 0;
         connect();
@@ -103,14 +98,14 @@ void Hokuyo::setIPAddress(string &ipAddress) {
     connect();
 }
 
-void Hokuyo::setSleep(bool& isSleeping) {
+/*void Hokuyo::setSleep(bool& isSleeping) {
     if (isSleeping) {
         sendMeasurementModeOffCommand();
     } else {
         sendMeasurementModeOnCommand();
         sendStreamDistancesCommand();
     }
-}
+}*/
 
 void Hokuyo::threadedFunction() {
     tcpClient.setup(ipAddress, port, false, interface, localIPAddress);
@@ -118,16 +113,16 @@ void Hokuyo::threadedFunction() {
     sendStreamDistancesCommand();
     
     while(tcpClient.isConnected()) {
-        streamingPollingTimer += lastFrameTime;
+        streamingTimer += lastFrameTime;
         
         string response = tcpClient.receive();
         if (response.length() > 0){
             parseResponse(response);
         }
         
-        if (streamingPollingTimer > streamingPollingInterval) {
+        if (streamingTimer > streamingTimeInterval) {
             if (!isSleeping) sendStreamDistancesCommand();
-            streamingPollingTimer = 0;
+            streamingTimer = 0;
         }
         
         threadInactiveTime = 0;
@@ -239,7 +234,7 @@ string Hokuyo::formatIpv4String(string command) {
 void Hokuyo::checkStatus() {
     statusTimer += lastFrameTime;
     
-    if (statusTimer > statusInterval){
+    if (statusTimer > statusTimeInterval){
         sendStatusInfoCommand();
         sendVersionInfoCommand();
         sendParameterInfoCommand();
@@ -374,7 +369,7 @@ void Hokuyo::parseStreamingDistances(vector<string> packet) {
     }
     
     newCoordinatesAvailable = true;
-    streamingPollingTimer = 0;
+    streamingTimeInterval = 0;
 }
 
 void Hokuyo::parseDistances(vector<string> packet) {

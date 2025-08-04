@@ -28,7 +28,6 @@ public:
     
     // connection event functions
     virtual void setIPAddress(string& ipAddress);
-    virtual void setSleep(bool& isSleeping);
 
     // event functions
     void setInterfaceAndIP(string interface, string localIP);
@@ -44,6 +43,8 @@ public:
     float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
     bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
     bool threadActive;
+    string model;
+    string logStatus, logConnectionStatus, logMode;
     
     // parameters
     ofxDropdown_<string> typesDropdown { "types" };
@@ -57,6 +58,8 @@ public:
     ofParameter<bool> showSensorInformation;
     ofParameter<ofColor> sensorColor;
     ofParameter<int> whichMeatbag;
+    ofParameter<int> guiMotorSpeed;
+    ofParameter<bool> guiSpecialWorkingMode;
     
     void createCoordinate(int step, float distance);
     vector<float> angles;
@@ -70,19 +73,14 @@ public:
     int port;
     int index;
     
-    string status, lastStatus, laserState;
-    string connectionStatus, model;
+    string laserState;
     
-    float statusTimer, statusInterval;
-    float threadInactiveTime, threadInactiveInterval;
-    float streamingPollingTimer, streamingPollingInterval;
     float lastFrameTime;
     
     int angularResolution;
     
     // for the viewer class
     bool isConnected;
-    
 protected:
     virtual void initializeVectors();
     virtual void setupParameters();

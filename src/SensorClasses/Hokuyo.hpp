@@ -25,7 +25,6 @@ public:
     void close() override;
     
     virtual void setIPAddress(string& ipAddress) override;
-    virtual void setSleep(bool& isSleeping) override;
     
     void threadedFunction() override;
     void checkConnection();
@@ -43,7 +42,7 @@ public:
     void sendStreamDistancesCommand();
     void sendGetDistancesAndIntensitiesCommand();
     void send(string msg);
-
+    
     void parseResponse(const string& str);
     void parseStatusInfo(vector<string>& packet);
     void parseVersionInfo(vector<string> packet);
@@ -80,7 +79,14 @@ private:
     string startingStep, endingStep, stepNumberOfFrontDirection, scanningSpeed;
     string scanDirection;
     
-    float reconnectionTimer, reconnectionTimeout;
+    string status;
+    float checkTimer, checkTimeInterval;
+    float statusTimer, statusTimeInterval;
+    float streamingTimer, streamingTimeInterval;
+    float threadInactiveTime, threadInactiveTimeInterval;
+    float reconnectionTimer, reconnectionTimeInterval;
+    
+    string connectionStatus;
 };
 
 #endif /* Hokuyo_hpp */

@@ -124,9 +124,9 @@ void OscSender::sendFilterBlobs(Filters& filters) {
 
 void OscSender::sendLogs(Sensors& sensors) {
     for (auto & sensor : sensors.sensors) {
-        string connectionStatus = sensor->connectionStatus;
-        string generalStatus = sensor->status;
-        string laserStatus = sensor->laserState;
+        string connectionStatus = sensor->logConnectionStatus;
+        string status = sensor->logStatus;
+        string mode = sensor->logMode;
         
         if (lastConnectionStatus != connectionStatus) {
             lastConnectionStatus = connectionStatus;
@@ -138,23 +138,23 @@ void OscSender::sendLogs(Sensors& sensors) {
             oscSender.sendMessage(msg);
         }
         
-        if (lastGeneralStatus != generalStatus) {
-            lastGeneralStatus = generalStatus;
+        if (lastStatus != status) {
+            lastStatus = status;
             
             ofxOscMessage msg;
             msg.setAddress("/generalStatus");
             msg.addIntArg(sensor->index);
-            msg.addStringArg(generalStatus);
+            msg.addStringArg(status);
             oscSender.sendMessage(msg);
         }
         
-        if (lastLaserStatus != laserStatus) {
-            lastLaserStatus = laserStatus;
+        if (lastMode != mode) {
+            lastMode = mode;
             
             ofxOscMessage msg;
             msg.setAddress("/laserStatus");
             msg.addIntArg(sensor->index);
-            msg.addStringArg(laserStatus);
+            msg.addStringArg(mode);
             oscSender.sendMessage(msg);
         }
     }

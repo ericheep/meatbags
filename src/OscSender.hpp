@@ -34,7 +34,7 @@ public:
     ofParameter<bool> sendFiltersActive;
     ofParameter<bool> sendLogsActive;
 
-    string lastConnectionStatus, lastLaserStatus, lastGeneralStatus;
+    string lastConnectionStatus, lastMode, lastStatus;
 };
 
 #endif /* OscOut_hpp */

@@ -142,7 +142,6 @@ bool Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
         } else {
             positions[i].isMouseClicked = false;
         }
-        
     }
     
     ofPoint screenCentroid = convertCoordinateToScreenPoint(centroid);
@@ -153,9 +152,7 @@ bool Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
     } else {
         centroid.isMouseClicked = false;
     }
-    
-    updateHomography();
-    
+        
     return false;
 }
 
@@ -172,8 +169,15 @@ bool Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
     
     if (centroid.isMouseClicked) {
         ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
-        translatePointsByCentroid(coordinate);
-        updateHomography();
+        // translatePointsByCentroid(coordinate);
+        
+        ofPoint difference = coordinate - centroid;
+        difference.x = ofClamp(difference.x, -1, 1);
+        difference.y = ofClamp(difference.y, -1, 1);
+        
+        for (auto& point : points) {
+            point += difference;
+        }
         return true;
     }
     
@@ -182,8 +186,11 @@ bool Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
 
 void Filter::translatePointsByCentroid(ofPoint _centroid) {
     ofPoint difference = _centroid - centroid;
-
-    for (auto & point : points) {
+    difference.x = ofClamp(difference.x, -500, 500);
+    difference.y = ofClamp(difference.y, -500, 500);
+    
+    for (auto& point : points) {
+        // ofLogNotice() << point;
         point += difference;
     }
 }
@@ -198,10 +205,9 @@ bool Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
     if (centroid.isMouseClicked) {
         centroid.isMouseClicked = false;
         centroid.isMouseOver = false;
+        updateHomography();
     }
-    
-    updateHomography();
-    
+        
     return false;
 }
 

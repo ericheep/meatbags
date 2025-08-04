@@ -7,18 +7,6 @@
 Sensor::Sensor() {
     isConnected = false;
 
-    statusInterval = 3.0;
-    statusTimer = 0.0;
-    
-    streamingPollingInterval = 3.0;
-    streamingPollingTimer = 0.0;
-    
-    threadInactiveTime = 0.0;
-    threadInactiveInterval = 10.0;
-    
-    status = "";
-    lastStatus = status;
-    connectionStatus = "DISCONNECTED";
     autoReconnectActive = true;
     newCoordinatesAvailable = false;
     
@@ -57,9 +45,16 @@ void Sensor::setupParameters() {
 }
 
 void Sensor::initializeVectors() {
+    angles.clear();
+    coordinates.clear();
+    intensities.clear();
+    
     angles.resize(angularResolution);
     coordinates.resize(angularResolution);
     intensities.resize(angularResolution);
+    
+    bool m = mirrorAngles;
+    setMirrorAngles(m);
 }
 
 void Sensor::setLocalIPAddress(string & _localIPAddress) {
@@ -67,10 +62,6 @@ void Sensor::setLocalIPAddress(string & _localIPAddress) {
 }
 
 void Sensor::update() {
-}
-
-void Sensor::setSleep(bool& isSleeping) {
-    // will be overridden
 }
 
 void Sensor::setIPAddress(string &ipAddress) {
