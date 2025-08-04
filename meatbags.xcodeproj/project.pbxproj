@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		"05336E40-5596-4C64-82AD-F1FC80C52FFE" /* ofxCvContourFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "741A8903-68A4-4D87-BC38-0B1A1870E59E" /* ofxCvContourFinder.cpp */; };
+		0670D9632E40931100088A65 /* SensorGUIManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0670D9622E40931100088A65 /* SensorGUIManager.cpp */; };
 		"0AF2310A-F68C-455B-96C5-C434F08CFCE8" /* MemoryFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "9A7945AE-72AF-4307-8CA9-12C6CDF34EE4" /* MemoryFont.cpp */; };
 		"1017F86E-719F-445E-AB79-60C314EA3398" /* ofxPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "67417EAA-A358-4037-8D78-108B7EE8B406" /* ofxPanel.cpp */; };
 		"169A4D17-F3BD-40A9-AA2B-8ED20FF1E956" /* OscPrintReceivedElements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "73BFF566-D1F0-4AB9-9046-2C3126F0CDDE" /* OscPrintReceivedElements.cpp */; };
@@ -96,6 +97,8 @@
 		"052D550A-C54F-4F7E-91D6-3FE0B467E5E1" /* dist.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = dist.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/dist.h; sourceTree = SOURCE_ROOT; };
 		"0554A4C6-0444-4A8C-ADEF-820D3E36F0FD" /* result_set.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = result_set.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv4/opencv2/flann/result_set.h; sourceTree = SOURCE_ROOT; };
 		"0631C416-A938-4675-BC54-1185375D28ED" /* funcattrib.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = funcattrib.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/funcattrib.hpp; sourceTree = SOURCE_ROOT; };
+		0670D9612E40931100088A65 /* SensorGUIManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SensorGUIManager.hpp; sourceTree = "<group>"; };
+		0670D9622E40931100088A65 /* SensorGUIManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SensorGUIManager.cpp; sourceTree = "<group>"; };
 		"06B244CD-7D3D-4BF0-BE42-C179DC7848C9" /* ofxOpenCv.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxOpenCv.h; path = ../../../addons/ofxOpenCv/src/ofxOpenCv.h; sourceTree = SOURCE_ROOT; };
 		"06B92C63-1C1B-4853-A6FB-570271333ED4" /* ofxCvConstants.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxCvConstants.h; path = ../../../addons/ofxOpenCv/src/ofxCvConstants.h; sourceTree = SOURCE_ROOT; };
 		"06D0767C-D0B0-4236-925F-86A6552AF686" /* cuda_types.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cuda_types.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda_types.hpp; sourceTree = SOURCE_ROOT; };
@@ -2367,6 +2370,8 @@
 				"1296B47C-3BB5-4F11-9F9E-5E5B40DC57AC" /* OscSenders.cpp */,
 				"A83F0734-F981-4B3B-92E0-DD2B80D2D072" /* OscSenders.hpp */,
 				"5210CE91-BB3E-4BEE-8E35-E0DA0E134653" /* Space.h */,
+				0670D9622E40931100088A65 /* SensorGUIManager.cpp */,
+				0670D9612E40931100088A65 /* SensorGUIManager.hpp */,
 				"77399DB1-2918-4F53-A006-87C021970B53" /* UI.cpp */,
 				"737993B4-AB1E-4D9B-A432-010A5B39A479" /* UI.hpp */,
 				"3FE20327-0DAE-4C18-AE10-989B4C878FC2" /* UIButton.cpp */,
@@ -2621,6 +2626,7 @@
 				"1017F86E-719F-445E-AB79-60C314EA3398" /* ofxPanel.cpp in Sources */,
 				"27668721-C8E3-4022-BBAF-DC075FD42F98" /* ofxSlider.cpp in Sources */,
 				"B4641D20-1D3F-45D6-81D6-A7B357D778B0" /* ofxSliderGroup.cpp in Sources */,
+				0670D9632E40931100088A65 /* SensorGUIManager.cpp in Sources */,
 				"A276AD50-0053-4D89-8A3B-7F869523306B" /* ofxToggle.cpp in Sources */,
 				"EA22C171-E090-4FB2-BE9F-823922A7DC18" /* ofxCvColorImage.cpp in Sources */,
 				"05336E40-5596-4C64-82AD-F1FC80C52FFE" /* ofxCvContourFinder.cpp in Sources */,

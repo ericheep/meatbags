@@ -30,6 +30,8 @@ public:
     void drawConnections(Sensors & sensors);
     void drawCoordinates(vector<ofPoint> & coordinates, ofColor color, Filters & filters);
     void drawCursorCoordinate();
+    void drawHelpText();
+    void drawSaveNotification();
     
     void drawSensor(Sensor* sensor);
     void drawBlobs(vector<Blob> & blobs);
@@ -37,20 +39,22 @@ public:
     void setTranslation(ofPoint translation);
     void setCursorString(ofPoint mousePoint);
     
-    bool checkWithinBounds(float x, float y, Filters & filters);
+    void onMouseMoved(ofMouseEventArgs & mouseArgs);
+    void onMouseDragged(ofMouseEventArgs & mouseArgs);
     
+    bool checkWithinBounds(float x, float y, Filters & filters);
+
     Space space;
     Sensors sensor;
     float scale;
     ofPoint translation;
     
     MemoryFont blobFont, sensorFont, filterFont, cursorFont;
+    MemoryFont titleFont, helpFont, saveFont;
+
     string cursorString;
     vector<ofColor> sensorColors;
-    
-protected:
-    void onMouseMoved(ofMouseEventArgs & mouseArgs);
-    void onMouseDragged(ofMouseEventArgs & mouseArgs);
+    string version = "0.5.0";
 };
 
 #endif /* Viewer_hpp */

@@ -17,14 +17,15 @@ Viewer::Viewer() {
     filterFont.setSize(12);
     cursorFont.setBold();
     cursorFont.setSize(12);
-    
-    ofAddListener(ofEvents().mouseMoved, this, &Viewer::onMouseMoved);
-    ofAddListener(ofEvents().mouseDragged, this, &Viewer::onMouseDragged);
+    titleFont.setBold();
+    titleFont.setSize(14);
+    helpFont.setMedium();
+    helpFont.setSize(14);
+    saveFont.setBold();
+    saveFont.setSize(18);
 }
 
 Viewer::~Viewer() {
-    ofRemoveListener(ofEvents().mouseMoved, this, &Viewer::onMouseMoved);
-    ofRemoveListener(ofEvents().mouseDragged, this, &Viewer::onMouseDragged);
 }
 
 void Viewer::setSpace(Space & _space) {
@@ -396,4 +397,44 @@ void Viewer::onMouseMoved(ofMouseEventArgs& mouseArgs) {
 void Viewer::onMouseDragged(ofMouseEventArgs &mouseArgs) {
     ofPoint mousePoint = ofPoint(mouseArgs.x, mouseArgs.y);
     setCursorString(mousePoint);
+}
+
+void Viewer::drawHelpText() {
+    ofSetColor(ofColor::thistle);
+    
+    titleFont.draw("meatbags v" + version, 15, 20);
+    helpFont.draw("headless mode", 15, 40);
+    
+    helpFont.draw("(h) toggle help file", 15, 80);
+    helpFont.draw("(m) hold and move mouse to translate grid", 15, 100);
+    helpFont.draw("(f) press while over the center of a filter to toggle mask/filter", 15, 120);
+    helpFont.draw("(t) press while over the center of a filter to toggle active/inactive", 15, 140);
+    helpFont.draw("(ctrl/cmd + s) press to save", 15, 160);
+    
+    titleFont.draw("blob OSC format", 15, 200);
+    helpFont.draw("/blob index x y width length laserIntensity filterIndex1 filterIndex2 ...", 15, 220);
+    helpFont.draw("/blobsActive index1 index2 ...", 15, 240);
+    
+    titleFont.draw("filter OSC format", 15, 280);
+    helpFont.draw("/filter index isAnyBlobInside blobDistanceToCentroid", 15, 300);
+    helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 320);
+    
+    titleFont.draw("logging OSC format", 15, 360);
+    helpFont.draw("/generalStatus sensorIndex status", 15, 380);
+    helpFont.draw("/connectionStatus sensorIndex status", 15, 400);
+    helpFont.draw("/laserStatus sensorIndex status", 15, 420);
+}
+
+void Viewer::drawSaveNotification() {
+    string saveText = "configuration saved";
+    float stringWidth = saveFont.getStringWidth(saveText);
+    ofRectangle saveRectangle;
+    saveRectangle.setFromCenter(ofGetWidth() * 0.5, ofGetHeight() * 0.5 - 5, stringWidth + 50, 35);
+    
+    ofSetColor(ofColor::black);
+    ofDrawRectangle(saveRectangle);
+    ofSetColor(ofColor::thistle);
+    ofNoFill();
+    ofDrawRectangle(saveRectangle);
+    saveFont.draw(saveText, ofGetWidth() * 0.5 - stringWidth * 0.5, ofGetHeight() * 0.5);
 }

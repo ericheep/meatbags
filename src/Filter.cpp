@@ -190,7 +190,6 @@ void Filter::translatePointsByCentroid(ofPoint _centroid) {
     difference.y = ofClamp(difference.y, -500, 500);
     
     for (auto& point : points) {
-        // ofLogNotice() << point;
         point += difference;
     }
 }

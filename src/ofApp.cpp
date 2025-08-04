@@ -2,16 +2,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    version = getAppVersion();
     ofSetFrameRate(60);
-    
-    titleFont.setBold();
-    titleFont.setSize(14);
-    helpFont.setMedium();
-    helpFont.setSize(14);
-    saveFont.setBold();
-    saveFont.setSize(18);
-    
+
     guiBackgroundColor = ofColor::snow;
     guiBackgroundColor.a = 210;
     
@@ -19,7 +11,6 @@ void ofApp::setup(){
     guiBarColor.a = 160;
     
     guiTextColor = ofColor::black;
-    
     setupGui();
     
     buttonUI.numberSensors.addListener(this, &ofApp::setNumberSensors);
@@ -167,7 +158,7 @@ void ofApp::draw(){
     ofBackground(0);
     
     if (!isHelpMode) drawMeatbags();
-    if (isHelpMode) drawHelpText();
+    if (isHelpMode) viewer.drawHelpText();
     
     drawSaveNotification();
     drawFps();
@@ -197,45 +188,10 @@ void ofApp::drawMeatbags() {
     }
 }
 
-void ofApp::drawHelpText() {
-    ofSetColor(ofColor::thistle);
-    
-    titleFont.draw("meatbags v" + version, 15, 20);
-    helpFont.draw("headless mode", 15, 40);
-    
-    helpFont.draw("(h) toggle help file", 15, 80);
-    helpFont.draw("(m) hold and move mouse to translate grid", 15, 100);
-    helpFont.draw("(f) press while over the center of a filter to toggle mask/filter", 15, 120);
-    helpFont.draw("(t) press while over the center of a filter to toggle active/inactive", 15, 140);
-    helpFont.draw("(ctrl/cmd + s) press to save", 15, 160);
-    
-    titleFont.draw("blob OSC format", 15, 200);
-    helpFont.draw("/blob index x y width length laserIntensity filterIndex1 filterIndex2 ...", 15, 220);
-    helpFont.draw("/blobsActive index1 index2 ...", 15, 240);
-    
-    titleFont.draw("filter OSC format", 15, 280);
-    helpFont.draw("/filter index isAnyBlobInside blobDistanceToCentroid", 15, 300);
-    helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 320);
-    
-    titleFont.draw("logging OSC format", 15, 360);
-    helpFont.draw("/generalStatus sensorIndex status", 15, 380);
-    helpFont.draw("/connectionStatus sensorIndex status", 15, 400);
-    helpFont.draw("/laserStatus sensorIndex status", 15, 420);
-}
-
 void ofApp::drawSaveNotification() {
     if (saveNotificationTimer < saveNotificationTotalTime) {
-        string saveText = "configuration saved";
+        viewer.drawSaveNotification();
         saveNotificationTimer += ofGetLastFrameTime();
-        float stringWidth = saveFont.getStringWidth(saveText);
-        ofRectangle saveRectangle;
-        saveRectangle.setFromCenter(ofGetWidth() * 0.5, ofGetHeight() * 0.5, stringWidth + 10, 50 - 5);
-        
-        ofSetColor(ofColor::black);
-        ofDrawRectangle(saveRectangle);
-        ofSetColor(ofColor::thistle);
-        saveFont.draw(saveText, ofGetWidth() * 0.5 - stringWidth * 0.5, ofGetHeight() * 0.5);
-        
     }
 }
 
@@ -525,10 +481,7 @@ void ofApp::exit() {
 
 void ofApp::hideWindow() {
 #ifdef _WIN32
-    // Get the native window handle (HWND)
     HWND hwnd = (HWND)ofGetWin32Window();
-
-    // Minimize the window at startup
     ShowWindow(hwnd, SW_MINIMIZE);
 #else
     std::string applescript = "osascript -e 'tell application \"System Events\" to set visible of application process \"meatbags\" to false'";
@@ -590,6 +543,7 @@ void ofApp::setSpace() {
 }
 
 void ofApp::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+    viewer.onMouseMoved(mouseArgs);
     buttonUI.onMouseMoved(mouseArgs);
     filters.onMouseMoved(mouseArgs);
     sensors.onMouseMoved(mouseArgs);
@@ -610,6 +564,7 @@ void ofApp::onMousePressed(ofMouseEventArgs& mouseArgs) {
 }
 
 void ofApp::onMouseDragged(ofMouseEventArgs& mouseArgs) {
+    viewer.onMouseMoved(mouseArgs);
     if (mouseArgs.button == 1) {
         translation = initialTranslation - ofPoint(-mouseArgs.x, -mouseArgs.y);
         setTranslation();
@@ -631,10 +586,10 @@ void ofApp::onMouseScrolled(ofMouseEventArgs& mouseArgs) {
 
 void ofApp::onKeyPressed(ofKeyEventArgs& keyArgs) {
     filters.onKeyPressed(keyArgs);
-    
-    if (keyArgs.key == 104) {
-        isHelpMode = !isHelpMode;
-    }
+
+    if (keyArgs.key == 2) ctrlKeyActive = true;
+    if (keyArgs.key == 104) isHelpMode = !isHelpMode;
+    if ((ctrlKeyActive && keyArgs.key == 19) || keyArgs.key == 115) save();
     
     if (keyArgs.key == 109) {
         float x = ofGetMouseX();
@@ -642,14 +597,6 @@ void ofApp::onKeyPressed(ofKeyEventArgs& keyArgs) {
         initialTranslation = ofPoint(-x, -y) + translation;
         
         moveActive = true;
-    }
-    
-    if (keyArgs.key == 2) {
-        ctrlKeyActive = true;
-    }
-    
-    if ((ctrlKeyActive && keyArgs.key == 19) || keyArgs.key == 115) {
-        save();
     }
 }
 
@@ -661,59 +608,4 @@ void ofApp::onKeyReleased(ofKeyEventArgs& keyArgs) {
 void ofApp::setAreaSize(float &areaSize) {
     space.areaSize = areaSize;
     setSpace();
-}
-
-string ofApp::getAppVersion() {
-#ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
-
-    CFBundleRef mainBundle = CFBundleGetMainBundle();
-    CFDictionaryRef infoDict = CFBundleGetInfoDictionary(mainBundle);
-
-    CFStringRef versionStr = (CFStringRef)CFDictionaryGetValue(infoDict, CFSTR("CFBundleShortVersionString"));
-
-    char versionBuffer[256];
-    if (versionStr) {
-        CFStringGetCString(versionStr, versionBuffer, sizeof(versionBuffer), kCFStringEncodingUTF8);
-        return std::string(versionBuffer);
-    }
-    else {
-        return "Unknown Version";
-    }
-
-#elif defined(_WIN32)
-#include <windows.h>
-#include <vector>
-
-    char exePath[MAX_PATH];
-    GetModuleFileNameA(NULL, exePath, MAX_PATH);
-
-    DWORD dummy;
-    DWORD size = GetFileVersionInfoSizeA(exePath, &dummy);
-    if (size == 0) return "Unknown Version";
-
-    std::vector<char> buffer(size);
-    if (!GetFileVersionInfoA(exePath, 0, size, buffer.data())) return " Unknown Version";
-
-    VS_FIXEDFILEINFO* fileInfo = nullptr;
-    UINT len = 0;
-    if (!VerQueryValueA(buffer.data(), "\\", reinterpret_cast<LPVOID*>(&fileInfo), &len)) return " Unknown Version";
-
-    if (fileInfo) {
-        WORD major = HIWORD(fileInfo->dwFileVersionMS);
-        WORD minor = LOWORD(fileInfo->dwFileVersionMS);
-        WORD patch = HIWORD(fileInfo->dwFileVersionLS);
-        WORD build = LOWORD(fileInfo->dwFileVersionLS);
-
-        char versionStr[64];
-        snprintf(versionStr, sizeof(versionStr), "%d.%d.%d.%d", major, minor, patch, build);
-        return std::string(versionStr);
-    }
-
-    return "Unknown Version";
-
-#else
-    // For Linux or other platforms, you can hardcode or read from a config
-    return "Unknown Version";
-#endif
 }
