@@ -40,14 +40,13 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
     statusCommands.push_back([this]() { sendGetFirmwareVersionCommand(); });
     statusCommands.push_back([this]() { sendGetLidarWarningCommand(); });
     statusCommands.push_back([this]() { sendGetSpecialWorkingModeCommand(); });
-    
+    currentStatusCommandIndex = 0;
+
     checkCommands.clear();
     checkCommands.push_back([this]() { checkMotorSpeed(); });
     checkCommands.push_back([this]() { checkTransmissionProtocol(); });
     checkCommands.push_back([this]() { checkWorkingMode(); });
     checkCommands.push_back([this]() { checkSpecialWorkingMode(); });
-     
-    currentStatusCommandIndex = 0;
     currentCheckCommandIndex = 0;
 }
 
@@ -446,7 +445,6 @@ void OrbbecPulsar::parseControlResponse(const uint8_t* data,  int bytesRead) {
                 break;
             }
             case REG_SET_MOTOR_SPEED: {
-                sendEnableDataStreamCommand();
                 break;
             }
             case REG_SET_WORKING_MODE: {
@@ -692,9 +690,6 @@ void OrbbecPulsar::extractPointCloudPoints(const uint8_t* data, int pointCount, 
         if (newAngularResolution != angularResolution) {
             angularResolution = newAngularResolution;
             initializeVectors();
-            
-            bool m = mirrorAngles;
-            setMirrorAngles(m);
         }
         
         // convert to coordinate index (map 270° range to our angular resolution)
