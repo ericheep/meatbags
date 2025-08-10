@@ -14,6 +14,7 @@ SensorManager::~SensorManager() {
 
 void SensorManager::update() {
     lastFrameTime = ofGetLastFrameTime();
+    
     for (auto &entry : sensorEntries) {
         entry.sensor->lastFrameTime = lastFrameTime;
         entry.sensor->update();

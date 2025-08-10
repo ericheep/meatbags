@@ -41,12 +41,8 @@ public:
     
     // setup gui
     void setupGui();
-    void setupOscSenderGuis();
-    void setupMeatbagsGuis();
-    
-    // gui positions
-    void setLeftSideGuiPositions();
-    // void setRightSideGuiPositions();
+    void setupListeners();
+    void loadConfiguration();
     
     // sensor parameters
     void setPositionX(float &x);
@@ -62,22 +58,18 @@ public:
     
     void addMeatbag();
     void removeMeatbag();
-    void setNumberMeatbags(int& numberMeatbags);
     
     // sensors
     void addSensor();
     void removeSensor();
-    void setNumberSensors(int& numberSensors);
     
     // filterss
     void addFilter();
     void removeFilter();
-    void setNumberFilters(int& numberFilters);
     
     // osc senders
     void addOscSender();
     void removeOscSender();
-    void setNumberOscSenders(int& numberSenders);
     
     // view parameters
     void setAreaSize(float &areaSize);

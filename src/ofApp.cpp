@@ -4,40 +4,14 @@
 void ofApp::setup(){
     ofSetFrameRate(60);
 
-    guiBackgroundColor = ofColor::snow;
-    guiBackgroundColor.a = 210;
-    
-    guiBarColor = ofColor::snow;
-    guiBarColor.a = 160;
-    
-    guiTextColor = ofColor::black;
     setupGui();
-    
-    areaSize.addListener(this, &ofApp::setAreaSize);
-    interfacesDropdown.addListener(this, &ofApp::setInterface);
-        
-    space.width = ofGetWidth();
-    space.height = ofGetHeight();
-    space.areaSize = areaSize;
-    space.origin = ofPoint(ofGetWidth() / 2.0, 200);
-    
-    buttonUI.setPosition(ofPoint(25, 24));
-    buttonUI.onSaveCallback = std::bind(&ofApp::save, this);
-    buttonUI.onFilterAddCallback = std::bind(&ofApp::addFilter, this);
-    buttonUI.onFilterRemoveCallback = std::bind(&ofApp::removeFilter, this);
-    buttonUI.onSensorAddCallback = std::bind(&ofApp::addSensor, this);
-    buttonUI.onSensorRemoveCallback = std::bind(&ofApp::removeSensor, this);
-    buttonUI.onOscSenderAddCallback = std::bind(&ofApp::addOscSender, this);
-    buttonUI.onOscSenderRemoveCallback = std::bind(&ofApp::removeOscSender, this);
+    setupListeners();
+    loadConfiguration();
     
     moveActive = false;
-    setTranslation();
     
-    interfacesDropdown.disableMultipleSelection();
-    if (interfacesDropdown.getAllSelected().size() > 0) {
-        string selection = interfacesDropdown.getAllSelected()[0];
-        setInterface(selection);
-    }
+    setSpace();
+    setTranslation();
     
     saveNotificationTotalTime = 2.0;
     saveNotificationTimer = saveNotificationTotalTime;
@@ -46,41 +20,15 @@ void ofApp::setup(){
         isHelpMode = true;
         hideWindow();
     }
-    
-    ofJson configuration;
-    ofFile file("configuration.json");
-    file >> configuration;
-    
-    sensorManager.load(configuration);
-    filterManager.load(configuration);
-    oscSenderManager.load(configuration);
-    meatbagsManager.load(configuration);
-    
-    if (configuration.contains("general")) {
-        ofJson generalConfig;
-        generalConfig["general"] = configuration["general"];
-        generalGui.loadFrom(generalConfig);
-    }
-    
-    if (configuration.contains("hidden")) {
-        ofJson hiddenConfig;
-        hiddenConfig["hidden"] = configuration["hidden"];
-        hiddenGui.loadFrom(hiddenConfig);
-    }
-
-    setSpace();
-    setTranslation();
-    
-    ofAddListener(ofEvents().mouseMoved, this, &ofApp::onMouseMoved);
-    ofAddListener(ofEvents().mousePressed, this, &ofApp::onMousePressed);
-    ofAddListener(ofEvents().mouseDragged, this, &ofApp::onMouseDragged);
-    ofAddListener(ofEvents().mouseReleased, this, &ofApp::onMouseReleased);
-    ofAddListener(ofEvents().mouseScrolled, this, &ofApp::onMouseScrolled);
-    ofAddListener(ofEvents().keyPressed, this, &ofApp::onKeyPressed);
-    ofAddListener(ofEvents().keyReleased, this, &ofApp::onKeyReleased);
 }
 
 void ofApp::setupGui() {
+    guiBackgroundColor = ofColor::snow;
+    guiBackgroundColor.a = 210;
+    guiBarColor = ofColor::snow;
+    guiBarColor.a = 160;
+    guiTextColor = ofColor::black;
+    
     ofColor headerColor = ofColor::thistle;
     ofColor borderColor = ofColor::black;
     
@@ -107,6 +55,57 @@ void ofApp::setupGui() {
     generalGui.add(& interfacesDropdown);
     generalGui.add(headlessMode.set("start headless", false));
     generalGui.setPosition(ofVec3f(10, 135, 0));
+    
+    interfacesDropdown.disableMultipleSelection();
+    if (interfacesDropdown.getAllSelected().size() > 0) {
+        string selection = interfacesDropdown.getAllSelected()[0];
+        setInterface(selection);
+    }
+}
+
+void ofApp::setupListeners() {
+    buttonUI.setPosition(ofPoint(25, 24));
+    buttonUI.onSaveCallback = std::bind(&ofApp::save, this);
+    buttonUI.onFilterAddCallback = std::bind(&ofApp::addFilter, this);
+    buttonUI.onFilterRemoveCallback = std::bind(&ofApp::removeFilter, this);
+    buttonUI.onSensorAddCallback = std::bind(&ofApp::addSensor, this);
+    buttonUI.onSensorRemoveCallback = std::bind(&ofApp::removeSensor, this);
+    buttonUI.onOscSenderAddCallback = std::bind(&ofApp::addOscSender, this);
+    buttonUI.onOscSenderRemoveCallback = std::bind(&ofApp::removeOscSender, this);
+    
+    ofAddListener(ofEvents().mouseMoved, this, &ofApp::onMouseMoved);
+    ofAddListener(ofEvents().mousePressed, this, &ofApp::onMousePressed);
+    ofAddListener(ofEvents().mouseDragged, this, &ofApp::onMouseDragged);
+    ofAddListener(ofEvents().mouseReleased, this, &ofApp::onMouseReleased);
+    ofAddListener(ofEvents().mouseScrolled, this, &ofApp::onMouseScrolled);
+    ofAddListener(ofEvents().keyPressed, this, &ofApp::onKeyPressed);
+    ofAddListener(ofEvents().keyReleased, this, &ofApp::onKeyReleased);
+    
+    areaSize.addListener(this, &ofApp::setAreaSize);
+    interfacesDropdown.addListener(this, &ofApp::setInterface);
+}
+
+void ofApp::loadConfiguration() {
+    ofJson configuration;
+    ofFile file("configuration.json");
+    file >> configuration;
+    
+    sensorManager.load(configuration);
+    filterManager.load(configuration);
+    oscSenderManager.load(configuration);
+    meatbagsManager.load(configuration);
+    
+    if (configuration.contains("general")) {
+        ofJson generalConfig;
+        generalConfig["general"] = configuration["general"];
+        generalGui.loadFrom(generalConfig);
+    }
+    
+    if (configuration.contains("hidden")) {
+        ofJson hiddenConfig;
+        hiddenConfig["hidden"] = configuration["hidden"];
+        hiddenGui.loadFrom(hiddenConfig);
+    }
 }
 
 //--------------------------------------------------------------
@@ -144,8 +143,6 @@ void ofApp::draw(){
 void ofApp::drawMeatbags() {
     viewer.draw(blobs, filterManager.getFilters(), sensorManager.getSensors());
     buttonUI.draw();
-    
-    // draw guis
     generalGui.draw();
     filterManager.draw();
     sensorManager.draw();
@@ -195,8 +192,8 @@ void ofApp::save() {
     filterManager.saveTo(configuration);
     oscSenderManager.saveTo(configuration);
     meatbagsManager.saveTo(configuration);
-        
     ofSavePrettyJson("configuration.json", configuration);
+    
     saveNotificationTimer = 0;
 }
 
@@ -225,10 +222,6 @@ void ofApp::removeOscSender() {
 }
 
 void ofApp::windowResized(int width, int height) {
-    space.width = width;
-    space.height = height;
-    space.origin.x = width / 2.0;
-    
     setSpace();
     sensorManager.refreshGUIPositions();
     filterManager.refreshGUIPositions();
@@ -241,6 +234,8 @@ void ofApp::setTranslation() {
 }
 
 void ofApp::setSpace() {
+    
+    
     viewer.setSpace(space);
     sensorManager.setSpace(space);
     filterManager.setSpace(space);
