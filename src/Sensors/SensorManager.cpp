@@ -90,6 +90,17 @@ void SensorManager::addSensor(SensorType type) {
     auto sensor = createSensorOfType(type);
     
     if (sensor) sensor->index = sensorEntries.size() + 1;
+    
+    ofPoint center = ofPoint(0, 1.25);
+    cout << sensor->index << endl;
+    
+    float centerRatio = float(sensor->index - 1) / 6.0;
+    float sensorX = cos(centerRatio * TWO_PI - HALF_PI) * 1.25 + center.x;
+    float sensorY = sin(centerRatio * TWO_PI - HALF_PI) * 1.25 + center.y;
+    
+    sensor->positionX = sensorX;
+    sensor->positionY = sensorY;
+    
     auto gui = createGUIForSensor(sensor.get(), type);
     
     SensorEntry entry;
@@ -235,7 +246,7 @@ void SensorManager::setFilters(const std::vector<Filter*>& filters_) {
 }
 
 void SensorManager::refreshGUIPositions() {
-    int yOffset = 308;
+    int yOffset = 313;
     int nextYPos = 0.0;
     
     for (int i = 0; i < sensorEntries.size(); ++i) {
@@ -243,7 +254,7 @@ void SensorManager::refreshGUIPositions() {
         if (!(entry.gui && entry.sensor)) continue;
         
         int guiHeight = 0;
-        int margin = 15;
+        int margin = 10;
         int xPos = 0;
         int yPos = 0;
         
@@ -254,7 +265,7 @@ void SensorManager::refreshGUIPositions() {
             yOffset = 308;
             xPos = margin;
         } else {
-            yOffset = 130;
+            yOffset = 135;
             xPos = 200 + margin + (margin * 0.5);
         }
         
@@ -269,7 +280,7 @@ void SensorManager::refreshGUIPositions() {
             guiHeight = 145;
         }
         
-        nextYPos += guiHeight + margin;
+        nextYPos += guiHeight + margin + 5;
     }
 }
 

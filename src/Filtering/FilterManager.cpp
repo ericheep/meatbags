@@ -212,6 +212,11 @@ std::unique_ptr<ofxPanel> FilterManager::createGUIForFilter(Filter* filter, Filt
     auto gui = std::make_unique<ofxPanel>();
     gui->setup("filter " + to_string(filter->index));
 
+    ofColor guiBarColor;
+    guiBarColor = ofColor::grey;
+    guiBarColor.a = 100;
+    ofxGuiSetFillColor(guiBarColor);
+    
     setupCommonGUI(gui.get(), filter);
 
     switch (type) {
@@ -237,6 +242,10 @@ void FilterManager::setupCommonGUI(ofxPanel* gui, Filter* filter) {
     FilterType currentType = getCurrentFilterType(filter);
     filter->filterTypes.selectedValue = filterTypeToString(currentType);
     
+    ofColor guiBarColor;
+    guiBarColor = ofColor::grey;
+    guiBarColor.a = 100;
+    
     ofColor filterColor = ofColor::thistle;
     ofColor backgroundColor = ofColor::snow;
     backgroundColor.a = 210;
@@ -244,13 +253,13 @@ void FilterManager::setupCommonGUI(ofxPanel* gui, Filter* filter) {
     gui->setDefaultBackgroundColor(backgroundColor);
     gui->setBackgroundColor(backgroundColor);
     gui->setHeaderBackgroundColor(filterColor);
-    gui->setFillColor(filterColor);
-    gui->setDefaultFillColor(filterColor);
+    gui->setFillColor(guiBarColor);
+    gui->setDefaultFillColor(guiBarColor);
     gui->add(&filter->filterTypes);
     
     filter->filterTypes.setBackgroundColor(backgroundColor);
-    filter->filterTypes.setDefaultFillColor(backgroundColor);
-    filter->filterTypes.setFillColor(filterColor);
+    filter->filterTypes.setDefaultFillColor(guiBarColor);
+    filter->filterTypes.setFillColor(guiBarColor);
     filter->filterTypes.setBackgroundColor(backgroundColor);
     filter->filterTypes.setTextColor(ofColor::black);
     filter->filterTypes.setDefaultHeaderBackgroundColor(backgroundColor);

@@ -58,6 +58,19 @@ UI::~UI() {}
 void UI::draw() {
     ofPushMatrix();
     
+    ofRectangle backgroundRectangle;
+    backgroundRectangle.set(position.x - 15, position.y - 18, 200, 123);
+    
+    ofColor transparentBlack = ofColor::black;
+    transparentBlack.a = 150;
+    ofSetColor(transparentBlack);
+    ofFill();
+    ofDrawRectangle(backgroundRectangle);
+    
+    ofSetColor(ofColor::thistle);
+    ofNoFill();
+    ofDrawRectangle(backgroundRectangle);
+    
     ofTranslate(position.x, position.y);
     saveButton.draw();
     addSensorButton.draw();

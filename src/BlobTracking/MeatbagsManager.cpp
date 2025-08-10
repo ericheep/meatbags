@@ -57,8 +57,24 @@ void MeatbagsManager::removeMeatbag() {
 }
 
 std::unique_ptr<ofxPanel> MeatbagsManager::createGUIForMeatbags(Meatbags* meatbags) {
+    
+    ofColor guiBarColor;
+    guiBarColor = ofColor::grey;
+    guiBarColor.a = 100;
+    ofxGuiSetFillColor(guiBarColor);
+    
     auto gui = std::make_unique<ofxPanel>();
 
+    ofColor filterColor = ofColor::thistle;
+    ofColor backgroundColor = ofColor::snow;
+    backgroundColor.a = 210;
+    
+    gui->setDefaultBackgroundColor(backgroundColor);
+    gui->setBackgroundColor(backgroundColor);
+    gui->setHeaderBackgroundColor(filterColor);
+    gui->setFillColor(guiBarColor);
+    gui->setDefaultFillColor(guiBarColor);
+    
     gui->setup("meatbags " + to_string(meatbags->index));
     gui->add(meatbags->epsilon.set( "cluster epsilon (mm)", 100, 1, 1000));
     gui->add(meatbags->minPoints.set( "cluster min points", 10, 1, 150));
@@ -68,10 +84,10 @@ std::unique_ptr<ofxPanel> MeatbagsManager::createGUIForMeatbags(Meatbags* meatba
 }
 
 void MeatbagsManager::refreshGUIPositions() {
-    int yOffset = 197;
+    int yOffset = 202;
     int nextYPos = 0;
     int guiHeight = 40;
-    int margin = 15;
+    int margin = 10;
     
     for (int i = 0; i < meatbagsEntries.size(); ++i) {
         auto& entry = meatbagsEntries[i];

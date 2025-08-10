@@ -25,6 +25,7 @@ public:
     void loadOscSenders(int numberOscSenders, ofJson config);
     void saveTo(ofJson& configuration);
     
+    void refreshGUIPositions();
 private:
     struct OscSenderEntry {
         unique_ptr<OscSender> oscSender;

@@ -24,20 +24,41 @@ void OscSenderManager::send(vector<Blob>& blobs, const vector<Sensor*> sensors, 
 }
 
 void OscSenderManager::addOscSender() {
-    auto oscSender = std::make_unique<OscSender>();
-    if (oscSender) oscSender->index = oscSenderEntries.size() + 1;
-    
-    auto gui = createGUIForSender(oscSender.get());
-    oscSenderEntries.push_back({std::move(oscSender), std::move(gui)});
+    if (oscSenderEntries.size() < 5) {
+        auto oscSender = std::make_unique<OscSender>();
+        if (oscSender) oscSender->index = oscSenderEntries.size() + 1;
+        
+        auto gui = createGUIForSender(oscSender.get());
+        oscSenderEntries.push_back({std::move(oscSender), std::move(gui)});
+        
+        refreshGUIPositions();
+    }
 }
 
 void OscSenderManager::removeOscSender() {
-    // maybe add code to remove listeneres later
-    oscSenderEntries.pop_back();
+    if (oscSenderEntries.size() > 1) {
+        oscSenderEntries.pop_back();
+    }
 }
 
 std::unique_ptr<ofxPanel> OscSenderManager::createGUIForSender(OscSender* oscSender) {
+    
+    ofColor guiBarColor;
+    guiBarColor = ofColor::grey;
+    guiBarColor.a = 100;
+    ofxGuiSetFillColor(guiBarColor);
+    
     auto gui = std::make_unique<ofxPanel>();
+    
+    ofColor filterColor = ofColor::thistle;
+    ofColor backgroundColor = ofColor::snow;
+    backgroundColor.a = 210;
+    
+    gui->setDefaultBackgroundColor(backgroundColor);
+    gui->setBackgroundColor(backgroundColor);
+    gui->setHeaderBackgroundColor(filterColor);
+    gui->setFillColor(guiBarColor);
+    gui->setDefaultFillColor(guiBarColor);
     
     gui->setDefaultWidth(190);
     gui->setup("osc sender " + to_string(oscSender->index));
@@ -48,6 +69,22 @@ std::unique_ptr<ofxPanel> OscSenderManager::createGUIForSender(OscSender* oscSen
     gui->add(oscSender->sendLogsActive.set("send logs", false));
     
     return gui;
+}
+
+void OscSenderManager::refreshGUIPositions() {
+    for (int i = 0; i < oscSenderEntries.size(); ++i) {
+        auto& entry = oscSenderEntries[i];
+        if (!(entry.gui && entry.oscSender)) continue;
+        
+        int guiWidth = 190;
+        int guiHeight = 73;
+        int margin = 10;
+
+        int xPos = ofGetWidth() - guiWidth - margin - 197;
+        int yPos = margin + i * (guiHeight + margin);
+        
+        entry.gui->setPosition(xPos, yPos);
+    }
 }
 
 void OscSenderManager::loadOscSenders(int numberOscSenders, ofJson config) {

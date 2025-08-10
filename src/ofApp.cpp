@@ -21,7 +21,7 @@ void ofApp::setup(){
     space.areaSize = areaSize;
     space.origin = ofPoint(ofGetWidth() / 2.0, 200);
     
-    buttonUI.setPosition(ofPoint(25, 20));
+    buttonUI.setPosition(ofPoint(25, 24));
     buttonUI.onSaveCallback = std::bind(&ofApp::save, this);
     buttonUI.onFilterAddCallback = std::bind(&ofApp::addFilter, this);
     buttonUI.onFilterRemoveCallback = std::bind(&ofApp::removeFilter, this);
@@ -106,7 +106,7 @@ void ofApp::setupGui() {
     generalGui.setup("general");
     generalGui.add(& interfacesDropdown);
     generalGui.add(headlessMode.set("start headless", false));
-    generalGui.setPosition(ofVec3f(15, 130, 0));
+    generalGui.setPosition(ofVec3f(10, 135, 0));
 }
 
 //--------------------------------------------------------------
@@ -247,13 +247,11 @@ void ofApp::setSpace() {
 }
 
 void ofApp::onMouseMoved(ofMouseEventArgs& mouseArgs) {
-    filterManager.onMouseMoved(mouseArgs);
-    if (filterManager.onMouseDragged(mouseArgs)) return
-    
     viewer.onMouseMoved(mouseArgs);
     buttonUI.onMouseMoved(mouseArgs);
     sensorManager.onMouseMoved(mouseArgs);
-   
+    filterManager.onMouseMoved(mouseArgs);
+
     if (moveActive) {
         translation = initialTranslation - ofPoint(-mouseArgs.x, -mouseArgs.y);
         setTranslation();
