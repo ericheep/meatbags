@@ -45,8 +45,16 @@ Sensor::~Sensor() {
     sensorRotationDeg.removeListener(this, &Sensor::setSensorRotation);
 }
 
-void Sensor::shutdown() {
+void Sensor::close() {
+    if (isThreadRunning()) {
+        stopThread();
+        sleep(100);
+    }
     
+    tcpClient.close();
+}
+
+void Sensor::shutdown() {
     showSensorInformation = false;
     ipAddress.removeListener(this, &Sensor::setIPAddress);
     positionX.removeListener(this, &Sensor::setPositionX);

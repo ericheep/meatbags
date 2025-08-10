@@ -10,7 +10,7 @@
 #include "ofxNetwork.h"
 #include "Sensor.hpp"
 
-class OrbbecPulsar : public ofThread, public Sensor {
+class OrbbecPulsar : public Sensor {
 public:
     OrbbecPulsar();
     ~OrbbecPulsar();

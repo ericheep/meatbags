@@ -29,6 +29,8 @@ public:
     void load(ofJson configuration);
     void loadMeatbags(int numberMeatbags, ofJson config);
     void saveTo(ofJson& configuration);
+    
+    void refreshGUIPositions();
 private:
     struct MeatbagsEntry {
         unique_ptr<Meatbags> meatbags;

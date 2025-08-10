@@ -31,6 +31,7 @@ void SensorManager::update() {
         
         if (newSensorType != currentType) {
             changeSensorType(i, newSensorType);
+            refreshGUIPositions();
         }
     }
 }
@@ -103,7 +104,7 @@ void SensorManager::addSensor(SensorType type) {
 void SensorManager::removeSensor() {
     if (sensorEntries.size() > 1) {
         sensorEntries.back().sensor->sensorTypes.removeListener(this, &SensorManager::onSensorTypeChanged);
-
+        
         sensorEntries.pop_back();
     }
 }
@@ -234,7 +235,7 @@ void SensorManager::setFilters(const std::vector<Filter*>& filters_) {
 }
 
 void SensorManager::refreshGUIPositions() {
-    int yOffset = 197;
+    int yOffset = 308;
     int nextYPos = 0.0;
     
     for (int i = 0; i < sensorEntries.size(); ++i) {
@@ -243,18 +244,30 @@ void SensorManager::refreshGUIPositions() {
         
         int guiHeight = 0;
         int margin = 15;
-        int xPos = margin;
+        int xPos = 0;
+        int yPos = 0;
         
-        string currentTypeName = sensorTypeToString(getCurrentSensorType(entry.sensor.get()));
         
-        if (currentTypeName == "Hokuyo") {
-            guiHeight = 120;
-        } else if (currentTypeName == "Orbbec Pulsar") {
-            guiHeight = 145;
+        if (i == 2) nextYPos = 0;
+        
+        if (i < 2) {
+            yOffset = 308;
+            xPos = margin;
+        } else {
+            yOffset = 130;
+            xPos = 200 + margin + (margin * 0.5);
         }
         
-        entry.gui->setPosition(xPos, nextYPos + yOffset);
+        yPos = nextYPos + yOffset;
+        entry.gui->setPosition(xPos, yPos);
         entry.sensor->setInfoPosition(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+        
+        string type = sensorTypeToString(getCurrentSensorType(entry.sensor.get()));
+        if (type == "Hokuyo") {
+            guiHeight = 120;
+        } else if (type == "Orbbec Pulsar") {
+            guiHeight = 145;
+        }
         
         nextYPos += guiHeight + margin;
     }
@@ -418,13 +431,13 @@ bool SensorManager::areNewCoordinatesAvailable() {
 void SensorManager::getCoordinates(const std::vector<Meatbags*>& meatbags) {
     for (auto& meatbag : meatbags) {
         int counter = 0;
-
+        
         for (auto& entry : sensorEntries) {
             if (entry.sensor->whichMeatbag == meatbag->index) {
                 for (auto& coordinate : entry.sensor->coordinates) {
                     float x = coordinate.x;
                     float y = coordinate.y;
-                        
+                    
                     if (coordinate.x != 0 && coordinate.y != 0) {
                         if (checkWithinFilters(x, y)) {
                             meatbag->coordinates[counter].set(x, y);

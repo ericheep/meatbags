@@ -205,13 +205,9 @@ void OrbbecPulsar::draw() {
 }
 
 void OrbbecPulsar::close() {
-    if (isThreadRunning()) {
-        sendDisableDataStreamCommand();
-        sleep(100);
-        stopThread();
-    }
-    
-    tcpClient.close();
+    sendDisableDataStreamCommand();
+    sleep(50);
+    Sensor::close();
 }
 
 void OrbbecPulsar::setIPAddress(string &ipAddress) {

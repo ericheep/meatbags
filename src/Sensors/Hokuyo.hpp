@@ -12,7 +12,7 @@
 #include "ofxNetwork.h"
 #include "Sensor.hpp"
 
-class Hokuyo : public ofThread, public Sensor {
+class Hokuyo : public Sensor {
 public:
     Hokuyo();
     ~Hokuyo();

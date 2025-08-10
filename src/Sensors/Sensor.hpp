@@ -13,7 +13,7 @@
 
 #include "DraggablePoint.hpp"
 
-class Sensor {
+class Sensor : public ofThread {
 public:
     Sensor();
     virtual ~Sensor();

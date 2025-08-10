@@ -114,7 +114,9 @@ void Hokuyo::reconnect() {
 }
 
 void Hokuyo::close() {
-    tcpClient.close();
+    sendMeasurementModeOffCommand();
+    sleep(50);
+    Sensor::close();
 }
 
 void Hokuyo::setIPAddress(string &ipAddress) {

@@ -55,6 +55,18 @@ void ofApp::setup(){
     filterManager.load(configuration);
     oscSenderManager.load(configuration);
     meatbagsManager.load(configuration);
+    
+    if (configuration.contains("general")) {
+        ofJson generalConfig;
+        generalConfig["general"] = configuration["general"];
+        generalGui.loadFrom(generalConfig);
+    }
+    
+    if (configuration.contains("hidden")) {
+        ofJson hiddenConfig;
+        hiddenConfig["hidden"] = configuration["hidden"];
+        hiddenGui.loadFrom(hiddenConfig);
+    }
 
     setSpace();
     setTranslation();
@@ -73,16 +85,15 @@ void ofApp::setupGui() {
     ofColor borderColor = ofColor::black;
     
     ofxGuiSetDefaultHeight(12);
-    ofxGuiSetDefaultWidth(230);
+    ofxGuiSetDefaultWidth(200);
     ofxGuiSetBorderColor(borderColor);
     ofxGuiSetTextColor(guiTextColor);
     ofxGuiSetBackgroundColor(guiBackgroundColor);
     ofxGuiSetFillColor(guiBarColor);
     
-    hiddenGui.setup("main");
+    hiddenGui.setup("hidden");
     hiddenGui.add(areaSize.set( "area size (m)", 10.0, 0.5, 50.0));
     hiddenGui.add(translation.set("translation", ofPoint(0.0, 0.0)));
-    hiddenGui.loadFromFile("hiddenSettings.json");
     
     interfaceSelector.listInterfaces();
     interfacesDropdown.add(interfaceSelector.interfacesStrings);
@@ -92,15 +103,17 @@ void ofApp::setupGui() {
     
     generalGui.setTextColor(guiTextColor);
     generalGui.setHeaderBackgroundColor(headerColor);
-    generalGui.setup("settings");
+    generalGui.setup("general");
     generalGui.add(& interfacesDropdown);
     generalGui.add(headlessMode.set("start headless", false));
     generalGui.setPosition(ofVec3f(15, 130, 0));
-    generalGui.loadFromFile("generalSettings.json");
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    setTranslation();
+    setSpace();
+    
     sensorManager.setFilters(filterManager.getFilters());
     sensorManager.update();
     meatbagsManager.update();
@@ -189,8 +202,6 @@ void ofApp::save() {
 
 void ofApp::addFilter() {
     filterManager.addFilter();
-    setTranslation();
-    setSpace();
 }
 
 void ofApp::removeFilter() {
@@ -236,9 +247,11 @@ void ofApp::setSpace() {
 }
 
 void ofApp::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+    filterManager.onMouseMoved(mouseArgs);
+    if (filterManager.onMouseDragged(mouseArgs)) return
+    
     viewer.onMouseMoved(mouseArgs);
     buttonUI.onMouseMoved(mouseArgs);
-    filterManager.onMouseMoved(mouseArgs);
     sensorManager.onMouseMoved(mouseArgs);
    
     if (moveActive) {

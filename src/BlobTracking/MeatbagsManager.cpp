@@ -58,8 +58,7 @@ void MeatbagsManager::removeMeatbag() {
 
 std::unique_ptr<ofxPanel> MeatbagsManager::createGUIForMeatbags(Meatbags* meatbags) {
     auto gui = std::make_unique<ofxPanel>();
-    
-    gui->setDefaultWidth(190);
+
     gui->setup("meatbags " + to_string(meatbags->index));
     gui->add(meatbags->epsilon.set( "cluster epsilon (mm)", 100, 1, 1000));
     gui->add(meatbags->minPoints.set( "cluster min points", 10, 1, 150));
@@ -68,12 +67,35 @@ std::unique_ptr<ofxPanel> MeatbagsManager::createGUIForMeatbags(Meatbags* meatba
     return gui;
 }
 
+void MeatbagsManager::refreshGUIPositions() {
+    int yOffset = 197;
+    int nextYPos = 0;
+    int guiHeight = 40;
+    int margin = 15;
+    
+    for (int i = 0; i < meatbagsEntries.size(); ++i) {
+        auto& entry = meatbagsEntries[i];
+        
+        int xPos = margin;
+        int yPos = nextYPos + yOffset;
+        
+        entry.gui->setPosition(xPos, yPos);
+        
+        nextYPos += guiHeight + margin;
+    }
+}
+
 void MeatbagsManager::addMeatbags() {
     auto meatbags = std::make_unique<Meatbags>();
     if (meatbags) meatbags->index = meatbagsEntries.size() + 1;
     
+    int guiWidth = 200;
+    ofxGuiSetDefaultWidth(guiWidth);
+    
     auto gui = createGUIForMeatbags(meatbags.get());
     meatbagsEntries.push_back({std::move(meatbags), std::move(gui)});
+    
+    refreshGUIPositions();
 }
 
 

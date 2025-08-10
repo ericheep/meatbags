@@ -72,6 +72,7 @@ private:
     string filterTypeToString(FilterType type);
     
     void transferFilterState(Filter* oldFilter, Filter* newFilter);
+    int guiWidth;
 };
 
 #endif /* FilterManager_hpp */

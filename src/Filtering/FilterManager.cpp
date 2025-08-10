@@ -5,7 +5,9 @@
 
 #include "FilterManager.hpp"
 
-FilterManager::FilterManager() {}
+FilterManager::FilterManager() {
+    guiWidth = 120;
+}
 
 FilterManager::~FilterManager() {
     clear();
@@ -206,6 +208,7 @@ std::unique_ptr<Filter> FilterManager::createFilterOfType(FilterType type) {
 }
 
 std::unique_ptr<ofxPanel> FilterManager::createGUIForFilter(Filter* filter, FilterType type) {
+    ofxGuiSetDefaultWidth(guiWidth);
     auto gui = std::make_unique<ofxPanel>();
     gui->setup("filter " + to_string(filter->index));
 
@@ -234,23 +237,23 @@ void FilterManager::setupCommonGUI(ofxPanel* gui, Filter* filter) {
     FilterType currentType = getCurrentFilterType(filter);
     filter->filterTypes.selectedValue = filterTypeToString(currentType);
     
-    ofColor sensorColor = ofColor::thistle;
+    ofColor filterColor = ofColor::thistle;
     ofColor backgroundColor = ofColor::snow;
     backgroundColor.a = 210;
     
     gui->setDefaultBackgroundColor(backgroundColor);
     gui->setBackgroundColor(backgroundColor);
-    gui->setHeaderBackgroundColor(sensorColor);
-    gui->setFillColor(sensorColor);
-    gui->setDefaultFillColor(sensorColor);
-    
+    gui->setHeaderBackgroundColor(filterColor);
+    gui->setFillColor(filterColor);
+    gui->setDefaultFillColor(filterColor);
     gui->add(&filter->filterTypes);
+    
     filter->filterTypes.setBackgroundColor(backgroundColor);
     filter->filterTypes.setDefaultFillColor(backgroundColor);
-    filter->filterTypes.setDefaultBackgroundColor(backgroundColor);
+    filter->filterTypes.setFillColor(filterColor);
+    filter->filterTypes.setBackgroundColor(backgroundColor);
+    filter->filterTypes.setTextColor(ofColor::black);
     filter->filterTypes.setDefaultHeaderBackgroundColor(backgroundColor);
-    filter->filterTypes.setHeaderBackgroundColor(sensorColor);
-    filter->filterTypes.setFillColor(sensorColor);
     
     gui->add(filter->isMask.set("mask", false));
     gui->add(filter->isNormalized.set("normalize", true));
@@ -287,11 +290,10 @@ void FilterManager::refreshGUIPositions() {
         auto& entry = filterEntries[i];
         if (!(entry.gui && entry.filter)) continue;
         
-        int guiWidth = 130;
-        int guiHeight = 80;
+        int guiHeight = 73;
         int margin = 10;
 
-        int xPos = ofGetWidth() - guiWidth - margin;// - 50;
+        int xPos = ofGetWidth() - guiWidth - margin - 70;
         int yPos = margin + i * (guiHeight + margin);
         
         entry.gui->setPosition(xPos, yPos);
