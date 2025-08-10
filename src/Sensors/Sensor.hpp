@@ -8,13 +8,15 @@
 #include <stdio.h>
 #include "ofMain.h"
 #include "ofxDropdown.h"
+#include "ofxNetwork.h"
+#include "Space.h"
 
 #include "DraggablePoint.hpp"
 
 class Sensor {
 public:
     Sensor();
-    ~Sensor();
+    virtual ~Sensor();
     
     // virtual functions
     virtual void connect() = 0;
@@ -22,9 +24,11 @@ public:
     virtual void update() = 0;
     virtual void close() = 0;
     virtual void draw() = 0;
+    virtual void shutdown() = 0;
     
     // set drawing rectangle
     void setInfoPosition(float x, float y);
+    void drawSensorInfo(vector<string> sensorInfoLines);
     
     // connection event functions
     virtual void setIPAddress(string& ipAddress);
@@ -36,6 +40,17 @@ public:
     void setPositionY(float& positionY);
     void setMirrorAngles(bool& mirrorX);
     void setSensorRotation(float& sensorRotationDeg);
+    void setSpace(Space& space);
+    void setTranslation(ofPoint translation);
+
+    ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
+    ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
+    
+    bool onMouseMoved(ofMouseEventArgs & mouseArgs);
+    bool onMousePressed(ofMouseEventArgs & mouseArgs);
+    bool onMouseDragged(ofMouseEventArgs & mouseArgs);
+    bool onMouseReleased(ofMouseEventArgs & mouseArgs);
+    bool onKeyPressed(ofKeyEventArgs & keyArgs);
     
     // interactions
     DraggablePoint position, nosePosition;
@@ -43,20 +58,25 @@ public:
     float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
     bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
     bool threadActive;
+    
+    float statusTimer, statusTimeInterval;
+    float threadInactiveTimer, threadInactiveTimeInterval;
+    float reconnectionTimer, reconnectionTimeInterval;
+    
     string model;
     string logStatus, logConnectionStatus, logMode;
-    
+    bool autoReconnectActive;
+    ofColor sensorColor;
+
     // parameters
-    ofxDropdown_<string> typesDropdown { "types" };
+    ofxDropdown_<string> sensorTypes { "types" };
     ofParameter<string> ipAddress;
     ofParameter<float> positionX;
     ofParameter<float> positionY;
-    ofParameter<bool> autoReconnectActive;
     ofParameter<bool> mirrorAngles;
     ofParameter<bool> isSleeping;
     ofParameter<float> sensorRotationDeg;
     ofParameter<bool> showSensorInformation;
-    ofParameter<ofColor> sensorColor;
     ofParameter<int> whichMeatbag;
     ofParameter<int> guiMotorSpeed;
     ofParameter<bool> guiSpecialWorkingMode;
@@ -73,6 +93,9 @@ public:
     int port;
     int index;
     
+    float scale;
+    ofPoint translation;
+    Space space;
     string laserState;
     
     float lastFrameTime;
@@ -81,9 +104,11 @@ public:
     
     // for the viewer class
     bool isConnected;
-protected:
+
     virtual void initializeVectors();
     virtual void setupParameters();
+    
+    ofxTCPClient tcpClient;
 };
 
 #endif /* Sensor_hpp */

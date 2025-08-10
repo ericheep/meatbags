@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "ofxOpenCv.h"
 #include "ofMain.h"
+#include "ofxDropdown.h"
 #include "DraggablePoint.hpp"
 #include "Space.h"
 #include "Blob.hpp"
@@ -15,12 +16,22 @@
 class Filter {
 public:
     Filter();
-    ~Filter();
+    virtual ~Filter();
         
-    void update();
-    void updateHomography();
-    void checkBlobs(vector<Blob> & blobs);
-    void setNumberPoints(int numberPoints);
+    virtual void update() = 0;
+    virtual void updateNormalization() = 0;
+    
+    void updateCentroid();
+    virtual void checkBlobs(vector<Blob>& blobs);
+    virtual bool checkInside(float x, float y);
+    virtual ofPoint normalizeCoordinate(float x, float y) = 0;
+    
+    virtual void drawOutline();
+    virtual void drawShape();
+    
+    void setPosition(vector<ofPoint> position);
+    vector<ofPoint> getPosition();
+
     void setSpace(Space & space);
     void setTranslation(ofPoint translation);
     void translatePointsByCentroid(ofPoint centroid);
@@ -34,29 +45,25 @@ public:
     ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
     ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
 
-    vector<ofParameter<ofVec2f>> points;
-    vector<DraggablePoint> positions;
+    vector<ofParameter<ofVec2f>> anchorPoints;
+    vector<DraggablePoint> draggablePoints;
     vector<Blob> filterBlobs;
-    
-    vector<cv::Point2f> quad;
-    vector<cv::Point2f> normalizedQuad;
+    ofPolyline polyline;
     
     DraggablePoint centroid;
-    ofParameter<bool> mask;
+    ofxDropdown_<string> filterTypes { "shape" };
+    ofParameter<bool> isMask;
     ofParameter<bool> isActive;
-    ofParameter<bool> normalize;
+    ofParameter<bool> isNormalized;
 
     float scale;
-    int numberPoints;
     int index;
     bool isBlobInside;
     float distanceOfClosestBlob;
-    cv::Mat homography;
+    int numberAnchorPoints = 4;
     
     ofPoint translation;
     Space space;
-    ofPolyline polyline;
-
 };
 
 #endif /* Filter_hpp */

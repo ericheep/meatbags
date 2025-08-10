@@ -7,10 +7,9 @@
 
 #include <stdio.h>
 #include "sstream"
+
 #include "ofMain.h"
 #include "ofxNetwork.h"
-
-#include "MemoryFont.hpp"
 #include "Sensor.hpp"
 
 class Hokuyo : public ofThread, public Sensor {
@@ -23,6 +22,7 @@ public:
     void connect() override;
     void reconnect() override;
     void close() override;
+    void shutdown() override;
     
     virtual void setIPAddress(string& ipAddress) override;
     
@@ -71,7 +71,6 @@ private:
     bool callIntensitiesActive;
     int startStep, endStep, clusterCount, timeStamp;
     
-    MemoryFont font;
     string motorSpeed;
     string measurementMode, bitRate, sensorDiagnostic;
     string vendorInfo, productInfo, firmwareVersion, protocolVersion, serialNumber;
@@ -81,10 +80,7 @@ private:
     
     string status;
     float checkTimer, checkTimeInterval;
-    float statusTimer, statusTimeInterval;
     float streamingTimer, streamingTimeInterval;
-    float threadInactiveTime, threadInactiveTimeInterval;
-    float reconnectionTimer, reconnectionTimeInterval;
     
     string connectionStatus;
 };

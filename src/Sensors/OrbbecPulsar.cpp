@@ -5,9 +5,10 @@
 #include "OrbbecPulsar.hpp"
 
 OrbbecPulsar::OrbbecPulsar() : Sensor() {
-    angularResolution = int(360.0 / 0.1);      // default for 20hz mode
-    port = 2228;                   // Orbbec default UDP port
-    rotationFrequency = 20;        // default to 20hz
+    angularResolution = int(360.0 / 0.1);
+    port = 2228;
+    rotationFrequency = 20;
+    showSensorInformation = false;
     
     currentRotationSpeed = 0;
     temperature = 0.0;
@@ -16,20 +17,13 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
     initializeVectors();
     setupParameters();
     
-    threadInactiveTimer = 0.0;
-    threadInactiveTimeInterval = 5.0;
-    
-    reconnectionTimer = 0.0;
-    reconnectionTimeInterval = 5.0;
-    
-    statusTimer = 0.0;
     statusTimeInterval = 0.2;
     
     checkTimer = 0.0;
     checkTimeInterval = 0.5;
-        
+    
     stopThread();
-    sleep(1000);
+    sleep(50);
     
     statusCommands.clear();
     statusCommands.push_back([this]() { sendGetMotorSpeedCommand(); });
@@ -41,7 +35,7 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
     statusCommands.push_back([this]() { sendGetLidarWarningCommand(); });
     statusCommands.push_back([this]() { sendGetSpecialWorkingModeCommand(); });
     currentStatusCommandIndex = 0;
-
+    
     checkCommands.clear();
     checkCommands.push_back([this]() { checkMotorSpeed(); });
     checkCommands.push_back([this]() { checkTransmissionProtocol(); });
@@ -56,6 +50,36 @@ OrbbecPulsar::~OrbbecPulsar() {
 
 void OrbbecPulsar::reconnect() {
     connect();
+}
+
+void OrbbecPulsar::shutdown() {
+    ofLogNotice("OrbbecPulsar") << "Shutting down OrbbecPulsar sensor " << index;
+    
+    // Call base class shutdown first
+    Sensor::shutdown();
+    
+    // Stop data stream before closing connection
+    if (tcpClient.isConnected()) {
+        sendDisableDataStreamCommand();
+        ofSleepMillis(50); // Give time for command to be sent
+    }
+    
+    // Close TCP connection
+    tcpClient.close();
+    
+    // Stop the thread cleanly
+    if (isThreadRunning()) {
+        stopThread();
+        waitForThread(true);
+    }
+    
+    connectionStatus = "Disconnected";
+    threadInactiveTimer = 0.0;
+    reconnectionTimer = 0.0;
+    statusTimer = 0.0;
+    checkTimer = 0.0;
+    
+    ofLogNotice("OrbbecPulsar") << "OrbbecPulsar sensor " << index << " shutdown complete";
 }
 
 void OrbbecPulsar::connect() {
@@ -81,13 +105,13 @@ void OrbbecPulsar::threadedFunction() {
         return;
     }
     connectionStatus = "Connected";
-
+    
     sendConnectCommand();
     
     while (tcpClient.isConnected()) {
         uint8_t data[1024];
         int bytesRead = tcpClient.receiveRawBytes((char*)data, sizeof(data));
-         
+        
         if (bytesRead > 0) {
             if (isControlResponse(data, bytesRead)) {
                 parseControlResponse(data, bytesRead);
@@ -176,27 +200,8 @@ void OrbbecPulsar::draw() {
     sensorInfoLines.push_back("Working Mode: " + workingMode);
     sensorInfoLines.push_back("Warning: " + lidarWarning);
     sensorInfoLines.push_back("Special Working Mode: " + specialWorkingMode);
-
-    float textBoxHeight = sensorInfoLines.size() * 16;
-    float textBoxWidth = 300;
     
-    float textX = x - textBoxWidth * 0.5;
-    float textY = y - textBoxHeight * 0.5;
-    
-    ofFill();
-    ofSetColor(0, 0, 0, 200);
-    ofRectangle textBox;
-    textBox.setFromCenter(x, y, textBoxWidth, textBoxHeight + 8);
-    ofDrawRectangle(textBox);
-    ofSetColor(ofColor::lightBlue);
-    ofNoFill();
-    ofDrawRectangle(textBox);
-    ofFill();
-    
-    for (int i = 0; i < sensorInfoLines.size(); i++) {
-        float yPos = textY + 16 * i;
-        ofDrawBitmapString(sensorInfoLines[i], textX + 6, yPos + 10);
-    }
+    drawSensorInfo(sensorInfoLines);
 }
 
 void OrbbecPulsar::close() {
@@ -399,23 +404,23 @@ void OrbbecPulsar::sendSetTCPModeCommand() {
 
 vector<uint8_t> OrbbecPulsar::createControlMessage(uint16_t registerAddr, const vector<uint8_t>& dataSegment) {
     uint16_t dataLength = dataSegment.size();
-        
+    
     vector<uint8_t> message = {
-            0x01, 0xFE,                            // frame header
-            0x01,                                  // protocol version
-            (uint8_t)((dataLength >> 8) & 0xFF),   // data length high byte
-            (uint8_t)(dataLength & 0xFF),          // data length low byte
-            (uint8_t)((registerAddr >> 8) & 0xFF), // register high byte
-            (uint8_t)(registerAddr & 0xFF),        // register low byte
-            0x00, 0x00                             // response code
-        };
-        
+        0x01, 0xFE,                            // frame header
+        0x01,                                  // protocol version
+        (uint8_t)((dataLength >> 8) & 0xFF),   // data length high byte
+        (uint8_t)(dataLength & 0xFF),          // data length low byte
+        (uint8_t)((registerAddr >> 8) & 0xFF), // register high byte
+        (uint8_t)(registerAddr & 0xFF),        // register low byte
+        0x00, 0x00                             // response code
+    };
+    
     // append data segment
     message.insert(message.end(), dataSegment.begin(), dataSegment.end());
-        
+    
     uint8_t crc = calculateCRC8(message);
     message.push_back(crc);
-        
+    
     return message;
 }
 
@@ -428,9 +433,9 @@ void OrbbecPulsar::sendControlCommand(const vector<uint8_t>& command) {
 void OrbbecPulsar::parseControlResponse(const uint8_t* data,  int bytesRead) {
     int16_t controlCode = bytesToUint16(data[5], data[6]);
     int16_t responseCode = bytesToUint16(data[7], data[8]);
-
+    
     bool success = (responseCode == 0x0100);
-
+    
     if (success) {
         switch(controlCode) {
             case REG_CONNECT_DEVICE: {
@@ -489,7 +494,7 @@ void OrbbecPulsar::parseControlResponse(const uint8_t* data,  int bytesRead) {
 
 string OrbbecPulsar::parseString(const uint8_t* data, int bytesRead) {
     uint16_t dataLength = bytesToUint16(data[3], data[4]);
-
+    
     if (dataLength == 0 || bytesRead < (9 + dataLength)) {
         ofLogWarning("OrbbecPulsar") << "Invalid response length";
         return "NULL";
@@ -503,7 +508,7 @@ string OrbbecPulsar::parseString(const uint8_t* data, int bytesRead) {
     }
     
     str.erase(std::find_if(str.rbegin(), str.rend(),
-                   [](unsigned char ch) { return !std::isspace(ch); }).base(),
+                           [](unsigned char ch) { return !std::isspace(ch); }).base(),
               str.end());
     
     return str;
@@ -594,7 +599,7 @@ void OrbbecPulsar::parseSpecialWorkingMode(const uint8_t* data, int bytesRead) {
     }
     
     uint32_t modeValue = bytesToUint32(data[9], data[10], data[11], data[12]);
-        
+    
     switch (modeValue) {
         case 0:
             specialWorkingMode = "normal";
@@ -622,7 +627,7 @@ void OrbbecPulsar::parseMotorSpeed(const uint8_t* data, int bytesRead) {
     }
     
     uint32_t speedValue = bytesToUint32(data[9], data[10], data[11], data[12]);
-
+    
     motorSpeed = speedValue;
 }
 
@@ -658,7 +663,7 @@ void OrbbecPulsar::parsePointCloudData(const uint8_t* data, int length) {
     
     // extract rotation speed (bytes 33-34)
     currentRotationSpeed = bytesToUint16(data[33], data[34]);
-
+    
     // determine point count based on info type
     int pointCount;
     switch(infoType) {
@@ -696,7 +701,9 @@ void OrbbecPulsar::extractPointCloudPoints(const uint8_t* data, int pointCount, 
         int coordIndex = (int)((pointAngle - 45.0f) / 360.0f * angularResolution);
         
         if (coordIndex >= 0 && coordIndex < angularResolution) {
-            createCoordinate(coordIndex, distance);
+            if (distance >= 0) {
+                createCoordinate(coordIndex, distance);
+            }
             
             if (coordIndex < intensities.size()) {
                 intensities[coordIndex] = intensity;

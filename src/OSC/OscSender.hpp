@@ -11,7 +11,8 @@
 #include "ofMain.h"
 #include "Blob.hpp"
 #include "Meatbags.hpp"
-#include "Sensors.hpp"
+#include "Filter.hpp"
+#include "Sensor.hpp"
 
 class OscSender {
 public:
@@ -20,11 +21,11 @@ public:
 
     void setOscSenderAddress(string& oscSenderAddress);
     void setOscSenderPort(int& oscSenderPort);
-    void sendBlobOsc(vector<Blob>& blobs, Filters& filters);
-    void sendFilterOsc(Filters& filtere);
-    void sendFilterStatus(Filters& filters);
-    void sendFilterBlobs(Filters& filters);
-    void sendLogs(Sensors& sensors);
+    void sendBlobOsc(vector<Blob>& blobs, const vector<Filter*>& filters);
+    void sendFilterOsc(const vector<Filter*>& filters);
+    void sendFilterStatus(const vector<Filter*>& filters);
+    void sendFilterBlobs(const vector<Filter*>& filters);
+    void sendLogs(const vector<Sensor*> sensors);
     
     ofxOscSender oscSender;
 
@@ -35,6 +36,7 @@ public:
     ofParameter<bool> sendLogsActive;
 
     string lastConnectionStatus, lastMode, lastStatus;
+    int index;
 };
 
 #endif /* OscOut_hpp */

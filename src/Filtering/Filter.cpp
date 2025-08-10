@@ -7,27 +7,14 @@
 Filter::Filter() {
     isActive = true;
     
-    normalizedQuad = {
-        { 1.0f, 1.0f },
-        { 0.0f, 1.0f },
-        { 0.0f, 0.0f },
-        { 1.0f, 0.0f }
-    };
-}
-
-Filter::~Filter() {
-}
-
-void Filter::setNumberPoints(int numberPoints) {
-    points.resize(numberPoints);
-    positions.resize(numberPoints);
-    quad.resize(numberPoints);
+    draggablePoints.resize(numberAnchorPoints);
+    anchorPoints.resize(numberAnchorPoints);
     
-    for (int i = 0; i < numberPoints; i++) {
-        positions[i].size = 10;
-        positions[i].halfSize = positions[i].size * 0.5;
-        positions[i].isMouseOver = false;
-        positions[i].isMouseClicked = false;
+    for (int i = 0; i < numberAnchorPoints; i++) {
+        draggablePoints[i].size = 10;
+        draggablePoints[i].halfSize = draggablePoints[i].size * 0.5;
+        draggablePoints[i].isMouseOver = false;
+        draggablePoints[i].isMouseClicked = false;
     }
     
     centroid.size = 12;
@@ -35,36 +22,56 @@ void Filter::setNumberPoints(int numberPoints) {
     centroid.isMouseOver = false;
     centroid.isMouseClicked = false;
     
-    updateHomography();
+    filterTypes.add("ellipse");
+    filterTypes.add("quad");
+    filterTypes.disableMultipleSelection();
+}
+
+Filter::~Filter() {
+}
+
+void Filter::updateCentroid() {
+    float sumX = 0.0;
+    float sumY = 0.0;
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        sumX += anchorPoints[i]->x;
+        sumY += anchorPoints[i]->y;
+    }
+    
+    centroid.set(sumX / 4.0, sumY / 4.0);
 }
 
 void Filter::update() {
-    polyline.clear();
-    for (auto point : points) {
-        polyline.addVertex(ofPoint(point));
-    }
-    polyline.close();
-    
-    ofPoint c = polyline.getCentroid2D();
-    centroid.x = c.x;
-    centroid.y = c.y;
-    
-    for(int i = 0; i < positions.size(); i++) {
-        positions[i].x = points[i]->x;
-        positions[i].y = points[i]->y;
+    updateCentroid();
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        draggablePoints[i].x = anchorPoints[i]->x;
+        draggablePoints[i].y = anchorPoints[i]->y;
     }
 }
 
-void Filter::updateHomography() {
-    for(int i = 0; i < positions.size(); i++) {
-        quad[i].x = positions[i].x;
-        quad[i].y = positions[i].y;
+void Filter::drawOutline() {
+    ofPolyline p;
+    for (auto vertex : polyline.getVertices()) {
+        p.addVertex(vertex * scale * 1000.0 + space.origin);
     }
-    
-    homography = cv::getPerspectiveTransform(quad, normalizedQuad);
+    p.close();
+    p.draw();
 }
 
-void Filter::checkBlobs(vector<Blob> & blobs) {
+void Filter::drawShape() {
+    ofBeginShape();
+    for (auto vertex : polyline.getVertices()) {
+        ofPoint p = vertex * scale * 1000.0 + space.origin;
+        ofVertex(p);
+    }
+    ofEndShape();
+}
+
+void Filter::updateNormalization() {
+    // will be overridden
+}
+
+void Filter::checkBlobs(vector<Blob>& blobs) {
     filterBlobs.clear();
     isBlobInside = false;
     distanceOfClosestBlob = std::numeric_limits<float>::infinity();
@@ -87,6 +94,16 @@ void Filter::checkBlobs(vector<Blob> & blobs) {
     }
 }
 
+bool Filter::checkInside(float x, float y) {
+    if (polyline.inside(x, y)) return true;
+    return false;
+}
+
+ofPoint Filter::normalizeCoordinate(float x, float y) {
+    // will be overridden
+    return ofPoint::zero();
+}
+
 void Filter::setTranslation(ofPoint _translation) {
     translation = _translation;
 }
@@ -107,14 +124,14 @@ ofPoint Filter::convertScreenPointToCoordinate(ofPoint screenPoint) {
 bool Filter::onMouseMoved(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
     
-    for(int i = 0; i < positions.size(); i++) {
-        ofPoint screenPoint = convertCoordinateToScreenPoint(positions[i]);
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        ofPoint screenPoint = convertCoordinateToScreenPoint(draggablePoints[i]);
 
-        if(mousePoint.distance(screenPoint) <= positions[i].halfSize) {
-            positions[i].isMouseOver = true;
+        if(mousePoint.distance(screenPoint) <= draggablePoints[i].halfSize) {
+            draggablePoints[i].isMouseOver = true;
             return true;
         } else {
-            positions[i].isMouseOver = false;
+            draggablePoints[i].isMouseOver = false;
         }
     }
     
@@ -133,14 +150,14 @@ bool Filter::onMouseMoved(ofMouseEventArgs& mouseArgs) {
 bool Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
 
-    for(int i = 0; i < positions.size(); i++) {
-        ofPoint screenPoint = convertCoordinateToScreenPoint(positions[i]);
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        ofPoint screenPoint = convertCoordinateToScreenPoint(draggablePoints[i]);
 
-        if(mousePoint.distance(screenPoint) <= positions[i].halfSize) {
-            positions[i].isMouseClicked = true;
+        if(mousePoint.distance(screenPoint) <= draggablePoints[i].halfSize) {
+            draggablePoints[i].isMouseClicked = true;
             return true;
         } else {
-            positions[i].isMouseClicked = false;
+            draggablePoints[i].isMouseClicked = false;
         }
     }
     
@@ -159,10 +176,10 @@ bool Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
 bool Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
     ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
     
-    for(int i = 0; i < positions.size(); i++) {
-        if(positions[i].isMouseClicked) {
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        if(draggablePoints[i].isMouseClicked) {
             ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
-            points[i] = coordinate;
+            anchorPoints[i] = coordinate;
             return true;
         }
     }
@@ -175,8 +192,8 @@ bool Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
         difference.x = ofClamp(difference.x, -1, 1);
         difference.y = ofClamp(difference.y, -1, 1);
         
-        for (auto& point : points) {
-            point += difference;
+        for (auto& anchorPoint : anchorPoints) {
+            anchorPoint += difference;
         }
         return true;
     }
@@ -189,22 +206,22 @@ void Filter::translatePointsByCentroid(ofPoint _centroid) {
     difference.x = ofClamp(difference.x, -500, 500);
     difference.y = ofClamp(difference.y, -500, 500);
     
-    for (auto& point : points) {
-        point += difference;
+    for (auto& anchorPoint : anchorPoints) {
+        anchorPoint += difference;
     }
 }
 
 bool Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
-    for(int i = 0; i < positions.size(); i++) {
-        if (positions[i].isMouseClicked) {
-           positions[i].isMouseClicked = false;
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        if (draggablePoints[i].isMouseClicked) {
+            draggablePoints[i].isMouseClicked = false;
         }
     }
     
     if (centroid.isMouseClicked) {
         centroid.isMouseClicked = false;
         centroid.isMouseOver = false;
-        updateHomography();
+        updateNormalization();
     }
         
     return false;
@@ -212,9 +229,24 @@ bool Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
 
 bool Filter::onKeyPressed(ofKeyEventArgs& keyArgs) {
     if (centroid.isMouseOver) {
-        if (keyArgs.key == 102) mask = !mask;
+        if (keyArgs.key == 102) isMask = !isMask;
         if (keyArgs.key == 116) isActive = !isActive;
     }
     
     return false;
+}
+
+void Filter::setPosition(vector<ofPoint> points) {
+    for (int i = 0; i < 4; i++) {
+        anchorPoints[i] = points[i];
+    }
+}
+
+vector<ofPoint> Filter::getPosition() {
+    vector<ofPoint> points;
+    for (auto anchorPoint : anchorPoints) {
+        points.push_back(anchorPoint.get());
+    }
+    
+    return points;
 }

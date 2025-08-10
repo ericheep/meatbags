@@ -5,30 +5,31 @@
 #ifndef Viewer_hpp
 #define Viewer_hpp
 
+#include <stdio.h>
+#include "ofMain.h"
+#include "ofxOpenCv.h"
+
 #include "Blob.hpp"
 #include "Filter.hpp"
-#include "Sensors.hpp"
-#include "Filters.hpp"
-#include "ofMain.h"
+#include "Sensor.hpp"
 #include "Space.h"
 #include "MemoryFont.hpp"
-#include <stdio.h>
 
 class Viewer {
 public:
     Viewer();
     ~Viewer();
     
-    void draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors);
+    void draw(vector<Blob> & blobs, const vector<Filter*>& filters_, vector<Sensor*> sensors_);
     void drawGrid();
     void drawDraggablePoints(Filter & bounds);
     void drawDraggablePoints(Filter * filter);
 
     void drawFilter(Filter * filter);
-    void drawFilters(Filters & filters);
-    void drawSensors(Sensors & sensors, Filters & filters);
-    void drawConnections(Sensors & sensors);
-    void drawCoordinates(vector<ofPoint> & coordinates, ofColor color, Filters & filters);
+    void drawFilters(const vector<Filter*>& filters);
+    void drawSensors(vector<Sensor*> sensors, const vector<Filter*>& filters);
+    void drawConnections(vector<Sensor*> sensors);
+    void drawCoordinates(vector<ofPoint> & coordinates, ofColor color, const vector<Filter*>& filters);
     void drawCursorCoordinate();
     void drawHelpText();
     void drawSaveNotification();
@@ -42,10 +43,9 @@ public:
     void onMouseMoved(ofMouseEventArgs & mouseArgs);
     void onMouseDragged(ofMouseEventArgs & mouseArgs);
     
-    bool checkWithinBounds(float x, float y, Filters & filters);
+    bool checkWithinBounds(float x, float y, const vector<Filter*>& filters);
 
     Space space;
-    Sensors sensor;
     float scale;
     ofPoint translation;
     

@@ -82,39 +82,27 @@ void UI::setPosition(ofPoint _position) {
 }
 
 void UI::addSensor() {
-    if (numberSensors < numberSensors.getMax()) {
-        numberSensors++;
-    }
+    onSensorAddCallback();
 }
 
 void UI::removeSensor() {
-    if (numberSensors > numberSensors.getMin()) {
-        numberSensors--;
-    }
+    onSensorRemoveCallback();
 }
 
 void UI::addFilter() {
-    if (numberFilters < numberFilters.getMax()) {
-        numberFilters++;
-    }
+    onFilterAddCallback();
 }
 
 void UI::removeFilter() {
-    if (numberFilters > numberFilters.getMin()) {
-        numberFilters--;
-    }
+    onFilterRemoveCallback();
 }
 
 void UI::addOscSender() {
-    if (numberOscSenders < numberOscSenders.getMax()) {
-        numberOscSenders++;
-    }
+    onOscSenderAddCallback();
 }
 
 void UI::removeOscSender() {
-    if (numberOscSenders > numberOscSenders.getMin()) {
-        numberOscSenders--;
-    }
+    onOscSenderRemoveCallback();
 }
 
 void UI::checkIfMouseOver(UIButton & button, ofPoint mousePoint) {

@@ -1,25 +1,19 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxNetwork.h"
 #include "ofxGui.h"
 #include "ofxDropdown.h"
+#include "ofJson.h"
 
-#include "OrbbecPulsar.hpp"
-#include "Hokuyo.hpp"
-#include "Blob.hpp"
-#include "Meatbags.hpp"
-#include "MeatbagsFactory.hpp"
+#include "SensorManager.hpp"
+#include "FilterManager.hpp"
+#include "MeatbagsManager.hpp"
+#include "OscSenderManager.hpp"
 #include "Viewer.hpp"
-#include "Space.h"
-#include "Sensors.hpp"
-#include "Filter.hpp"
-#include "Filters.hpp"
-#include "OscSender.hpp"
-#include "OscSenders.hpp"
+
 #include "UI.hpp"
-#include "MemoryFont.hpp"
 #include "InterfaceSelector.hpp"
+#include "Space.h"
 
 class ofApp : public ofBaseApp{
 public:
@@ -47,19 +41,16 @@ public:
     
     // setup gui
     void setupGui();
-    void setupFilterGuis();
     void setupOscSenderGuis();
     void setupMeatbagsGuis();
-    void setupSensorGuis();
     
     // gui positions
     void setLeftSideGuiPositions();
-    void setRightSideGuiPositions();
+    // void setRightSideGuiPositions();
     
-    // hokuyo parameters
+    // sensor parameters
     void setPositionX(float &x);
     void setPositionY(float &y);
-    void setAutoReconnect(bool &autoReconnectActive);
     void setSensorRotation(float &sensorRotation);
     void setMirrorAngles(bool &mirrorAngles);
     void setInterface(string &interface);
@@ -79,7 +70,7 @@ public:
     void setNumberSensors(int& numberSensors);
     
     // filterss
-    void addFilter(int numberPoints);
+    void addFilter();
     void removeFilter();
     void setNumberFilters(int& numberFilters);
     
@@ -91,20 +82,22 @@ public:
     // view parameters
     void setAreaSize(float &areaSize);
 
-    UI buttonUI;
-    Sensors sensors;
-    Filters filters;
+    SensorManager sensorManager;
+    FilterManager filterManager;
+    OscSenderManager oscSenderManager;
+    MeatbagsManager meatbagsManager;
+    
     vector<Blob> blobs;
-    MeatbagsFactory meatbags;
-    Space space;
     Viewer viewer;
-    OscSenders oscSenders;
+
     InterfaceSelector interfaceSelector;
+    
+    UI buttonUI;
+    Space space;
     
     ofColor guiBackgroundColor, guiBarColor, guiHeaderColor, guiTextColor;
     ofxPanel hiddenGui;
     ofxPanel generalGui;
-    ofxPanel filtersGui;
     ofxPanel oscSendersGui;
 
     vector<ofxPanel*> meatbagsGuis;
@@ -118,11 +111,8 @@ public:
     // meatbags parameters
     ofParameterGroup generalSettings;
     ofParameterGroup meatbagsSettings;
-    ofParameter<float> epsilon;
-    ofParameter<int> minPoints;
-    ofParameter<float> blobPersistence;
+
     ofParameter<bool> headlessMode;
-    ofParameter<bool> autoSave;
     ofParameter<ofPoint> translation;
     ofParameter<string> localIPAddress;
     

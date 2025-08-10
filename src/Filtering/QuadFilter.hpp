@@ -1,0 +1,27 @@
+//
+//  QuadFilter.hpp
+//  meatbags
+//
+
+#ifndef QuadFilter_hpp
+#define QuadFilter_hpp
+
+#include <stdio.h>
+#include "Filter.hpp"
+
+class QuadFilter : public Filter {
+public:
+    QuadFilter();
+    
+    void update();
+    void updateNormalization();
+    
+    ofPoint normalizeCoordinate(float x, float y);
+    void updateHomography();
+
+    cv::Mat homography;
+    vector<cv::Point2f> quad;
+    vector<cv::Point2f> normalizedQuad;
+};
+
+#endif /* QuadFilter_hpp */

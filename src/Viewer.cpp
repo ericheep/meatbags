@@ -37,7 +37,7 @@ void Viewer::setTranslation(ofPoint _translation) {
     translation = _translation;
 }
 
-void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
+void Viewer::draw(vector<Blob> & blobs, const vector<Filter*>& filters, vector<Sensor*> sensors) {
     ofPushMatrix();
     ofTranslate(translation);
     drawGrid();
@@ -46,7 +46,7 @@ void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
     drawSensors(sensors, filters);
     ofPopMatrix();
     
-    for (const auto& sensor : sensors.sensors) {
+    for (const auto& sensor : sensors) {
         if (sensor->showSensorInformation) sensor->draw();
     }
     
@@ -137,23 +137,17 @@ void Viewer::drawBlobs(vector<Blob>& blobs) {
     }
 }
 
-bool Viewer::checkWithinBounds(float x, float y, Filters & filters) {
+bool Viewer::checkWithinBounds(float x, float y, const vector<Filter*>& filters) {
     bool isWithinFilter = false;
-    for (const auto &filter : filters.filters) {
-        if (filter->polyline.inside(x * 0.001, y * 0.001)) {
-            if (filter->mask) {
-                return false;
-            } else {
-                isWithinFilter = true;
-            }
-        }
+    for (const auto &filter : filters) {
+        filter->checkInside(x * 0.001, y * 0.001);
     }
     
     return isWithinFilter;
 }
 
 
-void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, Filters & filters) {
+void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, const std::vector<Filter*>& filters) {
     for (const auto& coordinate : coordinates) {
         ofColor pointColor;
 
@@ -180,23 +174,23 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, Filter
     }
 }
 
-void Viewer::drawSensors(Sensors& sensors, Filters & filters) {
-    for (const auto& sensor : sensors.sensors) {
+void Viewer::drawSensors(vector<Sensor*> sensors, const vector<Filter*>& filters) {
+    for (const auto& sensor : sensors) {
         drawCoordinates(sensor->coordinates, sensor->sensorColor, filters);
         drawSensor(sensor);
     }
 }
 
-void Viewer::drawConnections(Sensors& sensors) {
-    int numberSensors = sensors.sensors.size();
+void Viewer::drawConnections(vector<Sensor*> sensors) {
+    int numberSensors = sensors.size();
     
     float connectionsBoxHeight = numberSensors * 20;
     float y = space.height - connectionsBoxHeight + 8;
     float x = 10;
     
     for (int i = 0; i < numberSensors; i++) {
-        bool connected = sensors.sensors[i]->isConnected;
-        string model = sensors.sensors[i]->model;
+        bool connected = sensors[i]->isConnected;
+        string model = sensors[i]->model;
 
         ofFill();
         if (connected) {
@@ -207,7 +201,7 @@ void Viewer::drawConnections(Sensors& sensors) {
         
         string sensorString = "Sensor " + to_string(i + 1) + ": " + model;
         ofDrawRectangle(x, y + i * 20 - 8, 7, 7);
-        ofSetColor(sensors.sensors[i]->sensorColor);
+        ofSetColor(sensors[i]->sensorColor);
         sensorFont.draw(sensorString, x + 15, y + i * 20 - 1);
     }
 }
@@ -261,15 +255,15 @@ void Viewer::drawSensor(Sensor* sensor) {
 }
 
 void Viewer::drawDraggablePoints(Filter & bounds) {
-    for (const auto &position : bounds.positions) {
-        ofPoint point = position * 1000.0 * scale + space.origin;
+    for (const auto &draggablePoint : bounds.draggablePoints) {
+        ofPoint point = draggablePoint * 1000.0 * scale + space.origin;
 
         ofRectangle p;
-        float r = position.size;
+        float r = draggablePoint.size;
         p.setFromCenter(point.x, point.y, r, r);
         ofNoFill();
         
-        if (position.isMouseOver) ofFill();
+        if (draggablePoint.isMouseOver) ofFill();
         
         ofSetColor(ofColor::magenta);
         ofDrawRectangle(p);
@@ -294,42 +288,27 @@ void Viewer::drawDraggablePoints(Filter & bounds) {
     }
 }
 
-void Viewer::drawFilters(Filters & filters) {
-    for (auto & filter : filters.filters) {
+void Viewer::drawFilters(const vector<Filter*>& filters) {
+    for (auto & filter : filters) {
         drawFilter(filter);
     }
 }
 
 void Viewer::drawFilter(Filter * filter) {
-    ofNoFill();
-    
     ofColor filterColor = ofColor::magenta;
 
     if (!filter->isBlobInside) filterColor.a = 150;
-    if (filter->mask) filterColor = ofColor::lightPink;
+    if (filter->isMask) filterColor = ofColor::lightPink;
     if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
 
+    ofNoFill();
     ofSetColor(filterColor);
-    
-    ofPolyline p;
-    for (auto vertex : filter->polyline.getVertices()) {
-        p.addVertex(vertex * scale * 1000.0 + space.origin);
-    }
-    p.close();
-    p.draw();
-    
+    filter->drawOutline();
+   
     ofColor shapeColor = ofColor(filterColor.r, filterColor.g, filterColor.b, 40);
     ofSetColor(shapeColor);
-    
     ofFill();
-    if (filter->mask) {
-        ofBeginShape();
-        for(const auto &position : filter->positions) {
-            ofPoint p = position * scale * 1000.0 + space.origin;
-            ofVertex(p);
-        }
-        ofEndShape();
-    }
+    if (filter->isMask) filter->drawShape();
     
     drawDraggablePoints(filter);
 }
@@ -337,18 +316,18 @@ void Viewer::drawFilter(Filter * filter) {
 void Viewer::drawDraggablePoints(Filter * filter) {
     ofColor filterColor = ofColor::magenta;
     if (!filter->isBlobInside) filterColor.a = 150;
-    if (filter->mask) filterColor = ofColor::lightPink;
+    if (filter->isMask) filterColor = ofColor::lightPink;
     if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
 
-    for (auto position : filter->positions) {
-        ofPoint point = position * 1000.0 * scale + space.origin;
+    for (auto draggablePoint : filter->draggablePoints) {
+        ofPoint point = draggablePoint * 1000.0 * scale + space.origin;
         
         ofRectangle p;
-        float r = position.size;
+        float r = draggablePoint.size;
         p.setFromCenter(point.x, point.y, r, r);
         ofNoFill();
         
-        if (position.isMouseOver) ofFill();
+        if (draggablePoint.isMouseOver) ofFill();
         
         ofSetColor(filterColor);
         ofDrawRectangle(p);

@@ -12,32 +12,59 @@ Hokuyo::Hokuyo() {
     
     port = 10940;
     
-    netmask = "255.255.255.0";
-    gateway = "192.168.0.1";
     localIPAddress = "0.0.0.0";
     interface = "";
     
     callIntensitiesActive = true;
-        
-    font.setMedium();
-    font.setSize(12);
     
     initializeVectors();
     setupParameters();
-    
-    reconnectionTimer = 0;
-    reconnectionTimeInterval = 5.0;
+        
+    showSensorInformation = false;
 }
 
 Hokuyo::~Hokuyo() {
     stopThread();
 }
 
+void Hokuyo::shutdown() {
+    ofLogNotice("Hokuyo") << "Shutting down Hokuyo sensor " << index;
+    
+    // Call base class shutdown first
+    Sensor::shutdown();
+    
+    // Stop data stream before closing connection
+    if (tcpClient.isConnected()) {
+        ofSleepMillis(50); // Give time for command to be sent
+    }
+    
+    // Close TCP connection
+    tcpClient.close();
+    
+    // Stop the thread cleanly
+    if (isThreadRunning()) {
+        stopThread();
+        waitForThread(true); // Wait for thread to actually stop
+    }
+    
+    // Reset connection state
+    isConnected = false;
+    connectionStatus = "Disconnected";
+    
+    // Reset timers
+    threadInactiveTimer = 0.0;
+    reconnectionTimer = 0.0;
+    statusTimer = 0.0;
+    checkTimer = 0.0;
+    
+    ofLogNotice("Hokuyo") << "Hokuyo sensor " << index << " shutdown complete";
+}
+
 void Hokuyo::update() {    
-    threadInactiveTime += lastFrameTime;
-    if (threadInactiveTime > threadInactiveTimeInterval) {
+    threadInactiveTimer += lastFrameTime;
+    if (threadInactiveTimer > threadInactiveTimeInterval) {
         startThread();
-        threadInactiveTime = 0;
+        threadInactiveTimer = 0;
     }
         
     if(tcpClient.isConnected()) {
@@ -112,6 +139,7 @@ void Hokuyo::threadedFunction() {
     tcpClient.setMessageDelimiter("\012\012");
     sendStreamDistancesCommand();
     
+    cout << "THREAD" << endl;
     while(tcpClient.isConnected()) {
         streamingTimer += lastFrameTime;
         
@@ -125,7 +153,7 @@ void Hokuyo::threadedFunction() {
             streamingTimer = 0;
         }
         
-        threadInactiveTime = 0;
+        threadInactiveTimer = 0;
         sleep(1);
     }
 }
@@ -152,7 +180,7 @@ void Hokuyo::sendSetMotorSpeedCommand(int motorSpeed) {
 
 // not implemented, not working
 void Hokuyo::sendSetIPAddressCommand() {
-    string ipAddress;
+    /*string ipAddress;
     string netmask;
     string gateway;
     
@@ -160,7 +188,7 @@ void Hokuyo::sendSetIPAddressCommand() {
     string netmaskBytes = formatIpv4String(netmask);
     string gatewayBytes = formatIpv4String(gateway);
     
-    send("$IP" + ipAddress + netmask + gateway);
+    send("$IP" + ipAddress + netmask + gateway);*/
 }
 
 void Hokuyo::sendStatusInfoCommand() {
@@ -243,10 +271,9 @@ void Hokuyo::checkStatus() {
 }
 
 void Hokuyo::draw() {
-    ofSetColor(ofColor::grey);
-    
+    if (!showSensorInformation) return;
+
     vector<string> sensorInfoLines;
-    
     sensorInfoLines.push_back("version: " + vendorInfo);
     sensorInfoLines.push_back("model: " + model);
     sensorInfoLines.push_back("firmware: " +  firmwareVersion);
@@ -271,28 +298,7 @@ void Hokuyo::draw() {
     sensorInfoLines.push_back("front direction steps: " + stepNumberOfFrontDirection);
     sensorInfoLines.push_back("scanning speed: " + scanningSpeed);
     
-    float offset = 10;
-    
-    float textBoxHeight = sensorInfoLines.size() * 16;
-    float textBoxWidth = 340;
-    
-    float textX = x - textBoxWidth * 0.5;
-    float textY = y - textBoxHeight * 0.5;
-    
-    ofFill();
-    ofSetColor(0, 0, 0, 300);
-    ofRectangle textBox;
-    textBox.setFromCenter(x, y, textBoxWidth, textBoxHeight + 8);
-    ofDrawRectangle(textBox);
-    ofSetColor(ofColor::pink);
-    ofNoFill();
-    ofDrawRectangle(textBox);
-    ofFill();
-    
-    for (int i = 0; i < sensorInfoLines.size(); i++) {
-        float y = textY + 16 * i;
-        font.draw(sensorInfoLines[i], textX + 6, y + 10);
-    }
+    drawSensorInfo(sensorInfoLines);
 }
 
 string Hokuyo::checkSum(string str, int fromEnd) {
@@ -364,6 +370,7 @@ void Hokuyo::parseStreamingDistances(vector<string> packet) {
     int step = startStep;
     for (int i = 0; i < numSteps; i++) {
         int distance = sixBitCharDecode(raw + (i * 3), 3);
+        cout << "!" << endl;
         createCoordinate(step, distance);
         step += 1;
     }

@@ -24,7 +24,14 @@ public:
     void removeFilter();
     void addOscSender();
     void removeOscSender();
+    
     std::function<void()> onSaveCallback;
+    std::function<void()> onFilterAddCallback;
+    std::function<void()> onFilterRemoveCallback;
+    std::function<void()> onSensorAddCallback;
+    std::function<void()> onSensorRemoveCallback;
+    std::function<void()> onOscSenderAddCallback;
+    std::function<void()> onOscSenderRemoveCallback;
     
     void checkIfMouseOver(UIButton & button, ofPoint mousePoint);
     void checkIfMouseClicked(UIButton & button, ofPoint mousePoint);
@@ -41,10 +48,6 @@ public:
     UIButton removeFilterButton;
     UIButton addOscSenderButton;
     UIButton removeOscSenderButton;
-    
-    ofParameter<int> numberSensors;
-    ofParameter<int> numberFilters;
-    ofParameter<int> numberOscSenders;
     
     ofPoint position;
     

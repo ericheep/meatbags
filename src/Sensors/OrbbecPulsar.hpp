@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 #include "sstream"
-
-#include "Sensor.hpp"
 #include "ofxNetwork.h"
+#include "Sensor.hpp"
 
 class OrbbecPulsar : public ofThread, public Sensor {
 public:
@@ -21,6 +20,7 @@ public:
     virtual void update() override;
     virtual void draw() override;
     virtual void close() override;
+    virtual void shutdown() override;
 
     void threadedFunction() override;
 
@@ -123,9 +123,6 @@ protected:
     string lidarState;
     
     float checkTimer, checkTimeInterval;
-    float statusTimer, statusTimeInterval;
-    float threadInactiveTimer, threadInactiveTimeInterval;
-    float reconnectionTimer, reconnectionTimeInterval;
     string connectionStatus;
     
     virtual void setIPAddress(string& ipAddress) override;
