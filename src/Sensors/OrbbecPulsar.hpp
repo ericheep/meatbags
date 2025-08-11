@@ -19,6 +19,9 @@ public:
 
     void threadedFunction() override;
 
+private:
+    uint8_t receiveBuffer[1024];
+    mutable string lineBuffer;
 protected:
     void sendControlCommand(const vector<uint8_t>& command);
     
@@ -60,7 +63,7 @@ protected:
     void parseFirmwareVersion(const uint8_t* data, int bytesRead);
     void parseLidarWarning(const uint8_t* data, int bytesRead);
     void parseSpecialWorkingMode(const uint8_t* data, int bytesRead);
-    string parseString(const uint8_t* data,  int bytesRead);
+    void parseString(const uint8_t* data,  int bytesRead, string& value);
 
     void checkMotorSpeed();
     void checkTransmissionProtocol();
@@ -76,7 +79,7 @@ protected:
     uint8_t calculateCRC8Fast(const uint8_t* data, size_t length);
     uint16_t bytesToUint16(uint8_t low, uint8_t high);
     uint32_t bytesToUint32(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3);
-    void sendControlMessage(uint16_t registerAddr, const vector<uint8_t>& dataSegment = {});
+    void sendControlMessage(uint16_t registerAddr, std::initializer_list<uint8_t> data);
         
     int motorSpeed;
     int rotationFrequency;         // 15, 20, 25, 30, 40 Hz

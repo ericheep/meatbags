@@ -18,7 +18,7 @@ Sensor::Sensor() {
     threadInactiveTimer = 0.0;
     threadInactiveTimeInterval = 3.0;
     reconnectionTimer = 0.0;
-    reconnectionTimeInterval = 3.0;
+    reconnectionTimeInterval = 10.0;
     
     position = DraggablePoint();
     position.size = 15;
@@ -181,12 +181,13 @@ void Sensor::checkIfReconnect() {
             reconnectionTimer = 0;
             
             tcpClient.close();
+            sleep(100);
             if (isThreadRunning()) {
                 stopThread();
-                waitForThread(true);
+                waitForThread(100);
             }
             
-            ofLogNotice() << "Attemping reconnect";
+            connect();
         }
     } else {
         isConnected = true;

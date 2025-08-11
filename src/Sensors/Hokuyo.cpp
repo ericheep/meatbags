@@ -14,7 +14,7 @@ Hokuyo::Hokuyo() {
     
     callIntensitiesActive = true;
     showSensorInformation = false;
-
+    
     initializeVectors();
     setupParameters();
     
@@ -27,7 +27,7 @@ Hokuyo::Hokuyo() {
 
 Hokuyo::~Hokuyo() {
     sendMeasurementModeOffCommand();
-    sleep(50);
+    sleep(250);
 }
 
 void Hokuyo::update() {
@@ -35,7 +35,7 @@ void Hokuyo::update() {
     threadInactiveTimer.store(currentValue + lastFrameTime);
     statusTimer += lastFrameTime;
     streamingTimer += lastFrameTime;
-        
+    
     if (statusTimer > statusTimeInterval) {
         sendStatusInfoCommand();
         sendVersionInfoCommand();
@@ -47,17 +47,18 @@ void Hokuyo::update() {
     updateSensorInfo();
     checkIfReconnect();
     checkIfThreadRunning();
-
+    
 }
 
 void Hokuyo::threadedFunction() {
     this_thread::sleep_for(chrono::milliseconds(200));
-
+    
     bool tcpConnected = tcpSetup();
     tcpClient.setMessageDelimiter("\012\012");
     this_thread::sleep_for(chrono::milliseconds(300));
-
+    
     if (tcpConnected) {
+        sendMeasurementModeOnCommand();
         sendStreamDistancesCommand();
     }
     
@@ -170,31 +171,33 @@ string Hokuyo::formatIpv4String(string command) {
 
 void Hokuyo::updateSensorInfo() {
     if (!showSensorInformation) return;
-
+    
     sensorInfoLines.clear();
-    sensorInfoLines.push_back("version: " + vendorInfo);
-    sensorInfoLines.push_back("model: " + model);
-    sensorInfoLines.push_back("firmware: " +  firmwareVersion);
-    sensorInfoLines.push_back("protocol: " + protocolVersion);
-    sensorInfoLines.push_back("serial: " + serialNumber);
-    sensorInfoLines.push_back("laser state: " + laserState);
-    sensorInfoLines.push_back("polling start step: " + to_string(startStep));
-    sensorInfoLines.push_back("polling end step: " + to_string(endStep));
-    sensorInfoLines.push_back("measurement mode: " + measurementMode);
-    sensorInfoLines.push_back("bitrate: " + bitRate);
-    sensorInfoLines.push_back("timestamp: " + to_string(timeStamp));
-    sensorInfoLines.push_back("sensor diagnostic: " + sensorDiagnostic);
-    sensorInfoLines.push_back("IP Address: " + tcpClient.getIP());
-    sensorInfoLines.push_back("port: " + to_string(port));
-    sensorInfoLines.push_back("connection status: " + connectionStatus);
-    sensorInfoLines.push_back("status: " + status);
-    sensorInfoLines.push_back("min measurable dist: " + minimumMeasurableDistance);
-    sensorInfoLines.push_back("max measurable dist: " + maximumMeasureableDistance);
-    sensorInfoLines.push_back("angular resolution: " + angularResolutionInfo);
-    sensorInfoLines.push_back("starting step: " + startingStep);
-    sensorInfoLines.push_back("ending step: " + endingStep);
-    sensorInfoLines.push_back("front direction steps: " + stepNumberOfFrontDirection);
-    sensorInfoLines.push_back("scanning speed: " + scanningSpeed);
+    sensorInfoLines.reserve(22);
+    
+    sensorInfoLines.emplace_back("version: " + vendorInfo);
+    sensorInfoLines.emplace_back("model: " + model);
+    sensorInfoLines.emplace_back("firmware: " + firmwareVersion);
+    sensorInfoLines.emplace_back("protocol: " + protocolVersion);
+    sensorInfoLines.emplace_back("serial: " + serialNumber);
+    sensorInfoLines.emplace_back("laser state: " + laserState);
+    sensorInfoLines.emplace_back("polling start step: " + to_string(startStep));
+    sensorInfoLines.emplace_back("polling end step: " + to_string(endStep));
+    sensorInfoLines.emplace_back("measurement mode: " + measurementMode);
+    sensorInfoLines.emplace_back("bitrate: " + bitRate);
+    sensorInfoLines.emplace_back("timestamp: " + to_string(timeStamp));
+    sensorInfoLines.emplace_back("sensor diagnostic: " + sensorDiagnostic);
+    sensorInfoLines.emplace_back("IP Address: " + tcpClient.getIP());
+    sensorInfoLines.emplace_back("port: " + to_string(port));
+    sensorInfoLines.emplace_back("connection status: " + connectionStatus);
+    sensorInfoLines.emplace_back("status: " + status);
+    sensorInfoLines.emplace_back("min measurable dist: " + minimumMeasurableDistance);
+    sensorInfoLines.emplace_back("max measurable dist: " + maximumMeasureableDistance);
+    sensorInfoLines.emplace_back("angular resolution: " + angularResolutionInfo);
+    sensorInfoLines.emplace_back("starting step: " + startingStep);
+    sensorInfoLines.emplace_back("ending step: " + endingStep);
+    sensorInfoLines.emplace_back("front direction steps: " + stepNumberOfFrontDirection);
+    sensorInfoLines.emplace_back("scanning speed: " + scanningSpeed);
 }
 
 string Hokuyo::checkSum(string str, int fromEnd) {
@@ -288,7 +291,7 @@ void Hokuyo::parseDistances(vector<string> packet) {
     
     string concatenatedData;
     concatenatedData.reserve(expectedChars);
-
+    
     for (int i = 3; i < packet.size(); i++) {
         string decoded = checkSum(packet[i], 1);
         if (decoded.empty()) continue;
@@ -322,7 +325,7 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
     
     string concatenatedData;
     concatenatedData.reserve(expectedChars);
-
+    
     for (int i = 3; i < packet.size(); i++) {
         string decoded = checkSum(packet[i], 1);
         if (decoded.empty()) continue;
