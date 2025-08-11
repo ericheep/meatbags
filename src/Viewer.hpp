@@ -25,11 +25,11 @@ public:
     void drawDraggablePoints(Filter & bounds);
     void drawDraggablePoints(Filter * filter);
 
-    void drawFilter(Filter * filter);
+    void drawFilter(Filter* filter);
     void drawFilters(const vector<Filter*>& filters);
-    void drawSensors(vector<Sensor*> sensors, const vector<Filter*>& filters);
-    void drawConnections(vector<Sensor*> sensors);
-    void drawCoordinates(vector<ofPoint> & coordinates, ofColor color, const vector<Filter*>& filters);
+    void drawSensors(const vector<Sensor*> sensors, const vector<Filter*>& filters);
+    void drawConnections(const vector<Sensor*> sensors);
+    void drawCoordinates(const vector<ofPoint>& coordinates, ofColor color, const vector<Filter*>& filters);
     void drawCursorCoordinate();
     void drawHelpText();
     void drawSaveNotification();

@@ -46,7 +46,8 @@ public:
     void saveTo(ofJson& configuration);
     void load(ofJson configuration);
     void loadSensors(int numberSensors, ofJson configuration);
-
+    void setInterfaceAndIP(string interface, string IP);
+    
     void addSensor();
     void addSensor(SensorType type);
     void changeSensorType(int index, SensorType newType);
@@ -69,6 +70,7 @@ public:
     bool areNewCoordinatesAvailable();
 
     void refreshGUIPositions();
+    void start();
 private:
     unique_ptr<Sensor> createSensorOfType(SensorType type);
     unique_ptr<ofxPanel> createGUIForSensor(Sensor* sensor, SensorType type);
@@ -85,6 +87,7 @@ private:
     
     float lastFrameTime;
     vector<Filter*> filters;
+    bool hasStarted = false;
 };
 
 #endif /* SensorManager_hpp */

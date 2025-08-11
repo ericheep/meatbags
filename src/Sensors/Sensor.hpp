@@ -19,16 +19,17 @@ public:
     virtual ~Sensor();
     
     // virtual functions
-    virtual void connect() = 0;
-    virtual void reconnect() = 0;
     virtual void update() = 0;
-    virtual void close() = 0;
-    virtual void draw() = 0;
-    virtual void shutdown() = 0;
+    
+    void draw();
+    void connect();
+    void checkIfReconnect();
+    void checkIfThreadRunning();
+    bool tcpSetup();
     
     // set drawing rectangle
     void setInfoPosition(float x, float y);
-    void drawSensorInfo(vector<string> sensorInfoLines);
+    void drawSensorInfo();
     
     // connection event functions
     virtual void setIPAddress(string& ipAddress);
@@ -60,15 +61,16 @@ public:
     bool threadActive;
     
     float statusTimer, statusTimeInterval;
-    float threadInactiveTimer, threadInactiveTimeInterval;
+    atomic<float> threadInactiveTimer{0.0};
+    float threadInactiveTimeInterval;
     float reconnectionTimer, reconnectionTimeInterval;
     
     string model;
-    string logStatus, logConnectionStatus, logMode;
+    string logStatus, logConnectionStatus, logMode, connectionStatus;
     bool autoReconnectActive;
     ofColor sensorColor;
-
-    // parameters
+    
+    // in update loop
     ofxDropdown_<string> sensorTypes { "types" };
     ofParameter<string> ipAddress;
     ofParameter<float> positionX;
@@ -78,18 +80,20 @@ public:
     ofParameter<float> sensorRotationDeg;
     ofParameter<bool> showSensorInformation;
     ofParameter<int> whichMeatbag;
+
+    // in threads
     ofParameter<int> guiMotorSpeed;
     ofParameter<bool> guiSpecialWorkingMode;
+    vector<string> sensorInfoLines;
     
     void createCoordinate(int step, float distance);
     vector<float> angles;
-    vector<ofPoint> coordinates;
+    
     vector<int> intensities;
     float sensorRotationRad;
-    bool newCoordinatesAvailable;
     
     float x, y, width, height;
-    string netmask, gateway, localIPAddress, interface;
+    string localIPAddress, interface;
     int port;
     int index;
     
@@ -99,16 +103,22 @@ public:
     string laserState;
     
     float lastFrameTime;
-    
     int angularResolution;
     
     // for the viewer class
     bool isConnected;
-
+    bool isShuttingDown;
+    
     virtual void initializeVectors();
     virtual void setupParameters();
     
     ofxTCPClient tcpClient;
+    
+    void updateDistances();
+    vector<ofPoint> coordinates;
+protected:
+    vector<float> distances;
+    mutable std::mutex distancesMutex;
 };
 
 #endif /* Sensor_hpp */

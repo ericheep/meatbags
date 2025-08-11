@@ -97,7 +97,7 @@ void MeatbagsManager::refreshGUIPositions() {
         
         entry.gui->setPosition(xPos, yPos);
         
-        nextYPos += guiHeight + margin;
+        nextYPos += guiHeight + margin + 5;
     }
 }
 

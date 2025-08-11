@@ -45,14 +45,9 @@ public:
     void loadConfiguration();
     
     // sensor parameters
-    void setPositionX(float &x);
-    void setPositionY(float &y);
-    void setSensorRotation(float &sensorRotation);
-    void setMirrorAngles(bool &mirrorAngles);
     void setInterface(string &interface);
     
     // bounds parameters
-    void updateGuiBounds();
     void setSpace();
     void setTranslation();
     
@@ -81,9 +76,7 @@ public:
     
     vector<Blob> blobs;
     Viewer viewer;
-
     InterfaceSelector interfaceSelector;
-    
     UI buttonUI;
     Space space;
     
@@ -92,12 +85,7 @@ public:
     ofxPanel generalGui;
     ofxPanel oscSendersGui;
 
-    vector<ofxPanel*> meatbagsGuis;
-    vector<ofxPanel*> sensorGuis;
-    vector<ofxPanel*> filterGuis;
-    vector<ofxPanel*> oscSenderGuis;
     ofxDropdown_<string> interfacesDropdown { "interfaces" };
-
     ofPoint origin, initialTranslation;
     
     // meatbags parameters
@@ -112,5 +100,4 @@ public:
     ofParameter<float> areaSize;
     float saveNotificationTimer, saveNotificationTotalTime;
     bool moveActive, ctrlKeyActive, isHelpMode;
-    string version;
 };

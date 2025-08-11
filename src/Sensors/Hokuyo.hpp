@@ -17,21 +17,13 @@ public:
     Hokuyo();
     ~Hokuyo();
     
-    void draw() override;
     void update() override;
-    void connect() override;
-    void reconnect() override;
-    void close() override;
-    void shutdown() override;
-    
-    virtual void setIPAddress(string& ipAddress) override;
-    
+        
     void threadedFunction() override;
     void checkConnection();
     
     void sendResetStatusCommand();
     void sendSetMotorSpeedCommand(int motorSpeed);
-    void sendSetIPAddressCommand();
     void sendRebootCommand();
     void sendMeasurementModeOnCommand();
     void sendMeasurementModeOffCommand();
@@ -57,16 +49,12 @@ public:
     string zeroPad(int value, int numberChars);
     string checkSum(string str, int fromEnd);
     
-    void checkStatus();
     string formatDistanceMessage(string command);
     string formatStreamDistancesMessage(string command);
     string formatIpv4String(string command);
     
     int sixBitCharDecode(const char* data, int length);
     vector<string> splitStringByNewline(const string& str);
-    
-    ofxTCPClient tcpClient;
-    
 private:
     bool callIntensitiesActive;
     int startStep, endStep, clusterCount, timeStamp;
@@ -78,11 +66,11 @@ private:
     string startingStep, endingStep, stepNumberOfFrontDirection, scanningSpeed;
     string scanDirection;
     
+    void updateSensorInfo();
+    
     string status;
     float checkTimer, checkTimeInterval;
     float streamingTimer, streamingTimeInterval;
-    
-    string connectionStatus;
 };
 
 #endif /* Hokuyo_hpp */

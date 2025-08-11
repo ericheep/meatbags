@@ -3,23 +3,24 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetFrameRate(60);
-
+    
     setupGui();
     setupListeners();
     loadConfiguration();
-    
-    moveActive = false;
     
     setSpace();
     setTranslation();
     
     saveNotificationTotalTime = 2.0;
     saveNotificationTimer = saveNotificationTotalTime;
-    
+    moveActive = false;
+
     if (headlessMode) {
         isHelpMode = true;
         hideWindow();
     }
+    
+    sensorManager.start();
 }
 
 void ofApp::setupGui() {
@@ -49,18 +50,18 @@ void ofApp::setupGui() {
     interfacesDropdown.setBackgroundColor(guiBackgroundColor);
     interfacesDropdown.setTextColor(guiTextColor);
     
+    interfacesDropdown.disableMultipleSelection();
+    if (interfacesDropdown.getAllSelected().size() > 0) {
+        string selection = interfacesDropdown.getAllSelected()[0];
+        setInterface(selection);
+    }
+    
     generalGui.setTextColor(guiTextColor);
     generalGui.setHeaderBackgroundColor(headerColor);
     generalGui.setup("general");
     generalGui.add(& interfacesDropdown);
     generalGui.add(headlessMode.set("start headless", false));
     generalGui.setPosition(ofVec3f(10, 135, 0));
-    
-    interfacesDropdown.disableMultipleSelection();
-    if (interfacesDropdown.getAllSelected().size() > 0) {
-        string selection = interfacesDropdown.getAllSelected()[0];
-        setInterface(selection);
-    }
 }
 
 void ofApp::setupListeners() {
@@ -113,16 +114,16 @@ void ofApp::update(){
     setTranslation();
     setSpace();
     
-    sensorManager.setFilters(filterManager.getFilters());
-    sensorManager.update();
-    meatbagsManager.update();
     filterManager.update();
+    sensorManager.update();
+    sensorManager.setFilters(filterManager.getFilters());
+    meatbagsManager.update();
     
-    if (sensorManager.areNewCoordinatesAvailable()) {
+    //if (sensorManager.areNewCoordinatesAvailable()) {
         sensorManager.getCoordinates(meatbagsManager.getMeatbags());
         meatbagsManager.updateBlobs();
-    }
-
+    //}
+    
     meatbagsManager.getBlobs(blobs);
     filterManager.checkBlobs(blobs);
     
@@ -161,7 +162,7 @@ void ofApp::setInterface(string & interfaceAndIP) {
     string interface = interfaceSelector.getInterface(interfaceAndIP);
     string IP = interfaceSelector.getIP(interfaceAndIP);
     
-    // sensorMananger.setInterfaceAndIP(interface, IP);
+    sensorManager.setInterfaceAndIP(interface, IP);
 }
 
 void ofApp::drawFps() {
@@ -234,7 +235,10 @@ void ofApp::setTranslation() {
 }
 
 void ofApp::setSpace() {
-    
+    space.width = ofGetWidth();
+    space.height = ofGetHeight();
+    space.areaSize = areaSize;
+    space.origin = ofPoint(ofGetWidth() / 2.0, 200);
     
     viewer.setSpace(space);
     sensorManager.setSpace(space);
@@ -246,7 +250,7 @@ void ofApp::onMouseMoved(ofMouseEventArgs& mouseArgs) {
     buttonUI.onMouseMoved(mouseArgs);
     sensorManager.onMouseMoved(mouseArgs);
     filterManager.onMouseMoved(mouseArgs);
-
+    
     if (moveActive) {
         translation = initialTranslation - ofPoint(-mouseArgs.x, -mouseArgs.y);
         setTranslation();
@@ -285,7 +289,7 @@ void ofApp::onMouseScrolled(ofMouseEventArgs& mouseArgs) {
 
 void ofApp::onKeyPressed(ofKeyEventArgs& keyArgs) {
     filterManager.onKeyPressed(keyArgs);
-
+    
     if (keyArgs.key == 2) ctrlKeyActive = true;
     if (keyArgs.key == 104) isHelpMode = !isHelpMode;
     if ((ctrlKeyActive && keyArgs.key == 19) || keyArgs.key == 115) save();

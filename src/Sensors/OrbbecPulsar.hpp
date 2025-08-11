@@ -15,12 +15,7 @@ public:
     OrbbecPulsar();
     ~OrbbecPulsar();
     
-    virtual void connect() override;
-    virtual void reconnect() override;
     virtual void update() override;
-    virtual void draw() override;
-    virtual void close() override;
-    virtual void shutdown() override;
 
     void threadedFunction() override;
 
@@ -81,9 +76,7 @@ protected:
     uint16_t bytesToUint16(uint8_t low, uint8_t high);
     uint32_t bytesToUint32(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3);
     vector<uint8_t> createControlMessage(uint16_t registerAddr, const vector<uint8_t>& dataSegment = {});
-    
-    ofxTCPClient tcpClient;
-    
+        
     int motorSpeed;
     int rotationFrequency;         // 15, 20, 25, 30, 40 Hz
     int expectedPointsPerBlock;    // Varies with rotation frequency
@@ -122,12 +115,10 @@ protected:
     uint32_t timestamp;
     string lidarState;
     
+    void updateSensorInfo();
+    
     float checkTimer, checkTimeInterval;
-    string connectionStatus;
-    
-    virtual void setIPAddress(string& ipAddress) override;
-private:
-    
+    std::mutex sensorDataMutex;
 };
 
 #endif /* OrbbecPulsar_hpp */

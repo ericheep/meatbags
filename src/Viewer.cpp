@@ -147,13 +147,13 @@ bool Viewer::checkWithinBounds(float x, float y, const vector<Filter*>& filters)
 }
 
 
-void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, const std::vector<Filter*>& filters) {
+void Viewer::drawCoordinates(const vector<ofPoint>& coordinates, ofColor color, const std::vector<Filter*>& filters) {
     for (const auto& coordinate : coordinates) {
         ofColor pointColor;
 
         float x = coordinate.x;
         float y = coordinate.y;
-        
+                
         if (x == 0 && y == 0) continue;
 
         if (checkWithinBounds(x, y, filters)) {
@@ -174,14 +174,14 @@ void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, const 
     }
 }
 
-void Viewer::drawSensors(vector<Sensor*> sensors, const vector<Filter*>& filters) {
+void Viewer::drawSensors(const vector<Sensor*> sensors, const vector<Filter*>& filters) {
     for (const auto& sensor : sensors) {
         drawCoordinates(sensor->coordinates, sensor->sensorColor, filters);
         drawSensor(sensor);
     }
 }
 
-void Viewer::drawConnections(vector<Sensor*> sensors) {
+void Viewer::drawConnections(const vector<Sensor*> sensors) {
     int numberSensors = sensors.size();
     
     float connectionsBoxHeight = numberSensors * 20;

@@ -12,151 +12,69 @@ Hokuyo::Hokuyo() {
     
     port = 10940;
     
-    localIPAddress = "0.0.0.0";
-    interface = "";
-    
     callIntensitiesActive = true;
-    
+    showSensorInformation = false;
+
     initializeVectors();
     setupParameters();
-        
-    showSensorInformation = false;
+    
+    stopThread();
+    waitForThread(true);
+    
+    statusTimeInterval = 1.0;
+    streamingTimeInterval = 2.0;
 }
 
 Hokuyo::~Hokuyo() {
-    stopThread();
-}
-
-void Hokuyo::shutdown() {
-    ofLogNotice("Hokuyo") << "Shutting down Hokuyo sensor " << index;
-    
-    // Call base class shutdown first
-    Sensor::shutdown();
-    
-    // Stop data stream before closing connection
-    if (tcpClient.isConnected()) {
-        ofSleepMillis(50); // Give time for command to be sent
-    }
-    
-    // Close TCP connection
-    tcpClient.close();
-    
-    // Stop the thread cleanly
-    if (isThreadRunning()) {
-        stopThread();
-        waitForThread(true); // Wait for thread to actually stop
-    }
-    
-    // Reset connection state
-    isConnected = false;
-    connectionStatus = "Disconnected";
-    
-    // Reset timers
-    threadInactiveTimer = 0.0;
-    reconnectionTimer = 0.0;
-    statusTimer = 0.0;
-    checkTimer = 0.0;
-    
-    ofLogNotice("Hokuyo") << "Hokuyo sensor " << index << " shutdown complete";
-}
-
-void Hokuyo::update() {    
-    threadInactiveTimer += lastFrameTime;
-    if (threadInactiveTimer > threadInactiveTimeInterval) {
-        startThread();
-        threadInactiveTimer = 0;
-    }
-        
-    if(tcpClient.isConnected()) {
-        if (!isConnected) {
-            connectionStatus = "CONNECTED";
-            
-            status = "Connected at " + tcpClient.getIP() + " " + to_string(tcpClient.getPort());
-            isConnected = true;
-            sendStatusInfoCommand();
-            sendVersionInfoCommand();
-        }
-        
-        checkStatus();
-    } else {
-        for (int i = 0; i < angularResolution; i++) {
-            coordinates[i] = ofPoint::zero();
-            intensities[i] = 0;
-        }
-        
-        if (isConnected) {
-            connectionStatus = "DISCONNECTED";
-            isConnected = false;
-        }
-        
-        if (autoReconnectActive) reconnect();
-    }
-}
-
-void Hokuyo::connect() {
-    if (ipAddress.get() == "0.0.0.0") return;
-    
-    if (!isThreadRunning()) {
-        startThread();
-    } else {
-        ofLogWarning("Hokuyo") << "Thread already running; ignoring connect() call.";
-    }
-}
-
-void Hokuyo::reconnect() {
-    reconnectionTimer += lastFrameTime;
-    
-    if (reconnectionTimer > reconnectionTimeInterval){
-        connectionStatus = "Attempting to reconnect";
-        reconnectionTimer = 0;
-        connect();
-    }
-}
-
-void Hokuyo::close() {
     sendMeasurementModeOffCommand();
     sleep(50);
-    Sensor::close();
 }
 
-void Hokuyo::setIPAddress(string &ipAddress) {
-    tcpClient.close();
-    if (isThreadRunning()) {
-        stopThread();
+void Hokuyo::update() {
+    double currentValue = threadInactiveTimer.load();
+    threadInactiveTimer.store(currentValue + lastFrameTime);
+    statusTimer += lastFrameTime;
+    streamingTimer += lastFrameTime;
+        
+    if (statusTimer > statusTimeInterval) {
+        sendStatusInfoCommand();
+        sendVersionInfoCommand();
+        sendParameterInfoCommand();
+        statusTimer = 0;
     }
-    connect();
-}
+    
+    updateDistances();
+    updateSensorInfo();
+    checkIfReconnect();
+    checkIfThreadRunning();
 
-/*void Hokuyo::setSleep(bool& isSleeping) {
-    if (isSleeping) {
-        sendMeasurementModeOffCommand();
-    } else {
-        sendMeasurementModeOnCommand();
-        sendStreamDistancesCommand();
-    }
-}*/
+}
 
 void Hokuyo::threadedFunction() {
-    tcpClient.setup(ipAddress, port, false, interface, localIPAddress);
+    this_thread::sleep_for(chrono::milliseconds(200));
+
+    bool tcpConnected = tcpSetup();
     tcpClient.setMessageDelimiter("\012\012");
-    sendStreamDistancesCommand();
+    this_thread::sleep_for(chrono::milliseconds(300));
+
+    if (tcpConnected) {
+        sendStreamDistancesCommand();
+    }
     
-    cout << "THREAD" << endl;
-    while(tcpClient.isConnected()) {
-        streamingTimer += lastFrameTime;
-        
+    while(isThreadRunning() && tcpConnected) {
         string response = tcpClient.receive();
         if (response.length() > 0){
             parseResponse(response);
-        }
-        
-        if (streamingTimer > streamingTimeInterval) {
-            if (!isSleeping) sendStreamDistancesCommand();
             streamingTimer = 0;
         }
         
-        threadInactiveTimer = 0;
-        sleep(1);
+        if (streamingTimer > streamingTimeInterval) {
+            sendStreamDistancesCommand();
+            streamingTimer = 0;
+        }
+        
+        threadInactiveTimer.store(0.0);
+        this_thread::sleep_for(chrono::milliseconds(1));
     }
 }
 
@@ -178,19 +96,6 @@ void Hokuyo::sendSetMotorSpeedCommand(int motorSpeed) {
     string motorSpeedBytes = (string) motorSpeedChars;
     
     send("CR" + motorSpeedBytes);
-}
-
-// not implemented, not working
-void Hokuyo::sendSetIPAddressCommand() {
-    /*string ipAddress;
-    string netmask;
-    string gateway;
-    
-    string ipAddressBytes = formatIpv4String(ipAddress);
-    string netmaskBytes = formatIpv4String(netmask);
-    string gatewayBytes = formatIpv4String(gateway);
-    
-    send("$IP" + ipAddress + netmask + gateway);*/
 }
 
 void Hokuyo::sendStatusInfoCommand() {
@@ -229,7 +134,9 @@ void Hokuyo::sendGetDistancesAndIntensitiesCommand() {
 }
 
 void Hokuyo::send(string msg) {
-    tcpClient.send(msg + "\012");
+    if (tcpClient.isConnected()) {
+        tcpClient.send(msg + "\012");
+    }
 }
 
 string Hokuyo::formatDistanceMessage(string command) {
@@ -261,21 +168,10 @@ string Hokuyo::formatIpv4String(string command) {
     return command;
 }
 
-void Hokuyo::checkStatus() {
-    statusTimer += lastFrameTime;
-    
-    if (statusTimer > statusTimeInterval){
-        sendStatusInfoCommand();
-        sendVersionInfoCommand();
-        sendParameterInfoCommand();
-        statusTimer = 0.0;
-    }
-}
-
-void Hokuyo::draw() {
+void Hokuyo::updateSensorInfo() {
     if (!showSensorInformation) return;
 
-    vector<string> sensorInfoLines;
+    sensorInfoLines.clear();
     sensorInfoLines.push_back("version: " + vendorInfo);
     sensorInfoLines.push_back("model: " + model);
     sensorInfoLines.push_back("firmware: " +  firmwareVersion);
@@ -299,8 +195,6 @@ void Hokuyo::draw() {
     sensorInfoLines.push_back("ending step: " + endingStep);
     sensorInfoLines.push_back("front direction steps: " + stepNumberOfFrontDirection);
     sensorInfoLines.push_back("scanning speed: " + scanningSpeed);
-    
-    drawSensorInfo(sensorInfoLines);
 }
 
 string Hokuyo::checkSum(string str, int fromEnd) {
@@ -342,7 +236,7 @@ void Hokuyo::parseResponse(const string& str) {
 }
 
 void Hokuyo::parseStreamingDistances(vector<string> packet) {
-    if (packet.size() < 2) return;
+    if (packet.size() < 3) return;
     
     const string& header = packet[0];
     int startStep = stoi(header.substr(2, 4));
@@ -372,13 +266,9 @@ void Hokuyo::parseStreamingDistances(vector<string> packet) {
     int step = startStep;
     for (int i = 0; i < numSteps; i++) {
         int distance = sixBitCharDecode(raw + (i * 3), 3);
-        cout << "!" << endl;
-        createCoordinate(step, distance);
+        distances[step] = distance;
         step += 1;
     }
-    
-    newCoordinatesAvailable = true;
-    streamingTimeInterval = 0;
 }
 
 void Hokuyo::parseDistances(vector<string> packet) {
@@ -411,11 +301,9 @@ void Hokuyo::parseDistances(vector<string> packet) {
     int step = startStep;
     for (int i = 0; i < numSteps; i++) {
         int distance = sixBitCharDecode(raw + (i * 3), 3);
-        createCoordinate(step, distance);
+        distances[step] = distance;
         step += 1;
     }
-    
-    newCoordinatesAvailable = true;
 }
 
 void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
@@ -457,8 +345,6 @@ void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {
      
      step += 1;
      }*/
-    
-    newCoordinatesAvailable = true;
 }
 
 void Hokuyo::parseStatusInfo(vector<string>& packet) {

@@ -7,7 +7,7 @@
 Sensor::Sensor() {
     isConnected = false;
     autoReconnectActive = true;
-    newCoordinatesAvailable = false;
+    isShuttingDown = false;
     
     lastFrameTime = 0.0;
     sensorRotationDeg = 0;
@@ -35,6 +35,18 @@ Sensor::Sensor() {
     sensorTypes.add("Hokuyo");
     sensorTypes.add("Orbbec Pulsar");
     sensorTypes.disableMultipleSelection();
+    
+    interface = "";
+    localIPAddress = "";
+    port = 0;
+    
+    /*
+    if (tcpClient.isConnected()) tcpClient.close();
+    
+    if (isThreadRunning()) {
+        stopThread();
+        waitForThread(true);
+    }*/
 }
 
 Sensor::~Sensor() {
@@ -43,25 +55,29 @@ Sensor::~Sensor() {
     positionY.removeListener(this, &Sensor::setPositionY);
     mirrorAngles.removeListener(this, &Sensor::setMirrorAngles);
     sensorRotationDeg.removeListener(this, &Sensor::setSensorRotation);
-}
-
-void Sensor::close() {
-    if (isThreadRunning()) {
-        stopThread();
-        sleep(100);
-    }
     
     tcpClient.close();
+    sleep(500);
+    
+    if (isThreadRunning()) {
+        stopThread();
+        waitForThread(true);
+    }
 }
 
-void Sensor::shutdown() {
-    showSensorInformation = false;
-    ipAddress.removeListener(this, &Sensor::setIPAddress);
-    positionX.removeListener(this, &Sensor::setPositionX);
-    positionY.removeListener(this, &Sensor::setPositionY);
-    mirrorAngles.removeListener(this, &Sensor::setMirrorAngles);
-    sensorRotationDeg.removeListener(this, &Sensor::setSensorRotation);
-    isConnected = false;
+void Sensor::update() {
+    if (isShuttingDown) return;
+}
+
+
+bool Sensor::tcpSetup() {
+    if (ipAddress.get() == "" || port == 0) return false;
+    
+    if (ipAddress.get() == "" || interface == "" || localIPAddress == "") {
+        return tcpClient.setup(ipAddress, port, false);
+    } else {
+        return tcpClient.setup(ipAddress, port, false, interface, localIPAddress);
+    }
 }
 
 void Sensor::setupParameters() {
@@ -74,26 +90,29 @@ void Sensor::setupParameters() {
 }
 
 void Sensor::initializeVectors() {
-    angles.clear();
-    coordinates.clear();
-    intensities.clear();
+    {
+        std::lock_guard<std::mutex> lock(distancesMutex);
+        distances.clear();
+        distances.resize(angularResolution);
+    }
     
+    angles.clear();
     angles.resize(angularResolution);
+    
+    coordinates.clear();
     coordinates.resize(angularResolution);
-    intensities.resize(angularResolution);
     
     bool m = mirrorAngles;
     setMirrorAngles(m);
 }
 
-void Sensor::setLocalIPAddress(string & _localIPAddress) {
-    localIPAddress = _localIPAddress;
+void Sensor::draw() {
+    drawSensorInfo();
 }
 
-void Sensor::update() {
-}
+void Sensor::drawSensorInfo() {
+    if (!showSensorInformation) return;
 
-void Sensor::drawSensorInfo(vector<string> sensorInfoLines) {
     float textBoxHeight = sensorInfoLines.size() * 16;
     float textBoxWidth = 400;
     
@@ -117,7 +136,61 @@ void Sensor::drawSensorInfo(vector<string> sensorInfoLines) {
 }
 
 void Sensor::setIPAddress(string &ipAddress) {
-    // will be overridden
+    tcpClient.close();
+    if (isThreadRunning()) {
+        stopThread();
+        waitForThread(true);
+    }
+    connect();
+}
+
+void Sensor::connect() {
+    if (ipAddress.get() == "0.0.0.0" || ipAddress.get().empty()) {
+        connectionStatus = "No IP address specified";
+        return;
+    }
+    
+    connectionStatus = "Connecting at " + ipAddress.get();
+    
+    if (!isThreadRunning()) {
+        startThread();
+    } else {
+        ofLogWarning("Thread already running; ignoring connect() call.");
+    }
+}
+
+void Sensor::checkIfThreadRunning() {
+    if (threadInactiveTimer.load() > threadInactiveTimeInterval ) {
+        if (isThreadRunning()) {
+            stopThread();
+            waitForThread(true);
+        }
+
+        startThread();
+        threadInactiveTimer.store(0.0);;
+    }
+}
+
+void Sensor::checkIfReconnect() {
+    if (!tcpClient.isConnected()) {
+        isConnected = false;
+        connectionStatus = "Disconnected";
+        reconnectionTimer += lastFrameTime;
+
+        if (reconnectionTimer > reconnectionTimeInterval) {
+            reconnectionTimer = 0;
+            
+            tcpClient.close();
+            if (isThreadRunning()) {
+                stopThread();
+                waitForThread(true);
+            }
+            
+            ofLogNotice() << "Attemping reconnect";
+        }
+    } else {
+        isConnected = true;
+    }
 }
 
 void Sensor::setSpace(Space& _space) {
@@ -160,6 +233,19 @@ void Sensor::createCoordinate(int index, float distance) {
     coordinates[index].set(ofPoint(x, y) + ofPoint(position.x, position.y));
 }
 
+void Sensor::updateDistances() {
+    vector<float> newDistances;
+    
+    {
+        std::lock_guard<std::mutex> lock(distancesMutex);
+        newDistances = distances;
+    }
+    
+    for (int i = 0; i < newDistances.size(); i++) {
+        createCoordinate(i, newDistances[i]);
+    }
+}
+
 void Sensor::setMirrorAngles(bool &_mirrorAngles) {
     mirrorAngles = _mirrorAngles;
     
@@ -179,6 +265,7 @@ void Sensor::setMirrorAngles(bool &_mirrorAngles) {
         angles[i] = theta + thetaOffset;
     }
 }
+
 ofPoint Sensor::convertCoordinateToScreenPoint(ofPoint coordinate) {
     return coordinate * scale + space.origin + translation;
 }

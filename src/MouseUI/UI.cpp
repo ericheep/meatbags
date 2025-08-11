@@ -82,7 +82,7 @@ void UI::draw() {
     
     ofSetColor(ofColor::thistle);
         
-    titleFont.draw("meatbags", -8, -1);
+    titleFont.draw("meatbags", -8, 2);
     uiFont.draw("sensors", 35, addSensorButton.y + 5);
     uiFont.draw("filters ", 35, addFilterButton.y + 5);
     uiFont.draw("osc senders", 35, addOscSenderButton.y + 5);

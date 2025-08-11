@@ -17,14 +17,12 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
     initializeVectors();
     setupParameters();
     
+    statusTimer = 0.0;
     statusTimeInterval = 0.2;
     
     checkTimer = 0.0;
     checkTimeInterval = 0.5;
-    
-    stopThread();
-    sleep(50);
-    
+        
     statusCommands.clear();
     statusCommands.push_back([this]() { sendGetMotorSpeedCommand(); });
     statusCommands.push_back([this]() { sendGetTransmissionProtocolCommand(); });
@@ -42,73 +40,27 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
     checkCommands.push_back([this]() { checkWorkingMode(); });
     checkCommands.push_back([this]() { checkSpecialWorkingMode(); });
     currentCheckCommandIndex = 0;
+    
+    stopThread();
+    waitForThread(true);
 }
 
 OrbbecPulsar::~OrbbecPulsar() {
-    close();
-}
-
-void OrbbecPulsar::reconnect() {
-    connect();
-}
-
-void OrbbecPulsar::shutdown() {
-    ofLogNotice("OrbbecPulsar") << "Shutting down OrbbecPulsar sensor " << index;
-    
-    // Call base class shutdown first
-    Sensor::shutdown();
-    
-    // Stop data stream before closing connection
-    if (tcpClient.isConnected()) {
-        sendDisableDataStreamCommand();
-        ofSleepMillis(50); // Give time for command to be sent
-    }
-    
-    // Close TCP connection
-    tcpClient.close();
-    
-    // Stop the thread cleanly
-    if (isThreadRunning()) {
-        stopThread();
-        waitForThread(true);
-    }
-    
-    connectionStatus = "Disconnected";
-    threadInactiveTimer = 0.0;
-    reconnectionTimer = 0.0;
-    statusTimer = 0.0;
-    checkTimer = 0.0;
-    
-    ofLogNotice("OrbbecPulsar") << "OrbbecPulsar sensor " << index << " shutdown complete";
-}
-
-void OrbbecPulsar::connect() {
-    if (ipAddress.get() == "0.0.0.0" || ipAddress.get().empty()) {
-        connectionStatus = "No IP address specified";
-        return;
-    }
-    
-    connectionStatus = "Connecting at " + ipAddress.get();
-    
-    if (!isThreadRunning()) {
-        startThread();
-    } else {
-        ofLogWarning("OrbbecPulsar") << "Thread already running; ignoring connect() call.";
-    }
+    sendDisableDataStreamCommand();
+    sleep(500);
 }
 
 void OrbbecPulsar::threadedFunction() {
-    bool tcpConnected = tcpClient.setup(ipAddress.get(), port);
-    
-    if (!tcpConnected) {
-        connectionStatus = "Failed to connect TCP control";
-        return;
+    this_thread::sleep_for(chrono::milliseconds(200));
+
+    bool tcpConnected = tcpSetup();
+    this_thread::sleep_for(chrono::milliseconds(300));
+
+    if (tcpConnected) {
+        sendConnectCommand();
     }
-    connectionStatus = "Connected";
     
-    sendConnectCommand();
-    
-    while (tcpClient.isConnected()) {
+    while (isThreadRunning() && tcpConnected) {
         uint8_t data[1024];
         int bytesRead = tcpClient.receiveRawBytes((char*)data, sizeof(data));
         
@@ -120,11 +72,9 @@ void OrbbecPulsar::threadedFunction() {
             }
         }
         
-        threadInactiveTimer = 0;
-        sleep(1);
+        threadInactiveTimer.store(0.0);;
+        this_thread::sleep_for(chrono::milliseconds(1));
     }
-    
-    connectionStatus = "Disconnected";
 }
 
 bool OrbbecPulsar::isPointCloudData(const uint8_t* data,  int bytesRead) {
@@ -140,17 +90,10 @@ bool OrbbecPulsar::isControlResponse(const uint8_t* data, int bytesRead) {
 }
 
 void OrbbecPulsar::update() {
-    statusTimer += lastFrameTime;
-    threadInactiveTimer += lastFrameTime ;
+    double currentValue = threadInactiveTimer.load();
+    threadInactiveTimer.store(currentValue + lastFrameTime);
     checkTimer += lastFrameTime;
-    
-    if (threadInactiveTimer > threadInactiveTimeInterval ) {
-        if (isThreadRunning()) {
-            stopThread();
-        }
-        startThread();
-        threadInactiveTimer = 0;
-    }
+    statusTimer += lastFrameTime;
     
     if (statusTimer > statusTimeInterval) {
         sendNextStatusCommand();
@@ -162,60 +105,38 @@ void OrbbecPulsar::update() {
         checkTimer = 0;
     }
     
-    isConnected = tcpClient.isConnected();
-    if (!tcpClient.isConnected()) {
-        connectionStatus = "Disconnected";
-        reconnectionTimer += lastFrameTime;
-        
-        if (reconnectionTimer > reconnectionTimeInterval) {
-            reconnect();
-            reconnectionTimer = 0;
-            ofLogNotice() << "Attemping reconnect";
-        }
+    updateDistances();
+    updateSensorInfo();
+    checkIfReconnect();
+    checkIfThreadRunning();
+}
+
+void OrbbecPulsar::updateSensorInfo() {
+    if (!showSensorInformation) return;
+    
+    sensorInfoLines.clear();
+    {
+        std::lock_guard<std::mutex> lock(sensorDataMutex);
+        sensorInfoLines.push_back("Model: " + model);
+        sensorInfoLines.push_back("Firmware: " + firmwareVersion);
+        sensorInfoLines.push_back("Serial: " + serialNumber);
+        sensorInfoLines.push_back("LiDAR state: " + lidarState);
+        sensorInfoLines.push_back("Transmission Protocol: " + transmissionProtocol);
+        sensorInfoLines.push_back("Set Motor Speed: " + to_string(motorSpeed) + " RPM");
+        sensorInfoLines.push_back("Real Time Motor Speed: " + to_string(currentRotationSpeed) + " RPM");
+        sensorInfoLines.push_back("Temperature: " + to_string(temperature) + "°C");
+        sensorInfoLines.push_back("IP Address: " + ipAddress.get());
+        sensorInfoLines.push_back("Port: " + to_string(port));
+        sensorInfoLines.push_back("Connection: " + connectionStatus);
+        sensorInfoLines.push_back("Timestamp: " + to_string(timestamp));
+        sensorInfoLines.push_back("Working Mode: " + workingMode);
+        sensorInfoLines.push_back("Warning: " + lidarWarning);
+        sensorInfoLines.push_back("Special Working Mode: " + specialWorkingMode);
     }
     
     logStatus = lidarState;
     logConnectionStatus = connectionStatus;
     logMode = workingMode;
-}
-
-void OrbbecPulsar::draw() {
-    if (!showSensorInformation) return;
-    
-    ofSetColor(ofColor::grey);
-    
-    vector<string> sensorInfoLines;
-    sensorInfoLines.push_back("Model: " + model);
-    sensorInfoLines.push_back("Firmware: " + firmwareVersion);
-    sensorInfoLines.push_back("Serial: " + serialNumber);
-    sensorInfoLines.push_back("LiDAR state: " + lidarState);
-    sensorInfoLines.push_back("Transmission Protocol: " + transmissionProtocol);
-    sensorInfoLines.push_back("Set Motor Speed: " + to_string(motorSpeed) + " RPM");
-    sensorInfoLines.push_back("Real Time Motor Speed: " + to_string(currentRotationSpeed) + " RPM");
-    sensorInfoLines.push_back("Temperature: " + to_string(temperature) + "°C");
-    sensorInfoLines.push_back("IP Address: " + ipAddress.get());
-    sensorInfoLines.push_back("Port: " + to_string(port));
-    sensorInfoLines.push_back("Connection: " + connectionStatus);
-    sensorInfoLines.push_back("Timestamp: " + to_string(timestamp));
-    sensorInfoLines.push_back("Working Mode: " + workingMode);
-    sensorInfoLines.push_back("Warning: " + lidarWarning);
-    sensorInfoLines.push_back("Special Working Mode: " + specialWorkingMode);
-    
-    drawSensorInfo(sensorInfoLines);
-}
-
-void OrbbecPulsar::close() {
-    sendDisableDataStreamCommand();
-    sleep(50);
-    Sensor::close();
-}
-
-void OrbbecPulsar::setIPAddress(string &ipAddress) {
-    tcpClient.close();
-    if (isThreadRunning()) {
-        stopThread();
-    }
-    connect();
 }
 
 void OrbbecPulsar::checkNextSetting() {
@@ -525,6 +446,7 @@ void OrbbecPulsar::parseTransmissionProtocol(const uint8_t* data, int bytesRead)
     
     uint32_t modeValue = bytesToUint32(data[9], data[10], data[11], data[12]);
     
+    std::lock_guard<std::mutex> lock(sensorDataMutex);
     switch (modeValue) {
         case 0:
             transmissionProtocol = "UDP";
@@ -533,7 +455,7 @@ void OrbbecPulsar::parseTransmissionProtocol(const uint8_t* data, int bytesRead)
             transmissionProtocol = "TCP";
             break;
         default:
-            workingMode = "unknown";
+            transmissionProtocol = "unknown";
             break;
     }
 }
@@ -596,16 +518,19 @@ void OrbbecPulsar::parseSpecialWorkingMode(const uint8_t* data, int bytesRead) {
     
     uint32_t modeValue = bytesToUint32(data[9], data[10], data[11], data[12]);
     
-    switch (modeValue) {
-        case 0:
-            specialWorkingMode = "normal";
-            break;
-        case 1:
-            specialWorkingMode = "fog";
-            break;
-        default:
-            specialWorkingMode = "unknown";
-            break;
+    {
+        std::lock_guard<std::mutex> lock(sensorDataMutex);
+        switch (modeValue) {
+            case 0:
+                specialWorkingMode = "normal";
+                break;
+            case 1:
+                specialWorkingMode = "fog";
+                break;
+            default:
+                specialWorkingMode = "unknown";
+                break;
+        }
     }
 }
 
@@ -673,7 +598,6 @@ void OrbbecPulsar::parsePointCloudData(const uint8_t* data, int length) {
     
     // extract point cloud data (starts at byte 40)
     extractPointCloudPoints(data + 40, pointCount, startAngle, angularRes * 0.001f);
-    newCoordinatesAvailable = true;
 }
 
 void OrbbecPulsar::extractPointCloudPoints(const uint8_t* data, int pointCount, int startAngle, float angularRes) {
@@ -698,12 +622,13 @@ void OrbbecPulsar::extractPointCloudPoints(const uint8_t* data, int pointCount, 
         
         if (coordIndex >= 0 && coordIndex < angularResolution) {
             if (distance >= 0) {
-                createCoordinate(coordIndex, distance);
+                std::lock_guard<std::mutex> lock(distancesMutex);
+                distances[coordIndex] = distance;
             }
             
-            if (coordIndex < intensities.size()) {
-                intensities[coordIndex] = intensity;
-            }
+            // if (coordIndex < intensities.size()) {
+            //     intensities[coordIndex] = intensity;
+            // }
         }
     }
 }

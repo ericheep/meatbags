@@ -12,6 +12,17 @@ SensorManager::~SensorManager() {
     clear();
 }
 
+void SensorManager::setInterfaceAndIP(string interface, string IP) {
+    for (auto &entry : sensorEntries) {
+        entry.sensor->interface = interface;
+        entry.sensor->localIPAddress = IP;
+    }
+}
+
+void SensorManager::start() {
+    hasStarted = true;
+}
+
 void SensorManager::update() {
     lastFrameTime = ofGetLastFrameTime();
     
@@ -93,7 +104,6 @@ void SensorManager::addSensor(SensorType type) {
     if (sensor) sensor->index = sensorEntries.size() + 1;
     
     ofPoint center = ofPoint(0, 1.25);
-    cout << sensor->index << endl;
     
     float centerRatio = float(sensor->index - 1) / 6.0;
     float sensorX = cos(centerRatio * TWO_PI - HALF_PI) * 1.25 + center.x;
@@ -144,12 +154,7 @@ void SensorManager::changeSensorType(int index, SensorType newType) {
     
     Space savedSpace = oldSensor->space;
     ofPoint savedTranslation = oldSensor->translation;
-    
-    oldSensor->shutdown();
-    oldSensor->showSensorInformation = false;
-    oldSensor->update();
-    
-    // Remove old listener
+        
     if (oldSensor) oldSensor->sensorTypes.removeListener(this, &SensorManager::onSensorTypeChanged);
     
     auto newSensor = createSensorOfType(newType);
@@ -177,7 +182,7 @@ void SensorManager::changeSensorType(int index, SensorType newType) {
     auto newGUI = createGUIForSensor(newSensor.get(), newType);
     entry.sensor = std::move(newSensor);
     entry.gui = std::move(newGUI);
-    entry.sensor->update();
+    /*entry.sensor->update();
     
     if (savedAutoReconnect && !savedIP.empty() && savedIP != "0.0.0.0") {
         ofLogNotice("SensorManager") << "Auto-connecting new " << sensorTypeToString(newType)
@@ -185,10 +190,8 @@ void SensorManager::changeSensorType(int index, SensorType newType) {
         entry.sensor->connect();
     }
     
-    entry.sensor->showSensorInformation = false;
+    entry.sensor->showSensorInformation = false;*/
     refreshGUIPositions();
-    
-    ofLogNotice("SensorManager") << "Changed sensor " << savedIndex << " to type " << sensorTypeToString(newType);
 }
 
 vector<Sensor*> SensorManager::getSensors() {
@@ -263,7 +266,7 @@ void SensorManager::refreshGUIPositions() {
         if (i == 2) nextYPos = 0;
         
         if (i < 2) {
-            yOffset = 308;
+            yOffset = 313;
             xPos = margin;
         } else {
             yOffset = 135;
@@ -433,13 +436,6 @@ bool SensorManager::onKeyPressed(ofKeyEventArgs& keyArgs) {
     return false;
 }
 
-bool SensorManager::areNewCoordinatesAvailable() {
-    for (auto& entry : sensorEntries) {
-        if (entry.sensor->newCoordinatesAvailable) return true;
-    }
-    return false;
-}
-
 void SensorManager::getCoordinates(const std::vector<Meatbags*>& meatbags) {
     for (auto& meatbag : meatbags) {
         int counter = 0;
@@ -449,7 +445,7 @@ void SensorManager::getCoordinates(const std::vector<Meatbags*>& meatbags) {
                 for (auto& coordinate : entry.sensor->coordinates) {
                     float x = coordinate.x;
                     float y = coordinate.y;
-                    
+
                     if (coordinate.x != 0 && coordinate.y != 0) {
                         if (checkWithinFilters(x, y)) {
                             meatbag->coordinates[counter].set(x, y);
@@ -457,8 +453,6 @@ void SensorManager::getCoordinates(const std::vector<Meatbags*>& meatbags) {
                         }
                     }
                 }
-                
-                entry.sensor->newCoordinatesAvailable = false;
             }
         }
         
@@ -476,6 +470,7 @@ bool SensorManager::checkWithinFilters(float x, float y) {
                 isWithinFilter = true;
             }
         }
+        
     }
     
     return isWithinFilter;
