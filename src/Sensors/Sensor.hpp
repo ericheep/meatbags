@@ -118,6 +118,8 @@ public:
     vector<ofPoint> coordinates;
 protected:
     vector<float> distances;
+    vector<float> cachedDistances;
+    
     mutable std::mutex distancesMutex;
 };
 

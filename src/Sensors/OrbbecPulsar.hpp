@@ -73,9 +73,10 @@ protected:
     
     // Utility methods
     uint8_t calculateCRC8(const vector<uint8_t>& data);
+    uint8_t calculateCRC8Fast(const uint8_t* data, size_t length);
     uint16_t bytesToUint16(uint8_t low, uint8_t high);
     uint32_t bytesToUint32(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3);
-    vector<uint8_t> createControlMessage(uint16_t registerAddr, const vector<uint8_t>& dataSegment = {});
+    void sendControlMessage(uint16_t registerAddr, const vector<uint8_t>& dataSegment = {});
         
     int motorSpeed;
     int rotationFrequency;         // 15, 20, 25, 30, 40 Hz
@@ -116,7 +117,9 @@ protected:
     string lidarState;
     
     void updateSensorInfo();
-    
+   
+    vector<uint8_t> commandBuffer;
+
     float checkTimer, checkTimeInterval;
     std::mutex sensorDataMutex;
 };

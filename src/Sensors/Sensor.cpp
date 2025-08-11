@@ -101,7 +101,7 @@ void Sensor::initializeVectors() {
     
     coordinates.clear();
     coordinates.resize(angularResolution);
-    
+
     bool m = mirrorAngles;
     setMirrorAngles(m);
 }
@@ -234,15 +234,13 @@ void Sensor::createCoordinate(int index, float distance) {
 }
 
 void Sensor::updateDistances() {
-    vector<float> newDistances;
-    
     {
         std::lock_guard<std::mutex> lock(distancesMutex);
-        newDistances = distances;
+        cachedDistances = distances;
     }
     
-    for (int i = 0; i < newDistances.size(); i++) {
-        createCoordinate(i, newDistances[i]);
+    for (int i = 0; i < cachedDistances.size(); i++) {
+        createCoordinate(i, cachedDistances[i]);
     }
 }
 
