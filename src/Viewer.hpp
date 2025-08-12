@@ -20,29 +20,31 @@ public:
     Viewer();
     ~Viewer();
     
-    void draw(vector<Blob> & blobs, const vector<Filter*>& filters_, vector<Sensor*> sensors_);
+    void draw(const vector<Blob>& blobs, const vector<Filter*>& filters_, const vector<Sensor*>& sensors_);
     void drawGrid();
-    void drawDraggablePoints(Filter & bounds);
-    void drawDraggablePoints(Filter * filter);
+    void drawDraggablePoints(const Filter& bounds);
+    void drawDraggablePoints(const Filter* filter);
 
     void drawFilter(Filter* filter);
     void drawFilters(const vector<Filter*>& filters);
-    void drawSensors(const vector<Sensor*> sensors, const vector<Filter*>& filters);
-    void drawConnections(const vector<Sensor*> sensors);
-    void drawCoordinates(const vector<ofPoint>& coordinates, ofColor color, const vector<Filter*>& filters);
+    void drawSensors(const vector<Sensor*>& sensors, const vector<Filter*>& filters);
+    void drawConnections(const vector<Sensor*>& sensors);
+    void drawCoordinates(const vector<ofPoint>& coordinates, ofColor& color, const vector<Filter*>& filters);
     void drawCursorCoordinate();
     void drawHelpText();
     void drawSaveNotification();
     
-    void drawSensor(Sensor* sensor);
-    void drawBlobs(vector<Blob> & blobs);
-    void setSpace(Space & space);
+    void drawSensor(const Sensor* sensor);
+    void drawBlobs(const vector<Blob>& blobs);
+    void setSpace(const Space& space);
     void setTranslation(ofPoint translation);
-    void setCursorString(ofPoint mousePoint);
+    void setCursorString(const ofPoint& mousePoint);
+    void onMouseMoved(ofMouseEventArgs& mouseArgs);
+    void onMouseDragged(ofMouseEventArgs& mouseArgs);
     
-    void onMouseMoved(ofMouseEventArgs & mouseArgs);
-    void onMouseDragged(ofMouseEventArgs & mouseArgs);
-    
+    ofMesh mesh, circleMesh;
+    void initializeCircleMeshes();
+    void initializeTrianglesMesh(int numParticles, const vector<ofPoint>& coordinates, ofColor& color, const vector<Filter*>& filters);
     bool checkWithinBounds(float x, float y, const vector<Filter*>& filters);
 
     Space space;
@@ -51,7 +53,8 @@ public:
     
     MemoryFont blobFont, sensorFont, filterFont, cursorFont;
     MemoryFont titleFont, helpFont, saveFont;
-
+    
+    int circleResolution;
     string cursorString;
     vector<ofColor> sensorColors;
     string version = "0.5.0";

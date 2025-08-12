@@ -71,7 +71,7 @@ void SensorManager::saveTo(ofJson& config) {
     }
 }
 
-void SensorManager::loadSensors(int numberFilters, ofJson config) {
+void SensorManager::loadSensors(int numberFilters, ofJson& config) {
     for (int i = 0; i < numberFilters; i++) {
         addSensor();
     }
@@ -83,7 +83,7 @@ void SensorManager::loadSensors(int numberFilters, ofJson config) {
     }
 }
 
-void SensorManager::load(ofJson config) {
+void SensorManager::load(ofJson& config) {
     if (config.contains("number_sensors")) {
         int numberSensors = config["number_sensors"];
         loadSensors(numberSensors, config);
@@ -470,7 +470,6 @@ bool SensorManager::checkWithinFilters(float x, float y) {
                 isWithinFilter = true;
             }
         }
-        
     }
     
     return isWithinFilter;

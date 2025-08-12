@@ -166,7 +166,7 @@ int Meatbags::findFreeBlobIndex() {
     while (lookingForFreeIndex) {
         lookingForFreeIndex = false;
         
-        for (Blob oldBlob : oldBlobs) {
+        for (Blob& oldBlob : oldBlobs) {
             if (freeIndex == oldBlob.index) lookingForFreeIndex = true;
         }
         
@@ -176,7 +176,7 @@ int Meatbags::findFreeBlobIndex() {
     return freeIndex;
 }
 
-void Meatbags::getBlobs(vector<Blob> &blobs) {
+void Meatbags::getBlobs(vector<Blob>& blobs) {
     blobs.clear();
     for (auto& oldBlob : oldBlobs) {
         blobs.push_back(oldBlob);

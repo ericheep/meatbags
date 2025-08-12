@@ -8,7 +8,14 @@ Viewer::Viewer() {
     scale = 0.0;
     ofSetCircleResolution(3);
     translation = ofPoint::zero();
-   
+    
+    mesh.getVertices().reserve(50000);
+    mesh.getColors().reserve(50000);
+    mesh.getIndices().reserve(50000);
+
+    circleResolution = 6;
+    initializeCircleMeshes();
+    
     blobFont.setBold();
     blobFont.setSize(14);
     sensorFont.setBold();
@@ -28,7 +35,7 @@ Viewer::Viewer() {
 Viewer::~Viewer() {
 }
 
-void Viewer::setSpace(Space & _space) {
+void Viewer::setSpace(const Space& _space) {
     space = _space;
     scale = space.width / (space.areaSize * 1000);
 }
@@ -37,7 +44,7 @@ void Viewer::setTranslation(ofPoint _translation) {
     translation = _translation;
 }
 
-void Viewer::draw(vector<Blob> & blobs, const vector<Filter*>& filters, vector<Sensor*> sensors) {
+void Viewer::draw(const vector<Blob>& blobs, const vector<Filter*>& filters, const vector<Sensor*>& sensors) {
     ofPushMatrix();
     ofTranslate(translation);
     drawGrid();
@@ -57,24 +64,37 @@ void Viewer::draw(vector<Blob> & blobs, const vector<Filter*>& filters, vector<S
 void Viewer::drawGrid() {
     ofSetColor(ofColor::grey);
     
-    float crossHalfLength = scale * 50;
+    /*float crossHalfLength = scale * 50;
+     for (int i = -25; i < 25; i++) {
+     for (int j = -10; j < 50; j++) {
+     float x = i * 1000.0 * scale + space.origin.x;
+     float y = j * 1000.0 * scale + space.origin.y;
+     
+     for (int k = 0; k < 3; k++) {
+     float ex = ofMap(k, 0, 3 - 1, x - scale * 333, x + scale * 333);
+     float ey = ofMap(k, 0, 3 - 1, y - scale * 333, y + scale * 333);
+     
+     ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
+     ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);
+     }
+     }
+     }*/
+    
+    float xScalar = 1000.0 * scale;
+    float height = ofGetHeight();
     for (int i = -25; i < 25; i++) {
-        for (int j = -10; j < 50; j++) {
-            float x = i * 1000.0 * scale + space.origin.x;
-            float y = j * 1000.0 * scale + space.origin.y;
-        
-            for (int k = 0; k < 3; k++) {
-                float ex = ofMap(k, 0, 3 - 1, x - scale * 333, x + scale * 333);
-                float ey = ofMap(k, 0, 3 - 1, y - scale * 333, y + scale * 333);
-                
-                ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
-                ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);
-            }
-        }
+        float x = i * xScalar + space.origin.x;
+        ofDrawLine(x, 0, x, height);
     }
     
-    ofColor originColor = ofColor::thistle;
-    ofSetColor(originColor);
+    float yScalar = 1000.0 * scale;
+    float width = ofGetWidth();
+    for (int i = -25; i < 25; i++) {
+        float y = i * yScalar + space.origin.y;
+        ofDrawLine(0, y, width, y);
+    }
+    
+    ofSetColor(ofColor::thistle);
     
     ofFill();
     ofSetCircleResolution(23);
@@ -98,90 +118,124 @@ void Viewer::drawCursorCoordinate() {
     cursorFont.draw(cursorString, x, y);
 }
 
-void Viewer::drawBlobs(vector<Blob>& blobs) {
-    for (const auto &blob : blobs) {
-        ofRectangle blobBox = blob.bounds;
-        blobBox.setX(blobBox.getX() * scale + space.origin.x);
-        blobBox.setY(blobBox.getY() * scale + space.origin.y);
-        blobBox.setWidth(blobBox.getWidth() * scale);
-        blobBox.setHeight(blobBox.getHeight() * scale);
+void Viewer::drawBlobs(const vector<Blob>& blobs) {
+    ofNoFill();
+    ofSetColor(0, 0, 255);
+    
+    for (const auto& blob : blobs) {
+        float scaledX = blob.centroid.x * scale + space.origin.x;
+        float scaledY = blob.centroid.y * scale + space.origin.y;
+        
+        float boxX = blob.bounds.getX() * scale + space.origin.x;
+        float boxY = blob.bounds.getY() * scale + space.origin.y;
+        float boxW = blob.bounds.getWidth() * scale;
+        float boxH = blob.bounds.getHeight() * scale;
+        
+        ofDrawRectangle(boxX, boxY, boxW, boxH);
+        
+        // Draw centroid
+        ofFill();
+        ofSetColor(255, 0, 0);
+        ofDrawEllipse(scaledX, scaledY, 9, 9);
+        
+        // Optimized string generation - avoid stringstreams
+        char buffer[32];  // Reusable buffer on stack
+        
+        sprintf(buffer, "%d", blob.index);
+        blobFont.draw(buffer, scaledX + 15, scaledY - 21);
+        
+        sprintf(buffer, "x: %.2f", blob.centroid.x / 1000.0);
+        blobFont.draw(buffer, scaledX + 15, scaledY - 7);
+        
+        sprintf(buffer, "y: %.2f", blob.centroid.y / 1000.0);
+        blobFont.draw(buffer, scaledX + 15, scaledY + 7);
+        
+        sprintf(buffer, "points: %d", blob.numberPoints);
+        blobFont.draw(buffer, scaledX + 15, scaledY + 21);
         
         ofNoFill();
         ofSetColor(0, 0, 255);
-        ofDrawRectangle(blobBox);
-        
-        float centroidX = blob.centroid.x * scale + space.origin.x;
-        float centroidY = blob.centroid.y * scale + space.origin.y;
-        
-        ofFill();
-        ofSetColor(255, 0, 0);
-        ofDrawEllipse(centroidX, centroidY, 9, 9);
-
-        std::stringstream index;
-        index << blob.index;
-        std::stringstream x;
-        x << setprecision(2) << blob.centroid.x / 1000.0;
-        std::stringstream y;
-        y << setprecision(2) << blob.centroid.y / 1000.0;
-       
-        ofSetColor(255, 0, 0);
-        string indexString = index.str();
-        string xString = "x: " + x.str();
-        string yString = "y: " + y.str();
-        string points = "points: " + to_string(blob.numberPoints);
-        
-        blobFont.draw(indexString, centroidX + 15, centroidY - 21);
-        blobFont.draw(xString, centroidX + 15, centroidY - 7);
-        blobFont.draw(yString, centroidX + 15, centroidY + 7);
-        blobFont.draw(points, centroidX + 15, centroidY + 21);
     }
 }
 
 bool Viewer::checkWithinBounds(float x, float y, const vector<Filter*>& filters) {
     bool isWithinFilter = false;
     for (const auto &filter : filters) {
-        filter->checkInside(x * 0.001, y * 0.001);
+        if (filter->checkInside(x * 0.001, y * 0.001)) {
+            return true;
+        }
     }
     
     return isWithinFilter;
 }
 
-
-void Viewer::drawCoordinates(const vector<ofPoint>& coordinates, ofColor color, const std::vector<Filter*>& filters) {
-    for (const auto& coordinate : coordinates) {
+void Viewer::initializeTrianglesMesh(int numberCoordinates, const vector<ofPoint>& coordinates, ofColor& color, const vector<Filter*>& filters) {
+    mesh.clear();
+    mesh.setMode(OF_PRIMITIVE_TRIANGLES);
+    
+    for (int i = 0; i < numberCoordinates; i++) {
+        float x = coordinates[i].x;
+        float y = coordinates[i].y;
+        
         ofColor pointColor;
-
-        float x = coordinate.x;
-        float y = coordinate.y;
-                
-        if (x == 0 && y == 0) continue;
-
         if (checkWithinBounds(x, y, filters)) {
             pointColor.set(color.r, color.g, color.b, 255);
         } else {
             pointColor.set(color.r, color.g, color.b, 90);
         }
         
-        x *= scale;
-        y *= scale;
+        x = x * scale + space.origin.x;
+        y = y * scale + space.origin.y;
         
-        float x2 = x + space.origin.x;
-        float y2 = y + space.origin.y;
+        mesh.addVertex(ofPoint(x, y));
+        mesh.addColor(pointColor);
+        for (int j = 0; j < circleResolution; j++) {
+            mesh.addVertex(ofPoint(x, y) + circleMesh.getVertex(j) * 2);
+            mesh.addColor(pointColor);
+        }
+    }
+    
+    for (int i = 0; i < numberCoordinates; i++) {
+        int coordinateIndex = (circleResolution + 1) * i;
         
-        ofFill();
-        ofSetColor(pointColor);
-        ofDrawEllipse(x2, y2, 3, 3);
+        for (int j = 0; j < circleResolution; j++) {
+            mesh.addIndex(coordinateIndex);
+            mesh.addIndex(coordinateIndex + j + 1);
+            
+            if (j < circleResolution - 1) {
+                mesh.addIndex(coordinateIndex + j + 2);
+            } else {
+                mesh.addIndex(coordinateIndex + 1);
+            }
+        }
     }
 }
 
-void Viewer::drawSensors(const vector<Sensor*> sensors, const vector<Filter*>& filters) {
+void Viewer::initializeCircleMeshes() {
+    circleMesh.clear();
+    float deltaTheta = TWO_PI / float(circleResolution);
+    
+    for (float i = 0; i < TWO_PI; i = i + deltaTheta) {
+        float x = cos(i);
+        float y = sin(i);
+        circleMesh.addVertex(ofVec3f(x, y, 0));
+    }
+}
+
+void Viewer::drawCoordinates(const vector<ofPoint>& coordinates, ofColor& color, const std::vector<Filter*>& filters) {
+    
+    initializeTrianglesMesh(coordinates.size(), coordinates, color, filters);
+    mesh.draw();
+}
+
+void Viewer::drawSensors(const vector<Sensor*>& sensors, const vector<Filter*>& filters) {
     for (const auto& sensor : sensors) {
         drawCoordinates(sensor->coordinates, sensor->sensorColor, filters);
         drawSensor(sensor);
     }
 }
 
-void Viewer::drawConnections(const vector<Sensor*> sensors) {
+void Viewer::drawConnections(const vector<Sensor*>& sensors) {
     int numberSensors = sensors.size();
     
     float connectionsBoxHeight = numberSensors * 20;
@@ -191,7 +245,7 @@ void Viewer::drawConnections(const vector<Sensor*> sensors) {
     for (int i = 0; i < numberSensors; i++) {
         bool connected = sensors[i]->isConnected;
         string model = sensors[i]->model;
-
+        
         ofFill();
         if (connected) {
             ofSetColor(0, 255, 0, 130);
@@ -206,9 +260,9 @@ void Viewer::drawConnections(const vector<Sensor*> sensors) {
     }
 }
 
-void Viewer::drawSensor(Sensor* sensor) {
+void Viewer::drawSensor(const Sensor* sensor) {
     ofPoint point = ofPoint(sensor->position.x, sensor->position.y);
-        
+    
     point *= scale;
     point += space.origin;
     
@@ -216,7 +270,7 @@ void Viewer::drawSensor(Sensor* sensor) {
     float halfSize = sensor->position.halfSize;
     float noseRadius = sensor->noseRadius;
     float noseSize = sensor->nosePosition.size;
-
+    
     ofSetColor(sensor->sensorColor);
     if (sensor->position.isMouseOver) {
         ofFill();
@@ -245,19 +299,19 @@ void Viewer::drawSensor(Sensor* sensor) {
     } else {
         ofNoFill();
     }
-        
+    
     ofRectangle nose;
     nose.setFromCenter(0, noseRadius, noseSize / 2.0, noseSize / 2.0);
     ofDrawRectangle(nose);
     ofDrawLine(0, halfSize, 0, size + halfSize);
-
+    
     ofPopMatrix();
 }
 
-void Viewer::drawDraggablePoints(Filter & bounds) {
-    for (const auto &draggablePoint : bounds.draggablePoints) {
+void Viewer::drawDraggablePoints(const Filter& bounds) {
+    for (const auto& draggablePoint : bounds.draggablePoints) {
         ofPoint point = draggablePoint * 1000.0 * scale + space.origin;
-
+        
         ofRectangle p;
         float r = draggablePoint.size;
         p.setFromCenter(point.x, point.y, r, r);
@@ -296,15 +350,15 @@ void Viewer::drawFilters(const vector<Filter*>& filters) {
 
 void Viewer::drawFilter(Filter * filter) {
     ofColor filterColor = ofColor::magenta;
-
+    
     if (!filter->isBlobInside) filterColor.a = 150;
     if (filter->isMask) filterColor = ofColor::lightPink;
     if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
-
+    
     ofNoFill();
     ofSetColor(filterColor);
     filter->drawOutline();
-   
+    
     ofColor shapeColor = ofColor(filterColor.r, filterColor.g, filterColor.b, 40);
     ofSetColor(shapeColor);
     ofFill();
@@ -313,13 +367,13 @@ void Viewer::drawFilter(Filter * filter) {
     drawDraggablePoints(filter);
 }
 
-void Viewer::drawDraggablePoints(Filter * filter) {
+void Viewer::drawDraggablePoints(const Filter* filter) {
     ofColor filterColor = ofColor::magenta;
     if (!filter->isBlobInside) filterColor.a = 150;
     if (filter->isMask) filterColor = ofColor::lightPink;
     if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
-
-    for (auto draggablePoint : filter->draggablePoints) {
+    
+    for (auto& draggablePoint : filter->draggablePoints) {
         ofPoint point = draggablePoint * 1000.0 * scale + space.origin;
         
         ofRectangle p;
@@ -341,9 +395,9 @@ void Viewer::drawDraggablePoints(Filter * filter) {
     ofSetColor(filterColor);
     ofPoint indexPoint = filter->centroid * 1000.0 * scale + space.origin;
     string indexString = to_string(filter->index);
-
+    
     filterFont.draw(to_string(filter->index), indexPoint.x - 3, indexPoint.y + 3);
-
+    
     if (filter->centroid.isMouseOver) {
         ofPoint centroidPoint = filter->centroid * 1000.0 * scale + space.origin;
         
@@ -358,14 +412,13 @@ void Viewer::drawDraggablePoints(Filter * filter) {
     }
 }
 
-void Viewer::setCursorString(ofPoint mousePoint) {
+void Viewer::setCursorString(const ofPoint& mousePoint) {
     ofPoint point = (mousePoint - space.origin - translation) / scale * 0.001;
-
-    std::stringstream x;
-    x << setprecision(3) << point.x;
-    std::stringstream y;
-    y << setprecision(3) << point.y;
-    cursorString = x.str() + " " + y.str();
+     
+     // Use sprintf instead of stringstreams
+     char buffer[32];
+     sprintf(buffer, "%.3f %.3f", point.x, point.y);
+    cursorString = buffer;
 }
 
 void Viewer::onMouseMoved(ofMouseEventArgs& mouseArgs) {

@@ -44,8 +44,8 @@ public:
     void draw();
     void clear();
     void saveTo(ofJson& configuration);
-    void load(ofJson configuration);
-    void loadSensors(int numberSensors, ofJson configuration);
+    void load(ofJson& configuration);
+    void loadSensors(int numberSensors, ofJson& configuration);
     void setInterfaceAndIP(string interface, string IP);
     
     void addSensor();
