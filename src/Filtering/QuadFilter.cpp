@@ -50,7 +50,7 @@ ofPoint QuadFilter::normalizeCoordinate(float x, float y) {
     
     ofPoint normalizedCoordinate;
     normalizedCoordinate.x = outputVec[0].x;
-    normalizedCoordinate.x = outputVec[0].y;
+    normalizedCoordinate.y = outputVec[0].y;
 
     return normalizedCoordinate;
 }
