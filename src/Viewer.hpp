@@ -57,7 +57,7 @@ public:
     int circleResolution;
     string cursorString;
     vector<ofColor> sensorColors;
-    string version = "0.5.0";
+    string version = "0.6.0";
 };
 
 #endif /* Viewer_hpp */
