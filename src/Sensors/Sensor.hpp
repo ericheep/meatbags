@@ -24,7 +24,6 @@ public:
     void draw();
     void connect();
     void checkIfReconnect();
-    void checkIfThreadRunning();
     bool tcpSetup();
     
     // set drawing rectangle

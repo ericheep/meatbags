@@ -30,23 +30,9 @@ Hokuyo::~Hokuyo() {
 }
 
 void Hokuyo::update() {
-    double currentValue = threadInactiveTimer.load();
-    threadInactiveTimer.store(currentValue + lastFrameTime);
-    statusTimer += lastFrameTime;
-    streamingTimer += lastFrameTime;
-    
-    if (statusTimer > statusTimeInterval) {
-        sendStatusInfoCommand();
-        sendVersionInfoCommand();
-        sendParameterInfoCommand();
-        statusTimer = 0;
-    }
-    
     updateDistances();
     updateSensorInfo();
     checkIfReconnect();
-    checkIfThreadRunning();
-    
 }
 
 void Hokuyo::threadedFunction() {
@@ -61,19 +47,30 @@ void Hokuyo::threadedFunction() {
         sendStreamDistancesCommand();
     }
     
+    auto lastDataTime = chrono::steady_clock::now();
+    const auto timeoutDuration = chrono::seconds(30);
+    
+    auto lastStatusTime = chrono::steady_clock::now();
+    const auto statusInterval = chrono::milliseconds(500);
+    
     while(isThreadRunning() && tcpClient.isConnected()) {
         string response = tcpClient.receive();
         if (response.length() > 0){
             parseResponse(response);
-            streamingTimer = 0;
+            lastDataTime = chrono::steady_clock::now();
         }
         
-        if (streamingTimer > streamingTimeInterval) {
-            sendStreamDistancesCommand();
-            streamingTimer = 0;
+        auto now = chrono::steady_clock::now();
+        if (now - lastDataTime > timeoutDuration) {            sendStreamDistancesCommand();
+            lastDataTime = chrono::steady_clock::now();
         }
         
-        threadInactiveTimer.store(0.0);
+        if (now - lastStatusTime > statusInterval) {
+            sendStatusInfoCommand();
+            sendVersionInfoCommand();
+            sendParameterInfoCommand();
+        }
+        
         this_thread::sleep_for(chrono::milliseconds(1));
     }
 }

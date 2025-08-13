@@ -10,11 +10,7 @@ Sensor::Sensor() {
     lastFrameTime = 0.0;
     sensorRotationDeg = 0;
     sensorRotationRad = 0;
-    
-    statusTimer = 0.0;
-    statusTimeInterval = 0.2;
-    threadInactiveTimer = 0.0;
-    threadInactiveTimeInterval = 3.0;
+
     reconnectionTimer = 0.0;
     reconnectionTimeInterval = 10.0;
     
@@ -37,15 +33,7 @@ Sensor::Sensor() {
     interface = "";
     localIPAddress = "";
     port = 0;
-    
-    /*
-    if (tcpClient.isConnected()) tcpClient.close();
-    
-    if (isThreadRunning()) {
-        stopThread();
-        waitForThread(true);
-    }*/
-    
+
     newCoordinatesAvailable = true;
 }
 
@@ -153,10 +141,6 @@ void Sensor::connect() {
     } else {
         ofLogWarning("Thread already running; ignoring connect() call.");
     }
-}
-
-void Sensor::checkIfThreadRunning() {
-
 }
 
 void Sensor::checkIfReconnect() {

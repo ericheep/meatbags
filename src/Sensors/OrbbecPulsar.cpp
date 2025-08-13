@@ -17,12 +17,6 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
     initializeVectors();
     setupParameters();
     
-    statusTimer = 0.0;
-    statusTimeInterval = 0.2;
-    
-    checkTimer = 0.0;
-    checkTimeInterval = 0.5;
-    
     statusCommands.clear();
     statusCommands.push_back([this]() { sendGetMotorSpeedCommand(); });
     statusCommands.push_back([this]() { sendGetTransmissionProtocolCommand(); });
@@ -65,22 +59,50 @@ void OrbbecPulsar::threadedFunction() {
         sendConnectCommand();
     }
     
+    auto lastDataTime = chrono::steady_clock::now();
+    const auto timeoutDuration = chrono::seconds(30);
+    
+    auto lastStatusTime = chrono::steady_clock::now();
+    const auto statusInterval = chrono::milliseconds(200);
+    
+    auto lastCheckSettingTime = chrono::steady_clock::now();
+    const auto checkSettingInterval = chrono::milliseconds(200);
+    
     while (isThreadRunning() && tcpClient.isConnected()) {
         int bytesRead = tcpClient.receiveRawBytes((char*)receiveBuffer, sizeof(receiveBuffer));
         
         if (bytesRead > 0) {
             if (isControlResponse(receiveBuffer, bytesRead)) {
                 parseControlResponse(receiveBuffer, bytesRead);
-                threadInactiveTimer.store(0.0);;
+                lastDataTime = chrono::steady_clock::now();
             } else if (isPointCloudData(receiveBuffer, bytesRead)){
                 parsePointCloudData(receiveBuffer, bytesRead);
-                threadInactiveTimer.store(0.0);;
+            } else {
+                char throwaway[1024];
+                int totalFlushed = 0;
+                int flushRead;
+                
+                while ((flushRead = tcpClient.receiveRawBytes(throwaway, sizeof(throwaway))) > 0) {
+                      totalFlushed += flushRead;
+                    ofLogNotice() << "Flushed " << flushRead << " total flushed"  << totalFlushed << " bytes";
+                }
             }
         }
         
-        if (threadInactiveTimer.load() > threadInactiveTimeInterval ) {
+        auto now = chrono::steady_clock::now();
+        if (now - lastDataTime > timeoutDuration) {
             sendConnectCommand();
-            threadInactiveTimer.store(0.0);;
+            lastDataTime = chrono::steady_clock::now();
+        }
+        
+        if (now - lastStatusTime > statusInterval) {
+            sendNextStatusCommand();
+            lastStatusTime = chrono::steady_clock::now();
+        }
+        
+        if (now - lastCheckSettingTime > checkSettingInterval) {
+            checkNextSetting();
+            lastStatusTime = chrono::steady_clock::now();
         }
         
         this_thread::sleep_for(chrono::milliseconds(1));
@@ -100,26 +122,9 @@ bool OrbbecPulsar::isControlResponse(const uint8_t* data, int bytesRead) {
 }
 
 void OrbbecPulsar::update() {
-    double currentValue = threadInactiveTimer.load();
-    threadInactiveTimer.store(currentValue + lastFrameTime);
-    
-    checkTimer += lastFrameTime;
-    statusTimer += lastFrameTime;
-    
-    if (statusTimer > statusTimeInterval) {
-        sendNextStatusCommand();
-        statusTimer = 0;
-    }
-    
-    if (checkTimer > checkTimeInterval) {
-        checkNextSetting();
-        checkTimer = 0;
-    }
-    
     updateDistances();
     updateSensorInfo();
     checkIfReconnect();
-    checkIfThreadRunning();
 }
 
 void OrbbecPulsar::updateSensorInfo() {
