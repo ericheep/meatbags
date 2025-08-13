@@ -10,8 +10,8 @@
 #include "ofMain.h"
 #include "ofxDropdown.h"
 #include "DraggablePoint.hpp"
-#include "Space.h"
 #include "Blob.hpp"
+#include "Space.h"
 
 class Filter {
 public:
@@ -19,6 +19,7 @@ public:
     virtual ~Filter();
         
     virtual void update() = 0;
+    virtual void reset() = 0;
     virtual void updateNormalization() = 0;
     
     void updateCentroid();

@@ -17,7 +17,8 @@ public:
     void update();
     void updateNormalization();
     void updateDraggablePoints(int anchorIndex);
-    
+    virtual void reset() override;
+
     ofPoint getPointOnEllipse(int index);
     ofPoint normalizeCoordinate(float x, float y);
     float xRadius, yRadius, rotation;

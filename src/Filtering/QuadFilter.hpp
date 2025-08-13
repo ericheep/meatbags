@@ -15,6 +15,7 @@ public:
     
     void update();
     void updateNormalization();
+    virtual void reset() override;
     
     ofPoint normalizeCoordinate(float x, float y);
     void updateHomography();

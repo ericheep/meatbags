@@ -75,7 +75,7 @@ void FilterManager::removeFilter() {
 
 void FilterManager::changeFilterType(int index, FilterType newType) {
     if (index < 0 || index >= filterEntries.size()) return;
-
+    
     auto& entry = filterEntries[index];
     
     // Check if it's actually a different type
@@ -134,22 +134,17 @@ void FilterManager::update() {
 void FilterManager::transferFilterState(Filter* oldFilter, Filter* newFilter) {
     if (!oldFilter || !newFilter) return;
     
-    // Transfer common properties
     newFilter->index = oldFilter->index;
-    newFilter->isMask = oldFilter->isMask;
-    newFilter->isNormalized = oldFilter->isNormalized;
+    newFilter->isMask = oldFilter->isMask.get();
+    newFilter->isNormalized = oldFilter->isNormalized.get();
     
-    // Transfer anchor points - these are ofParameter<ofVec2f> objects
     for (int i = 0; i < 4; i++) {
         newFilter->anchorPoints[i] = oldFilter->anchorPoints[i].get();
     }
     
-    // Transfer space and translation if they exist
     newFilter->setSpace(oldFilter->space);
     newFilter->setTranslation(oldFilter->translation);
     
-    // Make sure the new filter updates its internal state
-    newFilter->update();
     newFilter->updateNormalization();
 }
 
@@ -159,7 +154,7 @@ FilterType FilterManager::getCurrentFilterType(Filter* filter) {
     } else if (dynamic_cast<QuadFilter*>(filter)) {
         return FilterType::Quad;
     }
-    return FilterType::Ellipse; // default
+    return FilterType::Ellipse;
 }
 
 FilterType FilterManager::stringToFilterType(const std::string& typeStr) {
@@ -168,8 +163,7 @@ FilterType FilterManager::stringToFilterType(const std::string& typeStr) {
     } else if (typeStr == "quad") {
         return FilterType::Quad;
     }
-    // Add other types as needed
-    return FilterType::Ellipse; // default fallback
+    return FilterType::Ellipse;
 }
 
 string FilterManager::filterTypeToString(FilterType type) {
@@ -211,14 +205,14 @@ std::unique_ptr<ofxPanel> FilterManager::createGUIForFilter(Filter* filter, Filt
     ofxGuiSetDefaultWidth(guiWidth);
     auto gui = std::make_unique<ofxPanel>();
     gui->setup("filter " + to_string(filter->index));
-
+    
     ofColor guiBarColor;
     guiBarColor = ofColor::grey;
     guiBarColor.a = 100;
     ofxGuiSetFillColor(guiBarColor);
     
     setupCommonGUI(gui.get(), filter);
-
+    
     switch (type) {
         case FilterType::Ellipse:
             setupEllipseGUI(gui.get(), dynamic_cast<EllipseFilter*>(filter));
@@ -227,7 +221,7 @@ std::unique_ptr<ofxPanel> FilterManager::createGUIForFilter(Filter* filter, Filt
             setupQuadGUI(gui.get(), dynamic_cast<QuadFilter*>(filter));
             break;
     }
-
+    
     return gui;
 }
 
@@ -264,8 +258,17 @@ void FilterManager::setupCommonGUI(ofxPanel* gui, Filter* filter) {
     filter->filterTypes.setTextColor(ofColor::black);
     filter->filterTypes.setDefaultHeaderBackgroundColor(backgroundColor);
     
-    gui->add(filter->isMask.set("mask", false));
-    gui->add(filter->isNormalized.set("normalize", true));
+    if (filter->isMask.get() == true) {
+        gui->add(filter->isMask.set("mask", true));
+    } else {
+        gui->add(filter->isMask.set("mask", false));
+    }
+    
+    if (filter->isNormalized.get() == true) {
+        gui->add(filter->isNormalized.set("normalized", true));
+    } else {
+        gui->add(filter->isNormalized.set("normalized", false));
+    }
     
     ofParameterGroup anchorPointSettings;
     anchorPointSettings.setName("coordinates");
@@ -279,7 +282,7 @@ void FilterManager::setupCommonGUI(ofxPanel* gui, Filter* filter) {
             float y = sin(ratio * TWO_PI + HALF_PI * 0.5) * 0.5 + center.y;
             filter->anchorPoints[i] = ofVec2f(x, y);
         }
-
+        
         anchorPointSettings.add(filter->anchorPoints[i].set("p" + to_string(i),
                                                             filter->anchorPoints[i],
                                                             ofVec2f(-10, -10),
@@ -290,6 +293,7 @@ void FilterManager::setupCommonGUI(ofxPanel* gui, Filter* filter) {
     gui->getGroup("coordinates").minimize();
     
     filter->update();
+    filter->reset();
     filter->updateNormalization();
     filter->filterTypes.addListener(this, &FilterManager::onFilterTypeChanged);
 }
@@ -301,7 +305,7 @@ void FilterManager::refreshGUIPositions() {
         
         int guiHeight = 73;
         int margin = 10;
-
+        
         int xPos = ofGetWidth() - guiWidth - margin - 70;
         int yPos = margin + i * (guiHeight + margin);
         

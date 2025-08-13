@@ -20,6 +20,10 @@ void QuadFilter::updateNormalization() {
     updateHomography();
 }
 
+void QuadFilter::reset() {
+    update();
+}
+
 void QuadFilter::update() {
     polyline.clear();
     for (auto anchorPoint : anchorPoints) {

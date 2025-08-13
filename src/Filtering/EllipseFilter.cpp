@@ -74,6 +74,10 @@ void EllipseFilter::update() {
     }
 }
 
+void EllipseFilter::reset() {
+    updateDraggablePoints(0);
+}
+
 void EllipseFilter::updateDraggablePoints(int anchorIndex) {
     int oppositeIndex = (anchorIndex + 2) % 4;
     int nextIndex = (anchorIndex + 1) % 4;
