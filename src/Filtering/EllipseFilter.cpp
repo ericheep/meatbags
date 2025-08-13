@@ -106,6 +106,48 @@ void EllipseFilter::updateDraggablePoints(int anchorIndex) {
 }
 
 ofPoint EllipseFilter::normalizeCoordinate(float x, float y) {
-    ofPoint normalizedCoordinate;
+    ofPoint inputPoint(x, y);
+    
+    ofPoint center;
+    for (auto& p : draggablePoints) center += p;
+    center /= 4.0;
+    
+    float maxDist = 0;
+    int i1 = 0, i2 = 0;
+    for (int i = 0; i < 4; ++i) {
+        for (int j = i + 1; j < 4; ++j) {
+            float d = draggablePoints[i].distance(draggablePoints[j]);
+            if (d > maxDist) {
+                maxDist = d;
+                i1 = i;
+                i2 = j;
+            }
+        }
+    }
+    
+    ofPoint major1 = draggablePoints[i1];
+    ofPoint major2 = draggablePoints[i2];
+    
+    std::vector<int> remaining;
+    for (int i = 0; i < 4; ++i) {
+        if (i != i1 && i != i2) remaining.push_back(i);
+    }
+    ofPoint minor1 = draggablePoints[remaining[0]];
+    ofPoint minor2 = draggablePoints[remaining[1]];
+    
+    ofPoint majorVec = major2 - major1;
+    float rotation = atan2(majorVec.y, majorVec.x);
+    float a = major1.distance(major2) * 0.5;
+    float b = minor1.distance(minor2) * 0.5;
+    
+    ofPoint translatedPoint = inputPoint - center;
+    
+    float cp = cos(-rotation);
+    float sp = sin(-rotation);
+    float rotatedX = translatedPoint.x * cp - translatedPoint.y * sp;
+    float rotatedY = translatedPoint.x * sp + translatedPoint.y * cp;
+    
+    ofPoint normalizedCoordinate(-rotatedX / a, rotatedY / b);
+    
     return normalizedCoordinate;
 }

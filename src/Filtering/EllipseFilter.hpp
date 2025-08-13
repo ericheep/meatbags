@@ -14,13 +14,14 @@ class EllipseFilter : public Filter {
 public:
     EllipseFilter();
     
-    void update();
-    void updateNormalization();
-    void updateDraggablePoints(int anchorIndex);
+    virtual void update() override;
+    virtual void updateNormalization() override;
     virtual void reset() override;
+    virtual ofPoint normalizeCoordinate(float x, float y) override;
+
+    void updateDraggablePoints(int anchorIndex);
 
     ofPoint getPointOnEllipse(int index);
-    ofPoint normalizeCoordinate(float x, float y);
     float xRadius, yRadius, rotation;
     int ellipseResolution = 200;
 };
