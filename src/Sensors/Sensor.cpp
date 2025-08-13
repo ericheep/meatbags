@@ -21,7 +21,7 @@ Sensor::Sensor() {
     position = DraggablePoint();
     position.size = 15;
     position.halfSize = position.size * 0.5;
-    nosePosition.size = 12;
+    nosePosition.size = 13;
     nosePosition.halfSize = nosePosition.size * 0.5;
     noseRadius = position.size + position.halfSize;
     
@@ -92,7 +92,7 @@ void Sensor::initializeVectors() {
         std::lock_guard<std::mutex> lock(distancesMutex);
         distances.clear();
         distances.resize(angularResolution);
-        std::fill(distances.begin(), distances.end(), 50000);
+        std::fill(distances.begin(), distances.end(), 0.0);
     }
     
     angles.clear();
@@ -100,7 +100,7 @@ void Sensor::initializeVectors() {
 
     coordinates.clear();
     coordinates.resize(angularResolution);
-    std::fill(coordinates.begin(), coordinates.end(), ofPoint(50000, 50000));
+    std::fill(coordinates.begin(), coordinates.end(), ofPoint::zero());
 
     bool m = mirrorAngles;
     setMirrorAngles(m);
@@ -156,10 +156,7 @@ void Sensor::connect() {
 }
 
 void Sensor::checkIfThreadRunning() {
-    if (threadInactiveTimer.load() > threadInactiveTimeInterval ) {
-        connect();
-        threadInactiveTimer.store(0.0);;
-    }
+
 }
 
 void Sensor::checkIfReconnect() {

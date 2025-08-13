@@ -71,12 +71,18 @@ void OrbbecPulsar::threadedFunction() {
         if (bytesRead > 0) {
             if (isControlResponse(receiveBuffer, bytesRead)) {
                 parseControlResponse(receiveBuffer, bytesRead);
+                threadInactiveTimer.store(0.0);;
             } else if (isPointCloudData(receiveBuffer, bytesRead)){
                 parsePointCloudData(receiveBuffer, bytesRead);
+                threadInactiveTimer.store(0.0);;
             }
         }
         
-        threadInactiveTimer.store(0.0);;
+        if (threadInactiveTimer.load() > threadInactiveTimeInterval ) {
+            sendConnectCommand();
+            threadInactiveTimer.store(0.0);;
+        }
+        
         this_thread::sleep_for(chrono::milliseconds(1));
     }
 }

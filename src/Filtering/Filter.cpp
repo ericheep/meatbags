@@ -11,7 +11,7 @@ Filter::Filter() {
     anchorPoints.resize(numberAnchorPoints);
     
     for (int i = 0; i < numberAnchorPoints; i++) {
-        draggablePoints[i].size = 10;
+        draggablePoints[i].size = 12;
         draggablePoints[i].halfSize = draggablePoints[i].size * 0.5;
         draggablePoints[i].isMouseOver = false;
         draggablePoints[i].isMouseClicked = false;
@@ -180,6 +180,7 @@ bool Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
         if(draggablePoints[i].isMouseClicked) {
             ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
             anchorPoints[i] = coordinate;
+            updateNormalization();
             return true;
         }
     }
@@ -195,6 +196,7 @@ bool Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
         for (auto& anchorPoint : anchorPoints) {
             anchorPoint += difference;
         }
+        updateNormalization();
         return true;
     }
     
