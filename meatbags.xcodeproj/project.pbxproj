@@ -236,7 +236,6 @@
 		"3973DBAE-5786-43C7-A061-62B3A3389D44" /* ml.inl.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ml.inl.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv4/opencv2/ml/ml.inl.hpp; sourceTree = SOURCE_ROOT; };
 		"39C698D4-346B-4540-8AD1-C711844EE302" /* OscException.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = OscException.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscException.h; sourceTree = SOURCE_ROOT; };
 		"39D89953-30DE-47A1-BE65-A504121A85B2" /* ofxCvShortImage.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxCvShortImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvShortImage.cpp; sourceTree = SOURCE_ROOT; };
-		"39E7E8BC-39CF-4089-B17E-328ECB2CA5BB" /* jacobi_pd.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = jacobi_pd.hpp; path = src/superpose3d/jacobi_pd.hpp; sourceTree = SOURCE_ROOT; };
 		"39F91499-22A1-4A66-AA54-91951DAB74F3" /* ofxLabel.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxLabel.cpp; path = ../../../addons/ofxGui/src/ofxLabel.cpp; sourceTree = SOURCE_ROOT; };
 		"3A25EDE7-8350-4BE7-9556-85ED2877FCC2" /* OscReceivedElements.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = OscReceivedElements.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h; sourceTree = SOURCE_ROOT; };
 		"3AAAC272-72B2-4D08-9B5B-CE0932D7C28E" /* ofxOscReceiver.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxOscReceiver.h; path = ../../../addons/ofxOsc/src/ofxOscReceiver.h; sourceTree = SOURCE_ROOT; };
@@ -366,7 +365,6 @@
 		"6A3B48B4-95AD-437B-B477-0600ECFF998C" /* check.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = check.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv4/opencv2/core/check.hpp; sourceTree = SOURCE_ROOT; };
 		"6B56612A-D2B7-4B53-A2BC-003E40BFECE2" /* OscTypes.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = OscTypes.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h; sourceTree = SOURCE_ROOT; };
 		"6C00550E-EDCE-43FF-AD2F-839434BEC287" /* video.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = video.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/gapi/cpu/video.hpp; sourceTree = SOURCE_ROOT; };
-		"6C0A409E-B270-4DD3-B221-D283E49492A3" /* matrix_alloc_jpd.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = matrix_alloc_jpd.hpp; path = src/superpose3d/matrix_alloc_jpd.hpp; sourceTree = SOURCE_ROOT; };
 		"6CCB6998-0A99-4A4E-91DA-80ABE3C1EDA7" /* ofxOscMessage.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxOscMessage.cpp; path = ../../../addons/ofxOsc/src/ofxOscMessage.cpp; sourceTree = SOURCE_ROOT; };
 		"6CDCE7B2-D545-44F7-94E4-76FDA11B516C" /* opencl_svm_definitions.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = opencl_svm_definitions.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv4/opencv2/core/opencl/runtime/opencl_svm_definitions.hpp; sourceTree = SOURCE_ROOT; };
 		"6CDECC3A-16A4-4E47-AEEB-4A742CE99D8D" /* lsh_index.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = lsh_index.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/lsh_index.h; sourceTree = SOURCE_ROOT; };
@@ -496,7 +494,6 @@
 		"9AF53B19-5BF4-42CA-8F78-6BF3797C5FB7" /* segmentation.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = segmentation.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/segmentation.hpp; sourceTree = SOURCE_ROOT; };
 		"9C70A489-95AA-4306-BFAA-8C34CF411337" /* intrin_sse.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = intrin_sse.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/hal/intrin_sse.hpp; sourceTree = SOURCE_ROOT; };
 		"9CADE769-D011-4DBC-8789-E773A8FA5C07" /* ofxOscSender.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxOscSender.cpp; path = ../../../addons/ofxOsc/src/ofxOscSender.cpp; sourceTree = SOURCE_ROOT; };
-		"9D01F6B9-2EB4-4A07-987B-1D8A1FFCF921" /* superpose3d.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = superpose3d.hpp; path = src/superpose3d/superpose3d.hpp; sourceTree = SOURCE_ROOT; };
 		"9D146A12-F601-4AC0-9099-5CA9DBE8191B" /* opencl_gl.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = opencl_gl.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv4/opencv2/core/opencl/runtime/opencl_gl.hpp; sourceTree = SOURCE_ROOT; };
 		"9DDD4311-F35E-460B-B3BB-E6F4EA6E28D9" /* infer.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = infer.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/gapi/oak/infer.hpp; sourceTree = SOURCE_ROOT; };
 		"9DF7B101-C8FD-4B06-8379-04668777E921" /* dict.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = dict.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/dnn/dict.hpp; sourceTree = SOURCE_ROOT; };
@@ -651,7 +648,6 @@
 		"D695ACC5-A19E-4A3A-B551-8779F45877A6" /* types_c.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = types_c.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/types_c.h; sourceTree = SOURCE_ROOT; };
 		"D767A60E-2E9D-4085-B5FA-7FF191967D94" /* photo.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = photo.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv4/opencv2/photo.hpp; sourceTree = SOURCE_ROOT; };
 		"D789BB1C-24E9-43A6-A9C5-406DD670FE40" /* video.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = video.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/video.hpp; sourceTree = SOURCE_ROOT; };
-		"D815F106-55BA-4602-B7B1-D89AC2DD092E" /* peigencalc.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = peigencalc.hpp; path = src/superpose3d/peigencalc.hpp; sourceTree = SOURCE_ROOT; };
 		"D8462637-1DBB-474C-864E-ACA2EFD41CCD" /* objdetect.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = objdetect.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv4/opencv2/objdetect/objdetect.hpp; sourceTree = SOURCE_ROOT; };
 		"D8B0E12D-4F9F-44E0-9747-02899FA3497E" /* logger.defines.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = logger.defines.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/utils/logger.defines.hpp; sourceTree = SOURCE_ROOT; };
 		"D9055CBC-155E-41B5-BB70-065B5A73B4A7" /* allocator_stats.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = allocator_stats.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/utils/allocator_stats.hpp; sourceTree = SOURCE_ROOT; };
@@ -1539,18 +1535,6 @@
 			path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/gapi/streaming/onevpl;
 			sourceTree = SOURCE_ROOT;
 		};
-		"7449695A-FFD0-40AC-9D3E-004F306B2156" /* superpose3d */ = {
-			isa = PBXGroup;
-			children = (
-				"39E7E8BC-39CF-4089-B17E-328ECB2CA5BB" /* jacobi_pd.hpp */,
-				"6C0A409E-B270-4DD3-B221-D283E49492A3" /* matrix_alloc_jpd.hpp */,
-				"D815F106-55BA-4602-B7B1-D89AC2DD092E" /* peigencalc.hpp */,
-				"9D01F6B9-2EB4-4A07-987B-1D8A1FFCF921" /* superpose3d.hpp */,
-			);
-			name = superpose3d;
-			path = src/superpose3d;
-			sourceTree = SOURCE_ROOT;
-		};
 		"7590C827-B6C4-4BB6-B3FD-8BC3471C05F7" /* hal */ = {
 			isa = PBXGroup;
 			children = (
@@ -2334,7 +2318,6 @@
 				"C901C1B6-246A-4437-BCBF-49B0C15B3F87" /* dbscan */,
 				"BAD6D6E2-64A3-4BCE-88D2-332385067E64" /* fonts */,
 				"3F6702C5-55E9-4748-97EF-5C12A4793747" /* ofxNetwork */,
-				"7449695A-FFD0-40AC-9D3E-004F306B2156" /* superpose3d */,
 				"9A9FB4F9-CAD5-46EC-8902-C80D26C0ADE7" /* tcb */,
 			);
 			path = src;
