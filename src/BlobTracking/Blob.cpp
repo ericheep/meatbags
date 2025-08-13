@@ -81,9 +81,9 @@ void Blob::calculateBounds(vector<ofPoint> &coordinates) {
     float minY = std::numeric_limits<float>::max();
     float maxY = std::numeric_limits<float>::lowest();
     
-    for (int i = 0; i < coordinates.size(); i++) {
-        float x = coordinates[i].x;
-        float y = coordinates[i].y;
+    for (const auto& coordinate : coordinates) {
+        float x = coordinate.x;
+        float y = coordinate.y;;
 
         if (x > maxX) maxX = x;
         if (x < minX) minX = x;
