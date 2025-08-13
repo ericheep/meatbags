@@ -67,7 +67,6 @@ public:
     
     string model;
     string logStatus, logConnectionStatus, logMode, connectionStatus;
-    bool autoReconnectActive;
     ofColor sensorColor;
     
     // in update loop
@@ -107,7 +106,6 @@ public:
     
     // for the viewer class
     bool isConnected;
-    bool isShuttingDown;
     
     virtual void initializeVectors();
     virtual void setupParameters();
@@ -116,11 +114,16 @@ public:
     
     void updateDistances();
     vector<ofPoint> coordinates;
+    
+    bool newCoordinatesAvailable;
 protected:
     vector<float> distances;
     vector<float> cachedDistances;
     
     mutable std::mutex distancesMutex;
+    mutable std::mutex distancesAvailableMutex;
+    bool newDistancesAvailable;
+
 };
 
 #endif /* Sensor_hpp */

@@ -18,7 +18,7 @@ public:
     ~Hokuyo();
     
     void update() override;
-        
+
     void threadedFunction() override;
     void checkConnection();
     

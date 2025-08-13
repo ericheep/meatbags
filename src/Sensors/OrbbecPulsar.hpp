@@ -125,6 +125,8 @@ protected:
 
     float checkTimer, checkTimeInterval;
     std::mutex sensorDataMutex;
+    std::mutex coordinatesAvailableMutex;
+
 };
 
 #endif /* OrbbecPulsar_hpp */

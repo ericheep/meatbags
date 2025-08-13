@@ -6,6 +6,8 @@
 #include "SensorManager.hpp"
 
 SensorManager::SensorManager() {
+    lidarPoints.resize(21600);
+    numberLidarPoints = 0;
 }
 
 SensorManager::~SensorManager() {
@@ -144,7 +146,6 @@ void SensorManager::changeSensorType(int index, SensorType newType) {
     int savedIndex = oldSensor->index;
     ofColor savedColor = oldSensor->sensorColor;
     string savedIP = oldSensor->ipAddress;
-    bool savedAutoReconnect = oldSensor->autoReconnectActive;
     float savedPosX = oldSensor->positionX;
     float savedPosY = oldSensor->positionY;
     float savedRotation = oldSensor->sensorRotationDeg;
@@ -154,7 +155,7 @@ void SensorManager::changeSensorType(int index, SensorType newType) {
     
     Space savedSpace = oldSensor->space;
     ofPoint savedTranslation = oldSensor->translation;
-        
+    
     if (oldSensor) oldSensor->sensorTypes.removeListener(this, &SensorManager::onSensorTypeChanged);
     
     auto newSensor = createSensorOfType(newType);
@@ -166,7 +167,6 @@ void SensorManager::changeSensorType(int index, SensorType newType) {
     newSensor->index = savedIndex;
     newSensor->sensorColor = savedColor;
     newSensor->ipAddress = savedIP;
-    newSensor->autoReconnectActive = savedAutoReconnect;
     
     newSensor->positionX.setWithoutEventNotifications(savedPosX);
     newSensor->positionY.setWithoutEventNotifications(savedPosY);
@@ -183,14 +183,14 @@ void SensorManager::changeSensorType(int index, SensorType newType) {
     entry.sensor = std::move(newSensor);
     entry.gui = std::move(newGUI);
     /*entry.sensor->update();
-    
-    if (savedAutoReconnect && !savedIP.empty() && savedIP != "0.0.0.0") {
-        ofLogNotice("SensorManager") << "Auto-connecting new " << sensorTypeToString(newType)
-        << " sensor to " << savedIP << " (using default port for this sensor type)";
-        entry.sensor->connect();
-    }
-    
-    entry.sensor->showSensorInformation = false;*/
+     
+     if (savedAutoReconnect && !savedIP.empty() && savedIP != "0.0.0.0") {
+     ofLogNotice("SensorManager") << "Auto-connecting new " << sensorTypeToString(newType)
+     << " sensor to " << savedIP << " (using default port for this sensor type)";
+     entry.sensor->connect();
+     }
+     
+     entry.sensor->showSensorInformation = false;*/
     refreshGUIPositions();
 }
 
@@ -208,7 +208,6 @@ void SensorManager::transferSensorState(Sensor* oldSensor, Sensor* newSensor) {
     newSensor->index = oldSensor->index;
     newSensor->sensorColor = oldSensor->sensorColor;
     newSensor->ipAddress = oldSensor->ipAddress;
-    newSensor->autoReconnectActive = oldSensor->autoReconnectActive;
     newSensor->positionX = oldSensor->positionX;
     newSensor->positionY = oldSensor->positionY;
     newSensor->sensorRotationDeg = oldSensor->sensorRotationDeg;
@@ -362,6 +361,17 @@ void SensorManager::setupCommonParameters(ofxPanel* gui, Sensor* sensor) {
     sensor->sensorTypes.addListener(this, &SensorManager::onSensorTypeChanged);
 }
 
+bool SensorManager::areNewCoordinatesAvailable() {
+    bool newCoordinatesAvalable = false;
+    for (auto& entry : sensorEntries) {
+        if (entry.sensor->newCoordinatesAvailable) {
+            newCoordinatesAvalable = true;
+            entry.sensor->newCoordinatesAvailable = false;
+            break;
+        }
+    }
+    return newCoordinatesAvalable;}
+
 void SensorManager::setupHokuyoParameters(ofxPanel* gui, Hokuyo* hokuyo) {
     if (!hokuyo) return;
     // nothing unique here for now
@@ -437,27 +447,39 @@ bool SensorManager::onKeyPressed(ofKeyEventArgs& keyArgs) {
 }
 
 void SensorManager::getCoordinates(const std::vector<Meatbags*>& meatbags) {
+    int overallCounter = 0;
+
     for (auto& meatbag : meatbags) {
-        int counter = 0;
+        int inFilterCounter = 0;
         
         for (auto& entry : sensorEntries) {
             if (entry.sensor->whichMeatbag == meatbag->index) {
                 for (auto& coordinate : entry.sensor->coordinates) {
                     float x = coordinate.x;
                     float y = coordinate.y;
+                    
+                    float distance = entry.sensor->position.distance(coordinate);
+                    
+                    overallCounter++;
+                    
+                    lidarPoints[overallCounter].coordinate.set(x, y);
+                    lidarPoints[overallCounter].color = entry.sensor->sensorColor;
+                    lidarPoints[overallCounter].isInFilter = false;
 
-                    if (coordinate.x != 0 && coordinate.y != 0) {
-                        if (checkWithinFilters(x, y)) {
-                            meatbag->coordinates[counter].set(x, y);
-                            counter++;
-                        }
+                    if (checkWithinFilters(x, y)) {
+                        meatbag->coordinates[inFilterCounter].set(x, y);
+                        inFilterCounter++;
+                        
+                        lidarPoints[overallCounter].isInFilter = true;
                     }
                 }
             }
         }
         
-        meatbag->numberCoordinates = counter;
+        meatbag->numberCoordinates = inFilterCounter;
     }
+    
+    numberLidarPoints = overallCounter;
 }
 
 bool SensorManager::checkWithinFilters(float x, float y) {

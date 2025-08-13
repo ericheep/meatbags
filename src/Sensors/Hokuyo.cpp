@@ -26,8 +26,7 @@ Hokuyo::Hokuyo() {
 }
 
 Hokuyo::~Hokuyo() {
-    sendMeasurementModeOffCommand();
-    sleep(250);
+    //sleep(250);
 }
 
 void Hokuyo::update() {
@@ -62,7 +61,7 @@ void Hokuyo::threadedFunction() {
         sendStreamDistancesCommand();
     }
     
-    while(isThreadRunning() && tcpConnected) {
+    while(isThreadRunning() && tcpClient.isConnected()) {
         string response = tcpClient.receive();
         if (response.length() > 0){
             parseResponse(response);
@@ -269,9 +268,15 @@ void Hokuyo::parseStreamingDistances(vector<string> packet) {
     int step = startStep;
     for (int i = 0; i < numSteps; i++) {
         int distance = sixBitCharDecode(raw + (i * 3), 3);
-        distances[step] = distance;
+        {
+            std::lock_guard<std::mutex> lock(distancesMutex);
+            distances[step] = distance;
+        }
         step += 1;
     }
+    
+    std::lock_guard<std::mutex> lock(distancesAvailableMutex);
+    newDistancesAvailable = true;
 }
 
 void Hokuyo::parseDistances(vector<string> packet) {
@@ -307,6 +312,9 @@ void Hokuyo::parseDistances(vector<string> packet) {
         distances[step] = distance;
         step += 1;
     }
+    
+    std::lock_guard<std::mutex> lock(distancesAvailableMutex);
+    newDistancesAvailable = true;
 }
 
 void Hokuyo::parseDistancesAndIntensities(vector<string> packet) {

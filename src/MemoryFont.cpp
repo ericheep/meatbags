@@ -10,12 +10,12 @@ MemoryFont::MemoryFont() {
         ofLogError() << "Could not init FreeType";
         return;
     }
-
+    
     setRegular();
-
+    
     // set default font size
     FT_Set_Pixel_Sizes(face, 0, 48);
-
+    
     // load glyphs for ASCII characters
     buildGlyphs();
 }
@@ -41,13 +41,13 @@ void MemoryFont::setMedium() {
     }
 }
 
-void MemoryFont::buildGlyphs() { 
+void MemoryFont::buildGlyphs() {
     for (unsigned char c = 0; c < 128; c++) {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
             ofLogError() << "Could not load glyph " << c;
             continue;
         }
-
+        
         FT_Bitmap& bmp = face->glyph->bitmap;
         
         // Skip if bitmap has no data
@@ -59,16 +59,22 @@ void MemoryFont::buildGlyphs() {
         
         ofPixels pixels;
         pixels.setFromPixels(bmp.buffer, bmp.width, bmp.rows, OF_PIXELS_GRAY);
-
+        
         glyphTextures[c].allocate(pixels);
         glyphTextures[c].loadData(pixels);
-
+        
         glyphWidths[c] = face->glyph->advance.x >> 6;
         glyphTopOffsets[c] = face->glyph->bitmap_top;
     }
 }
 
 void MemoryFont::setSize(int size) {
+    for (int i = 0; i < 128; i++) {
+        if (glyphTextures[i].isAllocated()) {
+            glyphTextures[i].clear();
+        }
+    }
+    
     FT_Set_Pixel_Sizes(face, 0, size);
     buildGlyphs();
 }
@@ -94,7 +100,7 @@ void MemoryFont::draw(string text, float x, float y) {
         if (glyphTextures[c].isAllocated()) {
             glyphTextures[c].draw(x, y - glyphTopOffsets[c]);
         }
-
+        
         x += glyphWidths[c];
     }
 }

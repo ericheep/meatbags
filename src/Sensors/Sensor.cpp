@@ -6,8 +6,6 @@
 
 Sensor::Sensor() {
     isConnected = false;
-    autoReconnectActive = true;
-    isShuttingDown = false;
     
     lastFrameTime = 0.0;
     sensorRotationDeg = 0;
@@ -47,6 +45,8 @@ Sensor::Sensor() {
         stopThread();
         waitForThread(true);
     }*/
+    
+    newCoordinatesAvailable = true;
 }
 
 Sensor::~Sensor() {
@@ -66,9 +66,7 @@ Sensor::~Sensor() {
 }
 
 void Sensor::update() {
-    if (isShuttingDown) return;
 }
-
 
 bool Sensor::tcpSetup() {
     if (ipAddress.get() == "" || port == 0) return false;
@@ -94,13 +92,15 @@ void Sensor::initializeVectors() {
         std::lock_guard<std::mutex> lock(distancesMutex);
         distances.clear();
         distances.resize(angularResolution);
+        std::fill(distances.begin(), distances.end(), 50000);
     }
     
     angles.clear();
     angles.resize(angularResolution);
-    
+
     coordinates.clear();
     coordinates.resize(angularResolution);
+    std::fill(coordinates.begin(), coordinates.end(), ofPoint(50000, 50000));
 
     bool m = mirrorAngles;
     setMirrorAngles(m);
@@ -137,10 +137,6 @@ void Sensor::drawSensorInfo() {
 
 void Sensor::setIPAddress(string &ipAddress) {
     tcpClient.close();
-    if (isThreadRunning()) {
-        stopThread();
-        waitForThread(true);
-    }
     connect();
 }
 
@@ -161,12 +157,7 @@ void Sensor::connect() {
 
 void Sensor::checkIfThreadRunning() {
     if (threadInactiveTimer.load() > threadInactiveTimeInterval ) {
-        if (isThreadRunning()) {
-            stopThread();
-            waitForThread(true);
-        }
-
-        startThread();
+        connect();
         threadInactiveTimer.store(0.0);;
     }
 }
@@ -179,14 +170,6 @@ void Sensor::checkIfReconnect() {
 
         if (reconnectionTimer > reconnectionTimeInterval) {
             reconnectionTimer = 0;
-            
-            tcpClient.close();
-            sleep(100);
-            if (isThreadRunning()) {
-                stopThread();
-                waitForThread(100);
-            }
-            
             connect();
         }
     } else {
@@ -226,6 +209,8 @@ void Sensor::setPositionY(float &positionY) {
 }
 
 void Sensor::createCoordinate(int index, float distance) {
+    if (distance < 0.1) distance = 50000;
+    
     float theta = angles[index] + sensorRotationRad;
     
     float x = cos(theta) * distance;
@@ -236,6 +221,15 @@ void Sensor::createCoordinate(int index, float distance) {
 
 void Sensor::updateDistances() {
     {
+        std::lock_guard<std::mutex> lock(distancesAvailableMutex);
+        if (!newDistancesAvailable) {
+            return;
+        } else {
+            newDistancesAvailable = false;
+        }
+    }
+    
+    {
         std::lock_guard<std::mutex> lock(distancesMutex);
         cachedDistances = distances;
     }
@@ -243,6 +237,8 @@ void Sensor::updateDistances() {
     for (int i = 0; i < cachedDistances.size(); i++) {
         createCoordinate(i, cachedDistances[i]);
     }
+
+    newCoordinatesAvailable = true;
 }
 
 void Sensor::setMirrorAngles(bool &_mirrorAngles) {

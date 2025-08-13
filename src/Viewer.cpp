@@ -6,14 +6,13 @@
 
 Viewer::Viewer() {
     scale = 0.0;
-    ofSetCircleResolution(3);
     translation = ofPoint::zero();
     
     mesh.getVertices().reserve(50000);
     mesh.getColors().reserve(50000);
     mesh.getIndices().reserve(50000);
 
-    circleResolution = 6;
+    circleResolution = 5;
     initializeCircleMeshes();
     
     blobFont.setBold();
@@ -50,7 +49,7 @@ void Viewer::draw(const vector<Blob>& blobs, const vector<Filter*>& filters, con
     drawGrid();
     drawBlobs(blobs);
     drawFilters(filters);
-    drawSensors(sensors, filters);
+    drawSensors(sensors);
     ofPopMatrix();
     
     for (const auto& sensor : sensors) {
@@ -61,8 +60,15 @@ void Viewer::draw(const vector<Blob>& blobs, const vector<Filter*>& filters, con
     drawCursorCoordinate();
 }
 
+void Viewer::drawCoordinates(vector<LidarPoint>& lidarPoints, int numberLidarPoints) {
+    initializeTrianglesMesh(lidarPoints, numberLidarPoints);
+    ofPushMatrix();
+    ofTranslate(translation);
+    mesh.draw();
+    ofPopMatrix();
+}
+
 void Viewer::drawGrid() {
-    ofSetColor(ofColor::grey);
     
     /*float crossHalfLength = scale * 50;
      for (int i = -25; i < 25; i++) {
@@ -75,23 +81,30 @@ void Viewer::drawGrid() {
      float ey = ofMap(k, 0, 3 - 1, y - scale * 333, y + scale * 333);
      
      ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
-     ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);
-     }
-     }
-     }*/
+     ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);}}}*/
     
     float xScalar = 1000.0 * scale;
-    float height = ofGetHeight();
-    for (int i = -25; i < 25; i++) {
+    float height = 3000;
+    for (int i = -30; i < 30; i++) {
         float x = i * xScalar + space.origin.x;
-        ofDrawLine(x, 0, x, height);
+        if (i % 5 == 0) {
+            ofSetColor(ofColor(75, 75, 75));
+        } else {
+            ofSetColor(ofColor(45, 45, 45));
+        }
+        ofDrawLine(x, -height, x, height);
     }
     
     float yScalar = 1000.0 * scale;
-    float width = ofGetWidth();
-    for (int i = -25; i < 25; i++) {
+    float width = 3000;
+    for (int i = -30; i < 30; i++) {
         float y = i * yScalar + space.origin.y;
-        ofDrawLine(0, y, width, y);
+        if (i % 5 == 0) {
+            ofSetColor(ofColor(75, 75, 75));
+        } else {
+            ofSetColor(ofColor(45, 45, 45));
+        }
+        ofDrawLine(-width, y, width, y);
     }
     
     ofSetColor(ofColor::thistle);
@@ -133,14 +146,11 @@ void Viewer::drawBlobs(const vector<Blob>& blobs) {
         
         ofDrawRectangle(boxX, boxY, boxW, boxH);
         
-        // Draw centroid
         ofFill();
         ofSetColor(255, 0, 0);
         ofDrawEllipse(scaledX, scaledY, 9, 9);
         
-        // Optimized string generation - avoid stringstreams
-        char buffer[32];  // Reusable buffer on stack
-        
+        char buffer[32];
         sprintf(buffer, "%d", blob.index);
         blobFont.draw(buffer, scaledX + 15, scaledY - 21);
         
@@ -158,44 +168,34 @@ void Viewer::drawBlobs(const vector<Blob>& blobs) {
     }
 }
 
-bool Viewer::checkWithinBounds(float x, float y, const vector<Filter*>& filters) {
-    bool isWithinFilter = false;
-    for (const auto &filter : filters) {
-        if (filter->checkInside(x * 0.001, y * 0.001)) {
-            return true;
-        }
-    }
-    
-    return isWithinFilter;
-}
-
-void Viewer::initializeTrianglesMesh(int numberCoordinates, const vector<ofPoint>& coordinates, ofColor& color, const vector<Filter*>& filters) {
+void Viewer::initializeTrianglesMesh(const vector<LidarPoint>& lidarPoints, int numberLidarPoints) {
     mesh.clear();
     mesh.setMode(OF_PRIMITIVE_TRIANGLES);
     
-    for (int i = 0; i < numberCoordinates; i++) {
-        float x = coordinates[i].x;
-        float y = coordinates[i].y;
+    float radius = 0.0;
+    for (int i = 0; i < numberLidarPoints; i++) {
+        ofColor pointColor = lidarPoints[i].color;
         
-        ofColor pointColor;
-        if (checkWithinBounds(x, y, filters)) {
-            pointColor.set(color.r, color.g, color.b, 255);
+        if (lidarPoints[i].isInFilter) {
+            radius = 2.5;
+            pointColor.a = 255;
         } else {
-            pointColor.set(color.r, color.g, color.b, 90);
+            radius = 1.5;
+            pointColor.a = 90;
         }
         
-        x = x * scale + space.origin.x;
-        y = y * scale + space.origin.y;
+        ofPoint coordinate = lidarPoints[i].coordinate;
+        coordinate = coordinate * scale + space.origin;
         
-        mesh.addVertex(ofPoint(x, y));
+        mesh.addVertex(coordinate);
         mesh.addColor(pointColor);
         for (int j = 0; j < circleResolution; j++) {
-            mesh.addVertex(ofPoint(x, y) + circleMesh.getVertex(j) * 2);
+            mesh.addVertex(coordinate + circleMesh.getVertex(j) * radius);
             mesh.addColor(pointColor);
         }
     }
     
-    for (int i = 0; i < numberCoordinates; i++) {
+    for (int i = 0; i < numberLidarPoints; i++) {
         int coordinateIndex = (circleResolution + 1) * i;
         
         for (int j = 0; j < circleResolution; j++) {
@@ -222,15 +222,8 @@ void Viewer::initializeCircleMeshes() {
     }
 }
 
-void Viewer::drawCoordinates(const vector<ofPoint>& coordinates, ofColor& color, const std::vector<Filter*>& filters) {
-    
-    initializeTrianglesMesh(coordinates.size(), coordinates, color, filters);
-    mesh.draw();
-}
-
-void Viewer::drawSensors(const vector<Sensor*>& sensors, const vector<Filter*>& filters) {
+void Viewer::drawSensors(const vector<Sensor*>& sensors) {
     for (const auto& sensor : sensors) {
-        drawCoordinates(sensor->coordinates, sensor->sensorColor, filters);
         drawSensor(sensor);
     }
 }
@@ -415,9 +408,8 @@ void Viewer::drawDraggablePoints(const Filter* filter) {
 void Viewer::setCursorString(const ofPoint& mousePoint) {
     ofPoint point = (mousePoint - space.origin - translation) / scale * 0.001;
      
-     // Use sprintf instead of stringstreams
-     char buffer[32];
-     sprintf(buffer, "%.3f %.3f", point.x, point.y);
+    char buffer[32];
+    sprintf(buffer, "%.3f %.3f", point.x, point.y);
     cursorString = buffer;
 }
 

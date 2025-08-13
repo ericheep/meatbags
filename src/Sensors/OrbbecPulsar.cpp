@@ -65,7 +65,7 @@ void OrbbecPulsar::threadedFunction() {
         sendConnectCommand();
     }
     
-    while (isThreadRunning() && tcpConnected) {
+    while (isThreadRunning() && tcpClient.isConnected()) {
         int bytesRead = tcpClient.receiveRawBytes((char*)receiveBuffer, sizeof(receiveBuffer));
         
         if (bytesRead > 0) {
@@ -96,6 +96,7 @@ bool OrbbecPulsar::isControlResponse(const uint8_t* data, int bytesRead) {
 void OrbbecPulsar::update() {
     double currentValue = threadInactiveTimer.load();
     threadInactiveTimer.store(currentValue + lastFrameTime);
+    
     checkTimer += lastFrameTime;
     statusTimer += lastFrameTime;
     
@@ -163,7 +164,6 @@ void OrbbecPulsar::checkMotorSpeed() {
     }
     
     if (speedValue != motorSpeed) {
-        cout << motorSpeed << endl;
         sendSetMotorSpeedCommand(speedValue);
     }
 }
@@ -627,8 +627,10 @@ void OrbbecPulsar::extractPointCloudPoints(const uint8_t* data, int pointCount, 
         
         if (coordIndex >= 0 && coordIndex < angularResolution) {
             if (distance >= 0) {
-                std::lock_guard<std::mutex> lock(distancesMutex);
-                distances[coordIndex] = distance;
+                {
+                    std::lock_guard<std::mutex> lock(distancesMutex);
+                    distances[coordIndex] = distance;
+                }
             }
             
             // if (coordIndex < intensities.size()) {
@@ -636,6 +638,9 @@ void OrbbecPulsar::extractPointCloudPoints(const uint8_t* data, int pointCount, 
             // }
         }
     }
+    
+    std::lock_guard<std::mutex> lock(distancesAvailableMutex);
+    newDistancesAvailable = true;
 }
 
 uint8_t OrbbecPulsar::calculateCRC8(const vector<uint8_t>& data) {

@@ -13,6 +13,7 @@
 #include "Filter.hpp"
 #include "Sensor.hpp"
 #include "Space.h"
+#include "LidarPoint.h"
 #include "MemoryFont.hpp"
 
 class Viewer {
@@ -24,12 +25,12 @@ public:
     void drawGrid();
     void drawDraggablePoints(const Filter& bounds);
     void drawDraggablePoints(const Filter* filter);
+    void drawCoordinates(vector<LidarPoint>& lidarPoints, int numberLidarPoints);
 
     void drawFilter(Filter* filter);
     void drawFilters(const vector<Filter*>& filters);
-    void drawSensors(const vector<Sensor*>& sensors, const vector<Filter*>& filters);
+    void drawSensors(const vector<Sensor*>& sensors);
     void drawConnections(const vector<Sensor*>& sensors);
-    void drawCoordinates(const vector<ofPoint>& coordinates, ofColor& color, const vector<Filter*>& filters);
     void drawCursorCoordinate();
     void drawHelpText();
     void drawSaveNotification();
@@ -44,8 +45,7 @@ public:
     
     ofMesh mesh, circleMesh;
     void initializeCircleMeshes();
-    void initializeTrianglesMesh(int numParticles, const vector<ofPoint>& coordinates, ofColor& color, const vector<Filter*>& filters);
-    bool checkWithinBounds(float x, float y, const vector<Filter*>& filters);
+    void initializeTrianglesMesh(const vector<LidarPoint>& lidarPoints, int numberLidarPoints);
 
     Space space;
     float scale;

@@ -119,10 +119,10 @@ void ofApp::update(){
     sensorManager.setFilters(filterManager.getFilters());
     meatbagsManager.update();
     
-    //if (sensorManager.areNewCoordinatesAvailable()) {
+    if (sensorManager.areNewCoordinatesAvailable()) {
         sensorManager.getCoordinates(meatbagsManager.getMeatbags());
         meatbagsManager.updateBlobs();
-    //}
+    }
     
     meatbagsManager.getBlobs(blobs);
     filterManager.checkBlobs(blobs);
@@ -142,13 +142,14 @@ void ofApp::draw(){
 }
 
 void ofApp::drawMeatbags() {
+    viewer.drawCoordinates(sensorManager.lidarPoints, sensorManager.numberLidarPoints);
     viewer.draw(blobs, filterManager.getFilters(), sensorManager.getSensors());
+    meatbagsManager.draw();
     buttonUI.draw();
     generalGui.draw();
     filterManager.draw();
     sensorManager.draw();
     oscSenderManager.draw();
-    meatbagsManager.draw();
 }
 
 void ofApp::drawSaveNotification() {

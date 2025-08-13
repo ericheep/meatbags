@@ -16,6 +16,7 @@
 #include "Space.h"
 #include "Filter.hpp"
 #include "MeatbagsManager.hpp"
+#include "LidarPoint.h"
 
 enum class SensorType {
     Hokuyo,
@@ -71,6 +72,9 @@ public:
 
     void refreshGUIPositions();
     void start();
+    
+    vector<LidarPoint> lidarPoints;
+    int numberLidarPoints;
 private:
     unique_ptr<Sensor> createSensorOfType(SensorType type);
     unique_ptr<ofxPanel> createGUIForSensor(Sensor* sensor, SensorType type);
