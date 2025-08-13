@@ -173,6 +173,16 @@ void ofApp::drawFps() {
 }
 
 void ofApp::exit() {
+    ofRemoveListener(ofEvents().mouseMoved, this, &ofApp::onMouseMoved);
+    ofRemoveListener(ofEvents().mousePressed, this, &ofApp::onMousePressed);
+    ofRemoveListener(ofEvents().mouseDragged, this, &ofApp::onMouseDragged);
+    ofRemoveListener(ofEvents().mouseReleased, this, &ofApp::onMouseReleased);
+    ofRemoveListener(ofEvents().mouseScrolled, this, &ofApp::onMouseScrolled);
+    ofRemoveListener(ofEvents().keyPressed, this, &ofApp::onKeyPressed);
+    ofRemoveListener(ofEvents().keyReleased, this, &ofApp::onKeyReleased);
+    
+    areaSize.removeListener(this, &ofApp::setAreaSize);
+    interfacesDropdown.removeListener(this, &ofApp::setInterface);
 }
 
 void ofApp::hideWindow() {
@@ -227,6 +237,7 @@ void ofApp::windowResized(int width, int height) {
     setSpace();
     sensorManager.refreshGUIPositions();
     filterManager.refreshGUIPositions();
+    oscSenderManager.refreshGUIPositions();
 }
 
 void ofApp::setTranslation() {
