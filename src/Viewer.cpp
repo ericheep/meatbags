@@ -70,6 +70,7 @@ void Viewer::drawCoordinates(vector<LidarPoint>& lidarPoints, int numberLidarPoi
 
 void Viewer::drawGrid() {
     
+    // old grid, was eating memory, might revisit later
     /*float crossHalfLength = scale * 50;
      for (int i = -25; i < 25; i++) {
      for (int j = -10; j < 50; j++) {
@@ -83,6 +84,9 @@ void Viewer::drawGrid() {
      ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
      ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);}}}*/
     
+    glEnable(GL_LINE_STIPPLE);
+    glLineStipple(2, 0x3030);
+
     float xScalar = 1000.0 * scale;
     float height = 3000;
     for (int i = -30; i < 30; i++) {
@@ -107,6 +111,8 @@ void Viewer::drawGrid() {
         ofDrawLine(-width, y, width, y);
     }
     
+    glDisable(GL_LINE_STIPPLE);
+
     ofSetColor(ofColor::thistle);
     
     ofFill();
@@ -254,6 +260,7 @@ void Viewer::drawConnections(const vector<Sensor*>& sensors) {
 }
 
 void Viewer::drawSensor(const Sensor* sensor) {
+    if (!sensor) return;
     ofPoint point = ofPoint(sensor->position.x, sensor->position.y);
     
     point *= scale;
