@@ -460,17 +460,20 @@ void SensorManager::getCoordinates(const std::vector<Meatbags*>& meatbags) {
                     
                     float distance = entry.sensor->position.distance(coordinate);
                     
-                    overallCounter++;
-                    
-                    lidarPoints[overallCounter].coordinate.set(x, y);
-                    lidarPoints[overallCounter].color = entry.sensor->sensorColor;
-                    lidarPoints[overallCounter].isInFilter = false;
-
-                    if (checkWithinFilters(x, y)) {
-                        meatbag->coordinates[inFilterCounter].set(x, y);
-                        inFilterCounter++;
+                    // filters out if distances are 150mm too close
+                    if (distance > 150) {
+                        overallCounter++;
                         
-                        lidarPoints[overallCounter].isInFilter = true;
+                        lidarPoints[overallCounter].coordinate.set(x, y);
+                        lidarPoints[overallCounter].color = entry.sensor->sensorColor;
+                        lidarPoints[overallCounter].isInFilter = false;
+                        
+                        if (checkWithinFilters(x, y)) {
+                            meatbag->coordinates[inFilterCounter].set(x, y);
+                            inFilterCounter++;
+                            
+                            lidarPoints[overallCounter].isInFilter = true;
+                        }
                     }
                 }
             }
