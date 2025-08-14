@@ -63,7 +63,7 @@ void OrbbecPulsar::threadedFunction() {
     const auto timeoutDuration = chrono::seconds(30);
     
     auto lastStatusTime = chrono::steady_clock::now();
-    const auto statusInterval = chrono::milliseconds(200);
+    const auto statusInterval = chrono::milliseconds(199);
     
     auto lastCheckSettingTime = chrono::steady_clock::now();
     const auto checkSettingInterval = chrono::milliseconds(200);
@@ -77,15 +77,6 @@ void OrbbecPulsar::threadedFunction() {
                 lastDataTime = chrono::steady_clock::now();
             } else if (isPointCloudData(receiveBuffer, bytesRead)){
                 parsePointCloudData(receiveBuffer, bytesRead);
-            } else {
-                char throwaway[1024];
-                int totalFlushed = 0;
-                int flushRead;
-                
-                while ((flushRead = tcpClient.receiveRawBytes(throwaway, sizeof(throwaway))) > 0) {
-                      totalFlushed += flushRead;
-                    ofLogNotice() << "Flushed " << flushRead << " total flushed"  << totalFlushed << " bytes";
-                }
             }
         }
         
@@ -102,7 +93,7 @@ void OrbbecPulsar::threadedFunction() {
         
         if (now - lastCheckSettingTime > checkSettingInterval) {
             checkNextSetting();
-            lastStatusTime = chrono::steady_clock::now();
+            lastCheckSettingTime = chrono::steady_clock::now();
         }
         
         this_thread::sleep_for(chrono::milliseconds(1));

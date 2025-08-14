@@ -69,6 +69,7 @@ void Hokuyo::threadedFunction() {
             sendStatusInfoCommand();
             sendVersionInfoCommand();
             sendParameterInfoCommand();
+            lastStatusTime = chrono::steady_clock::now();
         }
         
         this_thread::sleep_for(chrono::milliseconds(1));

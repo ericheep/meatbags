@@ -20,7 +20,7 @@ public:
     void threadedFunction() override;
 
 private:
-    uint8_t receiveBuffer[1024];
+    uint8_t receiveBuffer[65536];
     mutable string lineBuffer;
 protected:
     void sendControlCommand(const vector<uint8_t>& command);
