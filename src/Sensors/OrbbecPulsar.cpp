@@ -36,9 +36,6 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
     currentCheckCommandIndex = 0;
     
     commandBuffer.reserve(64);
-    
-    stopThread();
-    waitForThread(true);
 }
 
 OrbbecPulsar::~OrbbecPulsar() {
@@ -53,6 +50,8 @@ void OrbbecPulsar::threadedFunction() {
     this_thread::sleep_for(chrono::milliseconds(200));
     
     bool tcpConnected = tcpSetup();
+    isConnected = tcpConnected;
+
     this_thread::sleep_for(chrono::milliseconds(300));
     
     if (tcpConnected) {
@@ -68,7 +67,13 @@ void OrbbecPulsar::threadedFunction() {
     auto lastCheckSettingTime = chrono::steady_clock::now();
     const auto checkSettingInterval = chrono::milliseconds(200);
     
-    while (isThreadRunning() && tcpClient.isConnected()) {
+    auto lastReconnectionTime = chrono::steady_clock::now();
+    const auto reconnectionTimeout = chrono::milliseconds(5000);
+
+
+    while (isThreadRunning()) {
+        isConnected = tcpClient.isConnected();
+
         int bytesRead = tcpClient.receiveRawBytes((char*)receiveBuffer, sizeof(receiveBuffer));
         
         if (bytesRead > 0) {
@@ -77,11 +82,14 @@ void OrbbecPulsar::threadedFunction() {
                 lastDataTime = chrono::steady_clock::now();
             } else if (isPointCloudData(receiveBuffer, bytesRead)){
                 parsePointCloudData(receiveBuffer, bytesRead);
+                lastDataTime = chrono::steady_clock::now();
             }
         }
         
         auto now = chrono::steady_clock::now();
         if (now - lastDataTime > timeoutDuration) {
+            ofLogNotice("Orbbec") << "Resending connect command";
+
             sendConnectCommand();
             lastDataTime = chrono::steady_clock::now();
         }
@@ -95,7 +103,27 @@ void OrbbecPulsar::threadedFunction() {
             checkNextSetting();
             lastCheckSettingTime = chrono::steady_clock::now();
         }
-        
+
+        if (!tcpClient.isConnected()) {
+            if (now - lastReconnectionTime > reconnectionTimeout) {
+                ofLogNotice("Orbbec") << "Connection lost, attempting reconnection";
+
+                if (tcpSetup()) {
+                    ofLogNotice("Orbbec") << "Reconnection successful";
+
+                    sendConnectCommand();
+                }
+                else {
+                    ofLogNotice("Orbbec") << "Reconnection unsuccessful";
+                }
+
+                lastReconnectionTime = chrono::steady_clock::now();
+            }
+        }
+        else {
+            lastReconnectionTime = chrono::steady_clock::now();
+        }
+
         this_thread::sleep_for(chrono::milliseconds(1));
     }
 }
@@ -115,7 +143,6 @@ bool OrbbecPulsar::isControlResponse(const uint8_t* data, int bytesRead) {
 void OrbbecPulsar::update() {
     updateDistances();
     updateSensorInfo();
-    checkIfReconnect();
 }
 
 void OrbbecPulsar::updateSensorInfo() {

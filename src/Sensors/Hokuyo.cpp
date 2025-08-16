@@ -9,38 +9,27 @@ Hokuyo::Hokuyo() {
     angularResolution = 1440;
     startStep = 0;
     endStep = 1079;
-    
+
     port = 10940;
-    
+
     callIntensitiesActive = true;
     showSensorInformation = false;
-    
+
     initializeVectors();
     setupParameters();
-    
-    stopThread();
-    waitForThread(true);
-    
-    statusTimeInterval = 1.0;
-    streamingTimeInterval = 2.0;
 }
 
 Hokuyo::~Hokuyo() {
-    //sleep(250);
 }
 
 void Hokuyo::update() {
     updateDistances();
     updateSensorInfo();
-    checkIfReconnect();
 }
 
-void Hokuyo::threadedFunction() {
-    this_thread::sleep_for(chrono::milliseconds(200));
-    
+void Hokuyo::threadedFunction() {    
     bool tcpConnected = tcpSetup();
     tcpClient.setMessageDelimiter("\012\012");
-    this_thread::sleep_for(chrono::milliseconds(300));
     
     if (tcpConnected) {
         sendMeasurementModeOnCommand();
@@ -48,20 +37,27 @@ void Hokuyo::threadedFunction() {
     }
     
     auto lastDataTime = chrono::steady_clock::now();
-    const auto timeoutDuration = chrono::seconds(30);
+    const auto timeoutDuration = chrono::seconds(3);
     
     auto lastStatusTime = chrono::steady_clock::now();
-    const auto statusInterval = chrono::milliseconds(500);
+    const auto statusInterval = chrono::milliseconds(1000);
+
+    auto lastReconnectionTime = chrono::steady_clock::now();
+    const auto reconnectionTimeout = chrono::milliseconds(5000);
     
-    while(isThreadRunning() && tcpClient.isConnected()) {
+    while(isThreadRunning()) {
+        isConnected = tcpClient.isConnected();
+
         string response = tcpClient.receive();
-        if (response.length() > 0){
+
+        if (response.length() > 0) {
             parseResponse(response);
             lastDataTime = chrono::steady_clock::now();
         }
-        
+
         auto now = chrono::steady_clock::now();
-        if (now - lastDataTime > timeoutDuration) {            sendStreamDistancesCommand();
+        if (now - lastDataTime > timeoutDuration) {            
+            sendStreamDistancesCommand();
             lastDataTime = chrono::steady_clock::now();
         }
         
@@ -70,6 +66,27 @@ void Hokuyo::threadedFunction() {
             sendVersionInfoCommand();
             sendParameterInfoCommand();
             lastStatusTime = chrono::steady_clock::now();
+        }
+
+        if (!tcpClient.isConnected()) {
+            if (now - lastReconnectionTime > reconnectionTimeout) {
+                ofLogNotice("Hokuyo") << "Connection lost, attempting reconnection";
+
+                if (tcpSetup()) {
+                    ofLogNotice("Hokuyo") << "Reconnection successful";
+
+                    tcpClient.setMessageDelimiter("\012\012");
+                    sendMeasurementModeOnCommand();
+                    sendStreamDistancesCommand();
+                } else {
+                    ofLogNotice("Hokuyo") << "Reconnection unsuccessful";
+                }
+
+                lastReconnectionTime = chrono::steady_clock::now();
+            }
+        } else {
+            lastReconnectionTime = chrono::steady_clock::now();
+
         }
         
         this_thread::sleep_for(chrono::milliseconds(1));
@@ -133,7 +150,7 @@ void Hokuyo::sendGetDistancesAndIntensitiesCommand() {
 
 void Hokuyo::send(string msg) {
     if (tcpClient.isConnected()) {
-        tcpClient.send(msg + "\012");
+        tcpClient.send(msg + "\012\012");
     }
 }
 

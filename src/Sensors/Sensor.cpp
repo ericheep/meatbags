@@ -10,9 +10,6 @@ Sensor::Sensor() {
     lastFrameTime = 0.0;
     sensorRotationDeg = 0;
     sensorRotationRad = 0;
-
-    reconnectionTimer = 0.0;
-    reconnectionTimeInterval = 10.0;
     
     position = DraggablePoint();
     position.size = 15;
@@ -35,6 +32,9 @@ Sensor::Sensor() {
     port = 0;
 
     newCoordinatesAvailable = true;
+
+    stopThread();
+    waitForThread(true);
 }
 
 Sensor::~Sensor() {
@@ -140,21 +140,6 @@ void Sensor::connect() {
         startThread();
     } else {
         ofLogWarning("Thread already running; ignoring connect() call.");
-    }
-}
-
-void Sensor::checkIfReconnect() {
-    if (!tcpClient.isConnected()) {
-        isConnected = false;
-        connectionStatus = "Disconnected";
-        reconnectionTimer += lastFrameTime;
-
-        if (reconnectionTimer > reconnectionTimeInterval) {
-            reconnectionTimer = 0;
-            connect();
-        }
-    } else {
-        isConnected = true;
     }
 }
 

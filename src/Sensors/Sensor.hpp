@@ -23,7 +23,6 @@ public:
     
     void draw();
     void connect();
-    void checkIfReconnect();
     bool tcpSetup();
     
     // set drawing rectangle
@@ -57,13 +56,7 @@ public:
     float mouseBoxSize, mouseBoxHalfSize, noseRadius;
     float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
     bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
-    bool threadActive;
-    
-    float statusTimer, statusTimeInterval;
-    atomic<float> threadInactiveTimer{0.0};
-    float threadInactiveTimeInterval;
-    float reconnectionTimer, reconnectionTimeInterval;
-    
+        
     string model;
     string logStatus, logConnectionStatus, logMode, connectionStatus;
     ofColor sensorColor;
@@ -104,8 +97,8 @@ public:
     int angularResolution;
     
     // for the viewer class
-    bool isConnected;
-    
+    std::atomic<bool> isConnected{ false };
+
     virtual void initializeVectors();
     virtual void setupParameters();
     
@@ -121,6 +114,7 @@ protected:
     
     mutable std::mutex distancesMutex;
     mutable std::mutex distancesAvailableMutex;
+
     bool newDistancesAvailable;
 
 };
