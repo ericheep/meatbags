@@ -1,0 +1,122 @@
+//
+//  Sensor.hpp
+//  meatbags
+
+#ifndef Sensor_hpp
+#define Sensor_hpp
+
+#include <stdio.h>
+#include "ofMain.h"
+#include "ofxDropdown.h"
+#include "ofxNetwork.h"
+#include "Space.h"
+
+#include "DraggablePoint.hpp"
+
+class Sensor : public ofThread {
+public:
+    Sensor();
+    virtual ~Sensor();
+    
+    // virtual functions
+    virtual void update() = 0;
+    
+    void draw();
+    void connect();
+    bool tcpSetup();
+    
+    // set drawing rectangle
+    void setInfoPosition(float x, float y);
+    void drawSensorInfo();
+    
+    // connection event functions
+    virtual void setIPAddress(string& ipAddress);
+
+    // event functions
+    void setInterfaceAndIP(string interface, string localIP);
+    void setLocalIPAddress(string& ipLocalAddress);
+    void setPositionX(float& positionX);
+    void setPositionY(float& positionY);
+    void setMirrorAngles(bool& mirrorX);
+    void setSensorRotation(float& sensorRotationDeg);
+    void setSpace(Space& space);
+    void setTranslation(ofPoint translation);
+
+    ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
+    ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
+    
+    bool onMouseMoved(ofMouseEventArgs & mouseArgs);
+    bool onMousePressed(ofMouseEventArgs & mouseArgs);
+    bool onMouseDragged(ofMouseEventArgs & mouseArgs);
+    bool onMouseReleased(ofMouseEventArgs & mouseArgs);
+    // bool onKeyPressed(ofKeyEventArgs & keyArgs);
+    
+    // interactions
+    DraggablePoint position, nosePosition;
+    float mouseBoxSize, mouseBoxHalfSize, noseRadius;
+    float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
+    bool isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
+        
+    string model;
+    string logStatus, logConnectionStatus, logMode, connectionStatus;
+    ofColor sensorColor;
+    
+    // in update loop
+    ofxDropdown_<string> sensorTypes { "types" };
+    ofParameter<string> ipAddress;
+    ofParameter<float> positionX;
+    ofParameter<float> positionY;
+    ofParameter<bool> mirrorAngles;
+    ofParameter<bool> isSleeping;
+    ofParameter<float> sensorRotationDeg;
+    ofParameter<bool> showSensorInformation;
+    ofParameter<int> whichMeatbag;
+
+    // in threads
+    ofParameter<int> guiMotorSpeed;
+    ofParameter<bool> guiSpecialWorkingMode;
+    vector<string> sensorInfoLines;
+    
+    void createCoordinate(int step, float distance);
+    vector<float> angles;
+    
+    vector<int> intensities;
+    float sensorRotationRad;
+    
+    float x, y, width, height;
+    string localIPAddress, interface;
+    int port;
+    int index;
+    
+    float scale;
+    ofPoint translation;
+    Space space;
+    string laserState;
+    
+    float lastFrameTime;
+    int angularResolution;
+    
+    // for the viewer class
+    std::atomic<bool> isConnected{ false };
+
+    virtual void initializeVectors();
+    virtual void setupParameters();
+    
+    ofxTCPClient tcpClient;
+    
+    void updateDistances();
+    vector<ofPoint> coordinates;
+    
+    bool newCoordinatesAvailable;
+protected:
+    vector<float> distances;
+    vector<float> cachedDistances;
+    
+    mutable std::mutex distancesMutex;
+    mutable std::mutex distancesAvailableMutex;
+
+    bool newDistancesAvailable;
+
+};
+
+#endif /* Sensor_hpp */

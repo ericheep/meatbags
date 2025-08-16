@@ -5,52 +5,59 @@
 #ifndef Viewer_hpp
 #define Viewer_hpp
 
+#include <stdio.h>
+#include "ofMain.h"
+#include "ofxOpenCv.h"
+
 #include "Blob.hpp"
 #include "Filter.hpp"
-#include "Sensors.hpp"
-#include "Filters.hpp"
-#include "ofMain.h"
+#include "Sensor.hpp"
 #include "Space.h"
+#include "LidarPoint.h"
 #include "MemoryFont.hpp"
-#include <stdio.h>
 
 class Viewer {
 public:
     Viewer();
     ~Viewer();
     
-    void draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors);
+    void draw(const vector<Blob>& blobs, const vector<Filter*>& filters_, const vector<Sensor*>& sensors_);
     void drawGrid();
-    void drawDraggablePoints(Filter & bounds);
-    void drawDraggablePoints(Filter * filter);
+    void drawDraggablePoints(const Filter& bounds);
+    void drawDraggablePoints(const Filter* filter);
+    void drawCoordinates(vector<LidarPoint>& lidarPoints, int numberLidarPoints);
 
-    void drawFilter(Filter * filter);
-    void drawFilters(Filters & filters);
-    void drawSensors(Sensors & sensors, Filters & filters);
-    void drawConnections(Sensors & sensors);
-    void drawCoordinates(vector<ofPoint> & coordinates, ofColor color, Filters & filters);
+    void drawFilter(Filter* filter);
+    void drawFilters(const vector<Filter*>& filters);
+    void drawSensors(const vector<Sensor*>& sensors);
+    void drawConnections(const vector<Sensor*>& sensors);
     void drawCursorCoordinate();
+    void drawHelpText();
+    void drawSaveNotification();
     
-    void drawSensor(Hokuyo * hokuyo);
-    void drawBlobs(vector<Blob> & blobs);
-    void setSpace(Space & space);
+    void drawSensor(const Sensor* sensor);
+    void drawBlobs(const vector<Blob>& blobs);
+    void setSpace(const Space& space);
     void setTranslation(ofPoint translation);
-    void setCursorString(ofPoint mousePoint);
+    void setCursorString(const ofPoint& mousePoint);
+    void onMouseMoved(ofMouseEventArgs& mouseArgs);
+    void onMouseDragged(ofMouseEventArgs& mouseArgs);
     
-    bool checkWithinBounds(float x, float y, Filters & filters);
-    
+    ofMesh mesh, circleMesh;
+    void initializeCircleMeshes();
+    void initializeTrianglesMesh(const vector<LidarPoint>& lidarPoints, int numberLidarPoints);
+
     Space space;
-    Sensors sensor;
     float scale;
     ofPoint translation;
     
     MemoryFont blobFont, sensorFont, filterFont, cursorFont;
+    MemoryFont titleFont, helpFont, saveFont;
+    
+    int circleResolution;
     string cursorString;
     vector<ofColor> sensorColors;
-    
-protected:
-    void onMouseMoved(ofMouseEventArgs & mouseArgs);
-    void onMouseDragged(ofMouseEventArgs & mouseArgs);
+    string version = "0.6.0";
 };
 
 #endif /* Viewer_hpp */

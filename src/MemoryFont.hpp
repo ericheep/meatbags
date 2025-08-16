@@ -3,7 +3,6 @@
 //
 
 #pragma once
-
 #ifndef MemoryFont_hpp
 #define MemoryFont_hpp
 

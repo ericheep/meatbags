@@ -10,6 +10,8 @@ OscSender::OscSender() {
     
     oscSenderAddress = "127.0.0.1";
     oscSenderPort = 5322;
+    
+    index = 0;
 }
 
 OscSender::~OscSender() {
@@ -27,7 +29,7 @@ void OscSender::setOscSenderPort(int& oscSenderPort) {
     oscSender.setup(oscSenderAddress, oscSenderPort);
 }
 
-void OscSender::sendBlobOsc(vector<Blob>& blobs, Filters& filters) {
+void OscSender::sendBlobOsc(vector<Blob>& blobs, const vector<Filter*>& filters) {
     ofxOscMessage blobsActiveMsg;
     blobsActiveMsg.setAddress("/blobsActive");
     
@@ -50,11 +52,11 @@ void OscSender::sendBlobOsc(vector<Blob>& blobs, Filters& filters) {
         msg.addFloatArg(blob.intensity);
         
         // sends out which filter(s) the blob is in
-        for (auto & filter : filters.filters) {
-            if (filter->polyline.inside(x, y) && !filter->mask) {
-                msg.addIntArg(filter->index);
-            }
-        }
+        //for (auto & filter : filters.filters) {
+        //    if (filter->polyline.inside(x, y) && !filter->mask) {
+        //        msg.addIntArg(filter->index);
+        //    }
+        //}
     
         oscSender.sendMessage(msg);
         
@@ -71,13 +73,13 @@ void OscSender::sendBlobOsc(vector<Blob>& blobs, Filters& filters) {
     }
 }
 
-void OscSender::sendFilterOsc(Filters& filters) {
+void OscSender::sendFilterOsc(const vector<Filter*>& filters) {
     sendFilterStatus(filters);
     sendFilterBlobs(filters);
 }
 
-void OscSender::sendFilterStatus(Filters& filters) {
-    for (auto & filter : filters.filters) {
+void OscSender::sendFilterStatus(const vector<Filter*>& filters) {
+    for (auto & filter : filters) {
         ofxOscMessage msg;
         msg.setAddress("/filter");
         
@@ -90,8 +92,8 @@ void OscSender::sendFilterStatus(Filters& filters) {
     }
 }
 
-void OscSender::sendFilterBlobs(Filters& filters) {
-    for (auto & filter : filters.filters) {
+void OscSender::sendFilterBlobs(const vector<Filter*>& filters) {
+    for (auto & filter : filters) {
         if (!filter->isBlobInside) continue;
         
         ofxOscMessage msg;
@@ -105,13 +107,10 @@ void OscSender::sendFilterBlobs(Filters& filters) {
             float x = blob.centroid.x * 0.001;
             float y = blob.centroid.y * 0.001;
             
-            if (filter->normalize) {
-                cv::Point2f inputPoint(x, y);
-                vector<cv::Point2f> inputVec = { inputPoint }, outputVec;
-                cv::perspectiveTransform(inputVec, outputVec, filter->homography);
-                
-                x = outputVec[0].x;
-                y = outputVec[0].y;
+            if (filter->isNormalized) {
+                ofPoint normalizedCoordinate = filter->normalizeCoordinate(x, y);
+                x = normalizedCoordinate.x;
+                y = normalizedCoordinate.y;
             }
             
             msg.addFloatArg(x);
@@ -122,11 +121,11 @@ void OscSender::sendFilterBlobs(Filters& filters) {
     }
 }
 
-void OscSender::sendLogs(Sensors& sensors) {
-    for (auto & sensor : sensors.hokuyos) {
-        string connectionStatus = sensor->connectionStatus;
-        string generalStatus = sensor->status;
-        string laserStatus = sensor->laserState;
+void OscSender::sendLogs(const vector<Sensor*> sensors) {
+    for (auto & sensor : sensors) {
+        string connectionStatus = sensor->logConnectionStatus;
+        string status = sensor->logStatus;
+        string mode = sensor->logMode;
         
         if (lastConnectionStatus != connectionStatus) {
             lastConnectionStatus = connectionStatus;
@@ -138,23 +137,23 @@ void OscSender::sendLogs(Sensors& sensors) {
             oscSender.sendMessage(msg);
         }
         
-        if (lastGeneralStatus != generalStatus) {
-            lastGeneralStatus = generalStatus;
+        if (lastStatus != status) {
+            lastStatus = status;
             
             ofxOscMessage msg;
             msg.setAddress("/generalStatus");
             msg.addIntArg(sensor->index);
-            msg.addStringArg(generalStatus);
+            msg.addStringArg(status);
             oscSender.sendMessage(msg);
         }
         
-        if (lastLaserStatus != laserStatus) {
-            lastLaserStatus = laserStatus;
+        if (lastMode != mode) {
+            lastMode = mode;
             
             ofxOscMessage msg;
             msg.setAddress("/laserStatus");
             msg.addIntArg(sensor->index);
-            msg.addStringArg(laserStatus);
+            msg.addStringArg(mode);
             oscSender.sendMessage(msg);
         }
     }

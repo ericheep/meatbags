@@ -1,0 +1,254 @@
+//
+//  Filter.cpp
+//
+
+#include "Filter.hpp"
+
+Filter::Filter() {
+    isActive = true;
+    
+    draggablePoints.resize(numberAnchorPoints);
+    anchorPoints.resize(numberAnchorPoints);
+    
+    for (int i = 0; i < numberAnchorPoints; i++) {
+        draggablePoints[i].size = 12;
+        draggablePoints[i].halfSize = draggablePoints[i].size * 0.5;
+        draggablePoints[i].isMouseOver = false;
+        draggablePoints[i].isMouseClicked = false;
+    }
+    
+    centroid.size = 12;
+    centroid.halfSize = centroid.size * 0.5;
+    centroid.isMouseOver = false;
+    centroid.isMouseClicked = false;
+    
+    filterTypes.add("ellipse");
+    filterTypes.add("quad");
+    filterTypes.disableMultipleSelection();
+}
+
+Filter::~Filter() {
+}
+
+void Filter::updateCentroid() {
+    float sumX = 0.0;
+    float sumY = 0.0;
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        sumX += anchorPoints[i]->x;
+        sumY += anchorPoints[i]->y;
+    }
+    
+    centroid.set(sumX / 4.0, sumY / 4.0);
+}
+
+void Filter::update() {
+    updateCentroid();
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        draggablePoints[i].x = anchorPoints[i]->x;
+        draggablePoints[i].y = anchorPoints[i]->y;
+    }
+}
+
+void Filter::drawOutline() {
+    ofPolyline p;
+    for (auto vertex : polyline.getVertices()) {
+        p.addVertex(vertex * scale * 1000.0 + space.origin);
+    }
+    p.close();
+    p.draw();
+}
+
+void Filter::drawShape() {
+    ofBeginShape();
+    for (auto vertex : polyline.getVertices()) {
+        ofPoint p = vertex * scale * 1000.0 + space.origin;
+        ofVertex(p);
+    }
+    ofEndShape();
+}
+
+void Filter::updateNormalization() {
+    // will be overridden
+}
+
+void Filter::checkBlobs(vector<Blob>& blobs) {
+    filterBlobs.clear();
+    isBlobInside = false;
+    distanceOfClosestBlob = std::numeric_limits<float>::infinity();
+    
+    for (auto & blob : blobs) {
+        // millimeters to meters
+        float x = blob.centroid.x * 0.001;
+        float y = blob.centroid.y * 0.001;
+        
+        if (polyline.inside(x, y)) {
+            filterBlobs.push_back(blob);
+            
+            isBlobInside = true;
+            float distance = centroid.distance(ofPoint(x, y));
+            
+            if (distance < distanceOfClosestBlob) {
+                distanceOfClosestBlob = distance;
+            }
+        }
+    }
+}
+
+bool Filter::checkInside(float x, float y) {
+    if (polyline.inside(x, y)) return true;
+    return false;
+}
+
+ofPoint Filter::normalizeCoordinate(float x, float y) {
+    // will be overridden
+    return ofPoint::zero();
+}
+
+void Filter::setTranslation(ofPoint _translation) {
+    translation = _translation;
+}
+
+void Filter::setSpace(Space & _space) {
+    space = _space;
+    scale = space.width / (space.areaSize * 1000.0);
+}
+
+ofPoint Filter::convertCoordinateToScreenPoint(ofPoint coordinate) {
+    return coordinate * 1000.0 * scale + space.origin + translation;
+}
+
+ofPoint Filter::convertScreenPointToCoordinate(ofPoint screenPoint) {
+    return (screenPoint - space.origin - translation) / scale * 0.001;
+}
+
+bool Filter::onMouseMoved(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+    
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        ofPoint screenPoint = convertCoordinateToScreenPoint(draggablePoints[i]);
+
+        if(mousePoint.distance(screenPoint) <= draggablePoints[i].halfSize) {
+            draggablePoints[i].isMouseOver = true;
+            return true;
+        } else {
+            draggablePoints[i].isMouseOver = false;
+        }
+    }
+    
+    ofPoint screenCentroid = convertCoordinateToScreenPoint(centroid);
+    
+    if (mousePoint.distance(screenCentroid) < centroid.halfSize) {
+        centroid.isMouseOver = true;
+        return true;
+    } else {
+        centroid.isMouseOver = false;
+    }
+    
+    return false;
+}
+
+bool Filter::onMousePressed(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        ofPoint screenPoint = convertCoordinateToScreenPoint(draggablePoints[i]);
+
+        if(mousePoint.distance(screenPoint) <= draggablePoints[i].halfSize) {
+            draggablePoints[i].isMouseClicked = true;
+            return true;
+        } else {
+            draggablePoints[i].isMouseClicked = false;
+        }
+    }
+    
+    ofPoint screenCentroid = convertCoordinateToScreenPoint(centroid);
+    
+    if (mousePoint.distance(screenCentroid) < centroid.halfSize) {
+        centroid.isMouseClicked = true;
+        return true;
+    } else {
+        centroid.isMouseClicked = false;
+    }
+        
+    return false;
+}
+
+bool Filter::onMouseDragged(ofMouseEventArgs& mouseArgs) {
+    ofPoint mousePoint(mouseArgs.x, mouseArgs.y);
+    
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        if(draggablePoints[i].isMouseClicked) {
+            ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
+            anchorPoints[i] = coordinate;
+            updateNormalization();
+            return true;
+        }
+    }
+    
+    if (centroid.isMouseClicked) {
+        ofPoint coordinate = convertScreenPointToCoordinate(mousePoint);
+        // translatePointsByCentroid(coordinate);
+        
+        ofPoint difference = coordinate - centroid;
+        difference.x = ofClamp(difference.x, -1, 1);
+        difference.y = ofClamp(difference.y, -1, 1);
+        
+        for (auto& anchorPoint : anchorPoints) {
+            anchorPoint += difference;
+        }
+        updateNormalization();
+        return true;
+    }
+    
+    return false;
+}
+
+void Filter::translatePointsByCentroid(ofPoint _centroid) {
+    ofPoint difference = _centroid - centroid;
+    difference.x = ofClamp(difference.x, -500, 500);
+    difference.y = ofClamp(difference.y, -500, 500);
+    
+    for (auto& anchorPoint : anchorPoints) {
+        anchorPoint += difference;
+    }
+}
+
+bool Filter::onMouseReleased(ofMouseEventArgs& mouseArgs) {
+    for(int i = 0; i < draggablePoints.size(); i++) {
+        if (draggablePoints[i].isMouseClicked) {
+            draggablePoints[i].isMouseClicked = false;
+        }
+    }
+    
+    if (centroid.isMouseClicked) {
+        centroid.isMouseClicked = false;
+        centroid.isMouseOver = false;
+        updateNormalization();
+    }
+        
+    return false;
+}
+
+bool Filter::onKeyPressed(ofKeyEventArgs& keyArgs) {
+    if (centroid.isMouseOver) {
+        if (keyArgs.key == 102) isMask = !isMask;
+        if (keyArgs.key == 116) isActive = !isActive;
+    }
+    
+    return false;
+}
+
+void Filter::setPosition(vector<ofPoint> points) {
+    for (int i = 0; i < 4; i++) {
+        anchorPoints[i] = points[i];
+    }
+}
+
+vector<ofPoint> Filter::getPosition() {
+    vector<ofPoint> points;
+    for (auto anchorPoint : anchorPoints) {
+        points.push_back(anchorPoint.get());
+    }
+    
+    return points;
+}

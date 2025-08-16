@@ -6,9 +6,15 @@
 
 Viewer::Viewer() {
     scale = 0.0;
-    ofSetCircleResolution(3);
     translation = ofPoint::zero();
-   
+    
+    mesh.getVertices().reserve(50000);
+    mesh.getColors().reserve(50000);
+    mesh.getIndices().reserve(50000);
+
+    circleResolution = 5;
+    initializeCircleMeshes();
+    
     blobFont.setBold();
     blobFont.setSize(14);
     sensorFont.setBold();
@@ -17,17 +23,18 @@ Viewer::Viewer() {
     filterFont.setSize(12);
     cursorFont.setBold();
     cursorFont.setSize(12);
-    
-    ofAddListener(ofEvents().mouseMoved, this, &Viewer::onMouseMoved);
-    ofAddListener(ofEvents().mouseDragged, this, &Viewer::onMouseDragged);
+    titleFont.setBold();
+    titleFont.setSize(14);
+    helpFont.setMedium();
+    helpFont.setSize(14);
+    saveFont.setBold();
+    saveFont.setSize(18);
 }
 
 Viewer::~Viewer() {
-    ofRemoveListener(ofEvents().mouseMoved, this, &Viewer::onMouseMoved);
-    ofRemoveListener(ofEvents().mouseDragged, this, &Viewer::onMouseDragged);
 }
 
-void Viewer::setSpace(Space & _space) {
+void Viewer::setSpace(const Space& _space) {
     space = _space;
     scale = space.width / (space.areaSize * 1000);
 }
@@ -36,16 +43,16 @@ void Viewer::setTranslation(ofPoint _translation) {
     translation = _translation;
 }
 
-void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
+void Viewer::draw(const vector<Blob>& blobs, const vector<Filter*>& filters, const vector<Sensor*>& sensors) {
     ofPushMatrix();
     ofTranslate(translation);
     drawGrid();
     drawBlobs(blobs);
     drawFilters(filters);
-    drawSensors(sensors, filters);
+    drawSensors(sensors);
     ofPopMatrix();
     
-    for (const auto& sensor : sensors.hokuyos) {
+    for (const auto& sensor : sensors) {
         if (sensor->showSensorInformation) sensor->draw();
     }
     
@@ -53,27 +60,60 @@ void Viewer::draw(vector<Blob> & blobs, Filters & filters, Sensors & sensors) {
     drawCursorCoordinate();
 }
 
+void Viewer::drawCoordinates(vector<LidarPoint>& lidarPoints, int numberLidarPoints) {
+    initializeTrianglesMesh(lidarPoints, numberLidarPoints);
+    ofPushMatrix();
+    ofTranslate(translation);
+    mesh.draw();
+    ofPopMatrix();
+}
+
 void Viewer::drawGrid() {
-    ofSetColor(ofColor::grey);
     
-    float crossHalfLength = scale * 50;
-    for (int i = -25; i < 25; i++) {
-        for (int j = -10; j < 50; j++) {
-            float x = i * 1000.0 * scale + space.origin.x;
-            float y = j * 1000.0 * scale + space.origin.y;
-        
-            for (int k = 0; k < 3; k++) {
-                float ex = ofMap(k, 0, 3 - 1, x - scale * 333, x + scale * 333);
-                float ey = ofMap(k, 0, 3 - 1, y - scale * 333, y + scale * 333);
-                
-                ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
-                ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);
-            }
+    // old grid, was eating memory, might revisit later
+    /*float crossHalfLength = scale * 50;
+     for (int i = -25; i < 25; i++) {
+     for (int j = -10; j < 50; j++) {
+     float x = i * 1000.0 * scale + space.origin.x;
+     float y = j * 1000.0 * scale + space.origin.y;
+     
+     for (int k = 0; k < 3; k++) {
+     float ex = ofMap(k, 0, 3 - 1, x - scale * 333, x + scale * 333);
+     float ey = ofMap(k, 0, 3 - 1, y - scale * 333, y + scale * 333);
+     
+     ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
+     ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);}}}*/
+    
+    glEnable(GL_LINE_STIPPLE);
+    glLineStipple(2, 0x3030);
+
+    float xScalar = 1000.0 * scale;
+    float height = 3000;
+    for (int i = -30; i < 30; i++) {
+        float x = i * xScalar + space.origin.x;
+        if (i % 5 == 0) {
+            ofSetColor(ofColor(75, 75, 75));
+        } else {
+            ofSetColor(ofColor(45, 45, 45));
         }
+        ofDrawLine(x, -height, x, height);
     }
     
-    ofColor originColor = ofColor::thistle;
-    ofSetColor(originColor);
+    float yScalar = 1000.0 * scale;
+    float width = 3000;
+    for (int i = -30; i < 30; i++) {
+        float y = i * yScalar + space.origin.y;
+        if (i % 5 == 0) {
+            ofSetColor(ofColor(75, 75, 75));
+        } else {
+            ofSetColor(ofColor(45, 45, 45));
+        }
+        ofDrawLine(-width, y, width, y);
+    }
+    
+    glDisable(GL_LINE_STIPPLE);
+
+    ofSetColor(ofColor::thistle);
     
     ofFill();
     ofSetCircleResolution(23);
@@ -97,132 +137,142 @@ void Viewer::drawCursorCoordinate() {
     cursorFont.draw(cursorString, x, y);
 }
 
-void Viewer::drawBlobs(vector<Blob>& blobs) {
-    for (const auto &blob : blobs) {
-        ofRectangle blobBox = blob.bounds;
-        blobBox.setX(blobBox.getX() * scale + space.origin.x);
-        blobBox.setY(blobBox.getY() * scale + space.origin.y);
-        blobBox.setWidth(blobBox.getWidth() * scale);
-        blobBox.setHeight(blobBox.getHeight() * scale);
+void Viewer::drawBlobs(const vector<Blob>& blobs) {
+    ofNoFill();
+    ofSetColor(0, 0, 255);
+    
+    for (const auto& blob : blobs) {
+        float scaledX = blob.centroid.x * scale + space.origin.x;
+        float scaledY = blob.centroid.y * scale + space.origin.y;
+        
+        float boxX = blob.bounds.getX() * scale + space.origin.x;
+        float boxY = blob.bounds.getY() * scale + space.origin.y;
+        float boxW = blob.bounds.getWidth() * scale;
+        float boxH = blob.bounds.getHeight() * scale;
+        
+        ofDrawRectangle(boxX, boxY, boxW, boxH);
+        
+        ofFill();
+        ofSetColor(255, 0, 0);
+        ofDrawEllipse(scaledX, scaledY, 9, 9);
+        
+        char buffer[32];
+        sprintf(buffer, "%d", blob.index);
+        blobFont.draw(buffer, scaledX + 15, scaledY - 21);
+        
+        sprintf(buffer, "x: %.2f", blob.centroid.x / 1000.0);
+        blobFont.draw(buffer, scaledX + 15, scaledY - 7);
+        
+        sprintf(buffer, "y: %.2f", blob.centroid.y / 1000.0);
+        blobFont.draw(buffer, scaledX + 15, scaledY + 7);
+        
+        sprintf(buffer, "points: %d", blob.numberPoints);
+        blobFont.draw(buffer, scaledX + 15, scaledY + 21);
         
         ofNoFill();
         ofSetColor(0, 0, 255);
-        ofDrawRectangle(blobBox);
-        
-        float centroidX = blob.centroid.x * scale + space.origin.x;
-        float centroidY = blob.centroid.y * scale + space.origin.y;
-        
-        ofFill();
-        ofSetColor(255, 0, 0);
-        ofDrawEllipse(centroidX, centroidY, 9, 9);
-
-        std::stringstream index;
-        index << blob.index;
-        std::stringstream x;
-        x << setprecision(2) << blob.centroid.x / 1000.0;
-        std::stringstream y;
-        y << setprecision(2) << blob.centroid.y / 1000.0;
-       
-        ofSetColor(255, 0, 0);
-        string indexString = index.str();
-        string xString = "x: " + x.str();
-        string yString = "y: " + y.str();
-        string points = "points: " + to_string(blob.numberPoints);
-        
-        blobFont.draw(indexString, centroidX + 15, centroidY - 21);
-        blobFont.draw(xString, centroidX + 15, centroidY - 7);
-        blobFont.draw(yString, centroidX + 15, centroidY + 7);
-        blobFont.draw(points, centroidX + 15, centroidY + 21);
     }
 }
 
-bool Viewer::checkWithinBounds(float x, float y, Filters & filters) {
-    bool isWithinFilter = false;
-    for (const auto &filter : filters.filters) {
-        if (filter->polyline.inside(x * 0.001, y * 0.001)) {
-            if (filter->mask) {
-                return false;
-            } else {
-                isWithinFilter = true;
-            }
+void Viewer::initializeTrianglesMesh(const vector<LidarPoint>& lidarPoints, int numberLidarPoints) {
+    mesh.clear();
+    mesh.setMode(OF_PRIMITIVE_TRIANGLES);
+    
+    float radius = 0.0;
+    for (int i = 0; i < numberLidarPoints; i++) {
+        ofColor pointColor = lidarPoints[i].color;
+        
+        if (lidarPoints[i].isInFilter) {
+            radius = 2.5;
+            pointColor.a = 255;
+        } else {
+            radius = 1.5;
+            pointColor.a = 90;
+        }
+        
+        ofPoint coordinate = lidarPoints[i].coordinate;
+        coordinate = coordinate * scale + space.origin;
+        
+        mesh.addVertex(coordinate);
+        mesh.addColor(pointColor);
+        for (int j = 0; j < circleResolution; j++) {
+            mesh.addVertex(coordinate + circleMesh.getVertex(j) * radius);
+            mesh.addColor(pointColor);
         }
     }
     
-    return isWithinFilter;
-}
-
-
-void Viewer::drawCoordinates(vector<ofPoint>& coordinates, ofColor color, Filters & filters) {
-    for (const auto& coordinate : coordinates) {
-        ofColor pointColor;
-
-        float x = coordinate.x;
-        float y = coordinate.y;
+    for (int i = 0; i < numberLidarPoints; i++) {
+        int coordinateIndex = (circleResolution + 1) * i;
         
-        if (x == 0 && y == 0) continue;
-
-        if (checkWithinBounds(x, y, filters)) {
-            pointColor.set(color.r, color.g, color.b, 255);
-        } else {
-            pointColor.set(color.r, color.g, color.b, 90);
+        for (int j = 0; j < circleResolution; j++) {
+            mesh.addIndex(coordinateIndex);
+            mesh.addIndex(coordinateIndex + j + 1);
+            
+            if (j < circleResolution - 1) {
+                mesh.addIndex(coordinateIndex + j + 2);
+            } else {
+                mesh.addIndex(coordinateIndex + 1);
+            }
         }
-        
-        x *= scale;
-        y *= scale;
-        
-        float x2 = x + space.origin.x;
-        float y2 = y + space.origin.y;
-        
-        ofFill();
-        ofSetColor(pointColor);
-        ofDrawEllipse(x2, y2, 3, 3);
     }
 }
 
-void Viewer::drawSensors(Sensors& sensors, Filters & filters) {
-    for (const auto& sensor : sensors.hokuyos) {
-        drawCoordinates(sensor->coordinates, sensor->sensorColor, filters);
+void Viewer::initializeCircleMeshes() {
+    circleMesh.clear();
+    float deltaTheta = TWO_PI / float(circleResolution);
+    
+    for (float i = 0; i < TWO_PI; i = i + deltaTheta) {
+        float x = cos(i);
+        float y = sin(i);
+        circleMesh.addVertex(ofVec3f(x, y, 0));
+    }
+}
+
+void Viewer::drawSensors(const vector<Sensor*>& sensors) {
+    for (const auto& sensor : sensors) {
         drawSensor(sensor);
     }
 }
 
-void Viewer::drawConnections(Sensors& sensors) {
-    int numberSensors = sensors.hokuyos.size();
+void Viewer::drawConnections(const vector<Sensor*>& sensors) {
+    int numberSensors = sensors.size();
     
     float connectionsBoxHeight = numberSensors * 20;
     float y = space.height - connectionsBoxHeight + 8;
     float x = 10;
     
     for (int i = 0; i < numberSensors; i++) {
-        bool connected = sensors.hokuyos[i]->isConnected;
-        string model = sensors.hokuyos[i]->model;
-
+        bool connected = sensors[i]->isConnected;
+        string model = sensors[i]->model;
+        
         ofFill();
         if (connected) {
             ofSetColor(0, 255, 0, 130);
         } else {
             ofSetColor(255, 0, 0, 130);
         }
+        
         string sensorString = "Sensor " + to_string(i + 1) + ": " + model;
         ofDrawRectangle(x, y + i * 20 - 8, 7, 7);
-        ofSetColor(sensors.hokuyos[i]->sensorColor);
+        ofSetColor(sensors[i]->sensorColor);
         sensorFont.draw(sensorString, x + 15, y + i * 20 - 1);
     }
 }
 
-void Viewer::drawSensor(Hokuyo* hokuyo) {
-    ofPoint point = ofPoint(hokuyo->position.x, hokuyo->position.y);
+void Viewer::drawSensor(const Sensor* sensor) {
+    if (!sensor) return;
+    ofPoint point = ofPoint(sensor->position.x, sensor->position.y);
     
     point *= scale;
     point += space.origin;
     
-    float size = hokuyo->position.size;
-    float halfSize = hokuyo->position.halfSize;
-    float noseRadius = hokuyo->noseRadius;
-    float noseSize = hokuyo->nosePosition.size;
-
-    ofSetColor(hokuyo->sensorColor);
-    if (hokuyo->position.isMouseOver) {
+    float size = sensor->position.size;
+    float halfSize = sensor->position.halfSize;
+    float noseRadius = sensor->noseRadius;
+    float noseSize = sensor->nosePosition.size;
+    
+    ofSetColor(sensor->sensorColor);
+    if (sensor->position.isMouseOver) {
         ofFill();
     } else {
         ofNoFill();
@@ -230,10 +280,10 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
     
     ofPushMatrix();
     ofTranslate(point.x, point.y);
-    ofRotateRad(hokuyo->sensorRotationRad);
+    ofRotateRad(sensor->sensorRotationRad);
     ofDrawRectangle(-halfSize, -halfSize, size, size);
     
-    if (hokuyo->isConnected) {
+    if (sensor->isConnected) {
         float time = fmod(ofGetElapsedTimef(), 1.0);
         for (int i = 0; i < 3; i++) {
             float t = 1.0 / 3.0 * i;
@@ -244,30 +294,30 @@ void Viewer::drawSensor(Hokuyo* hokuyo) {
         }
     }
     
-    if (hokuyo->nosePosition.isMouseOver) {
+    if (sensor->nosePosition.isMouseOver) {
         ofFill();
     } else {
         ofNoFill();
     }
-        
+    
     ofRectangle nose;
     nose.setFromCenter(0, noseRadius, noseSize / 2.0, noseSize / 2.0);
     ofDrawRectangle(nose);
     ofDrawLine(0, halfSize, 0, size + halfSize);
-
+    
     ofPopMatrix();
 }
 
-void Viewer::drawDraggablePoints(Filter & bounds) {
-    for (const auto &position : bounds.positions) {
-        ofPoint point = position * 1000.0 * scale + space.origin;
-
+void Viewer::drawDraggablePoints(const Filter& bounds) {
+    for (const auto& draggablePoint : bounds.draggablePoints) {
+        ofPoint point = draggablePoint * 1000.0 * scale + space.origin;
+        
         ofRectangle p;
-        float r = position.size;
+        float r = draggablePoint.size;
         p.setFromCenter(point.x, point.y, r, r);
         ofNoFill();
         
-        if (position.isMouseOver) ofFill();
+        if (draggablePoint.isMouseOver) ofFill();
         
         ofSetColor(ofColor::magenta);
         ofDrawRectangle(p);
@@ -292,61 +342,46 @@ void Viewer::drawDraggablePoints(Filter & bounds) {
     }
 }
 
-void Viewer::drawFilters(Filters & filters) {
-    for (auto & filter : filters.filters) {
+void Viewer::drawFilters(const vector<Filter*>& filters) {
+    for (auto & filter : filters) {
         drawFilter(filter);
     }
 }
 
 void Viewer::drawFilter(Filter * filter) {
-    ofNoFill();
-    
     ofColor filterColor = ofColor::magenta;
-
-    if (!filter->isBlobInside) filterColor.a = 150;
-    if (filter->mask) filterColor = ofColor::lightPink;
-    if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
-
-    ofSetColor(filterColor);
     
-    ofPolyline p;
-    for (auto vertex : filter->polyline.getVertices()) {
-        p.addVertex(vertex * scale * 1000.0 + space.origin);
-    }
-    p.close();
-    p.draw();
+    if (!filter->isBlobInside) filterColor.a = 150;
+    if (filter->isMask) filterColor = ofColor::lightPink;
+    if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
+    
+    ofNoFill();
+    ofSetColor(filterColor);
+    filter->drawOutline();
     
     ofColor shapeColor = ofColor(filterColor.r, filterColor.g, filterColor.b, 40);
     ofSetColor(shapeColor);
-    
     ofFill();
-    if (filter->mask) {
-        ofBeginShape();
-        for(const auto &position : filter->positions) {
-            ofPoint p = position * scale * 1000.0 + space.origin;
-            ofVertex(p);
-        }
-        ofEndShape();
-    }
+    if (filter->isMask) filter->drawShape();
     
     drawDraggablePoints(filter);
 }
 
-void Viewer::drawDraggablePoints(Filter * filter) {
+void Viewer::drawDraggablePoints(const Filter* filter) {
     ofColor filterColor = ofColor::magenta;
     if (!filter->isBlobInside) filterColor.a = 150;
-    if (filter->mask) filterColor = ofColor::lightPink;
+    if (filter->isMask) filterColor = ofColor::lightPink;
     if (!filter->isActive) filterColor.lerp(ofColor::grey, 0.95);
-
-    for (auto position : filter->positions) {
-        ofPoint point = position * 1000.0 * scale + space.origin;
+    
+    for (auto& draggablePoint : filter->draggablePoints) {
+        ofPoint point = draggablePoint * 1000.0 * scale + space.origin;
         
         ofRectangle p;
-        float r = position.size;
+        float r = draggablePoint.size;
         p.setFromCenter(point.x, point.y, r, r);
         ofNoFill();
         
-        if (position.isMouseOver) ofFill();
+        if (draggablePoint.isMouseOver) ofFill();
         
         ofSetColor(filterColor);
         ofDrawRectangle(p);
@@ -360,9 +395,9 @@ void Viewer::drawDraggablePoints(Filter * filter) {
     ofSetColor(filterColor);
     ofPoint indexPoint = filter->centroid * 1000.0 * scale + space.origin;
     string indexString = to_string(filter->index);
-
+    
     filterFont.draw(to_string(filter->index), indexPoint.x - 3, indexPoint.y + 3);
-
+    
     if (filter->centroid.isMouseOver) {
         ofPoint centroidPoint = filter->centroid * 1000.0 * scale + space.origin;
         
@@ -377,14 +412,12 @@ void Viewer::drawDraggablePoints(Filter * filter) {
     }
 }
 
-void Viewer::setCursorString(ofPoint mousePoint) {
+void Viewer::setCursorString(const ofPoint& mousePoint) {
     ofPoint point = (mousePoint - space.origin - translation) / scale * 0.001;
-
-    std::stringstream x;
-    x << setprecision(3) << point.x;
-    std::stringstream y;
-    y << setprecision(3) << point.y;
-    cursorString = x.str() + " " + y.str();
+     
+    char buffer[32];
+    sprintf(buffer, "%.3f %.3f", point.x, point.y);
+    cursorString = buffer;
 }
 
 void Viewer::onMouseMoved(ofMouseEventArgs& mouseArgs) {
@@ -395,4 +428,44 @@ void Viewer::onMouseMoved(ofMouseEventArgs& mouseArgs) {
 void Viewer::onMouseDragged(ofMouseEventArgs &mouseArgs) {
     ofPoint mousePoint = ofPoint(mouseArgs.x, mouseArgs.y);
     setCursorString(mousePoint);
+}
+
+void Viewer::drawHelpText() {
+    ofSetColor(ofColor::thistle);
+    
+    titleFont.draw("meatbags v" + version, 15, 20);
+    helpFont.draw("headless mode", 15, 40);
+    
+    helpFont.draw("(h) toggle help file", 15, 80);
+    helpFont.draw("(m) hold and move mouse to translate grid", 15, 100);
+    helpFont.draw("(f) press while over the center of a filter to toggle mask/filter", 15, 120);
+    helpFont.draw("(t) press while over the center of a filter to toggle active/inactive", 15, 140);
+    helpFont.draw("(ctrl/cmd + s) press to save", 15, 160);
+    
+    titleFont.draw("blob OSC format", 15, 200);
+    helpFont.draw("/blob index x y width length laserIntensity filterIndex1 filterIndex2 ...", 15, 220);
+    helpFont.draw("/blobsActive index1 index2 ...", 15, 240);
+    
+    titleFont.draw("filter OSC format", 15, 280);
+    helpFont.draw("/filter index isAnyBlobInside blobDistanceToCentroid", 15, 300);
+    helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 320);
+    
+    titleFont.draw("logging OSC format", 15, 360);
+    helpFont.draw("/generalStatus sensorIndex status", 15, 380);
+    helpFont.draw("/connectionStatus sensorIndex status", 15, 400);
+    helpFont.draw("/laserStatus sensorIndex status", 15, 420);
+}
+
+void Viewer::drawSaveNotification() {
+    string saveText = "configuration saved";
+    float stringWidth = saveFont.getStringWidth(saveText);
+    ofRectangle saveRectangle;
+    saveRectangle.setFromCenter(ofGetWidth() * 0.5, ofGetHeight() * 0.5 - 5, stringWidth + 50, 35);
+    
+    ofSetColor(ofColor::black);
+    ofDrawRectangle(saveRectangle);
+    ofSetColor(ofColor::thistle);
+    ofNoFill();
+    ofDrawRectangle(saveRectangle);
+    saveFont.draw(saveText, ofGetWidth() * 0.5 - stringWidth * 0.5, ofGetHeight() * 0.5);
 }

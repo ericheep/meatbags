@@ -6,10 +6,6 @@
 #include <functional>
 
 UI::UI() {
-    ofAddListener(ofEvents().mouseMoved, this, &UI::onMouseMoved);
-    ofAddListener(ofEvents().mousePressed, this, &UI::onMousePressed);
-    ofAddListener(ofEvents().mouseReleased, this, &UI::onMouseReleased);
-    
     size = 16;
     offset = 5;
 
@@ -57,14 +53,23 @@ UI::UI() {
     titleFont.setSize(15);
 }
 
-UI::~UI() {
-    ofRemoveListener(ofEvents().mouseMoved, this, &UI::onMouseMoved);
-    ofRemoveListener(ofEvents().mousePressed, this, &UI::onMousePressed);
-    ofRemoveListener(ofEvents().mouseReleased, this, &UI::onMouseReleased);
-}
+UI::~UI() {}
 
 void UI::draw() {
     ofPushMatrix();
+    
+    ofRectangle backgroundRectangle;
+    backgroundRectangle.set(position.x - 15, position.y - 18, 200, 123);
+    
+    ofColor transparentBlack = ofColor::black;
+    transparentBlack.a = 150;
+    ofSetColor(transparentBlack);
+    ofFill();
+    ofDrawRectangle(backgroundRectangle);
+    
+    ofSetColor(ofColor::thistle);
+    ofNoFill();
+    ofDrawRectangle(backgroundRectangle);
     
     ofTranslate(position.x, position.y);
     saveButton.draw();
@@ -77,7 +82,7 @@ void UI::draw() {
     
     ofSetColor(ofColor::thistle);
         
-    titleFont.draw("meatbags", -8, -1);
+    titleFont.draw("meatbags", -8, 2);
     uiFont.draw("sensors", 35, addSensorButton.y + 5);
     uiFont.draw("filters ", 35, addFilterButton.y + 5);
     uiFont.draw("osc senders", 35, addOscSenderButton.y + 5);
@@ -90,39 +95,27 @@ void UI::setPosition(ofPoint _position) {
 }
 
 void UI::addSensor() {
-    if (numberSensors < numberSensors.getMax()) {
-        numberSensors++;
-    }
+    onSensorAddCallback();
 }
 
 void UI::removeSensor() {
-    if (numberSensors > numberSensors.getMin()) {
-        numberSensors--;
-    }
+    onSensorRemoveCallback();
 }
 
 void UI::addFilter() {
-    if (numberFilters < numberFilters.getMax()) {
-        numberFilters++;
-    }
+    onFilterAddCallback();
 }
 
 void UI::removeFilter() {
-    if (numberFilters > numberFilters.getMin()) {
-        numberFilters--;
-    }
+    onFilterRemoveCallback();
 }
 
 void UI::addOscSender() {
-    if (numberOscSenders < numberOscSenders.getMax()) {
-        numberOscSenders++;
-    }
+    onOscSenderAddCallback();
 }
 
 void UI::removeOscSender() {
-    if (numberOscSenders > numberOscSenders.getMin()) {
-        numberOscSenders--;
-    }
+    onOscSenderRemoveCallback();
 }
 
 void UI::checkIfMouseOver(UIButton & button, ofPoint mousePoint) {
