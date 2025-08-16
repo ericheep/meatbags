@@ -29,6 +29,10 @@ void FilterManager::saveTo(ofJson& config) {
     }
 }
 
+void FilterManager::initialize() {
+    addFilter();
+}
+
 void FilterManager::loadFilters(int numberFilters, ofJson config) {
     for (int i = 0; i < numberFilters; i++) {
         addFilter();

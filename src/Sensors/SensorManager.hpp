@@ -44,6 +44,8 @@ public:
     void update();
     void draw();
     void clear();
+
+    void initialize();
     void saveTo(ofJson& configuration);
     void load(ofJson& configuration);
     void loadSensors(int numberSensors, ofJson& configuration);

@@ -26,6 +26,7 @@ public:
     void addMeatbags();
     vector<Meatbags*> getMeatbags();
     
+    void initialize();
     void load(ofJson configuration);
     void loadMeatbags(int numberMeatbags, ofJson config);
     void saveTo(ofJson& configuration);

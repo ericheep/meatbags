@@ -21,6 +21,7 @@ public:
     void removeOscSender();
     void send(vector<Blob>& blobs, const vector<Sensor*> sensors, const vector<Filter*>& filters);
     
+    void initialize();
     void load(ofJson configuration);
     void loadOscSenders(int numberOscSenders, ofJson config);
     void saveTo(ofJson& configuration);

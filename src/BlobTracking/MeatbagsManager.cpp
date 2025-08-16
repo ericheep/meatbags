@@ -114,6 +114,10 @@ void MeatbagsManager::addMeatbags() {
     refreshGUIPositions();
 }
 
+void MeatbagsManager::initialize() {
+    addMeatbags();
+    addMeatbags();
+}
 
 void MeatbagsManager::loadMeatbags(int numberMeatbags, ofJson config) {
     for (int i = 0; i < numberMeatbags; i++) {

@@ -35,6 +35,8 @@ public:
     
     void update();
     void draw();
+
+    void initialize();
     void saveTo(ofJson& configuration);
     void load(ofJson configuration);
     void loadFilters(int numberFilters, ofJson configuration);

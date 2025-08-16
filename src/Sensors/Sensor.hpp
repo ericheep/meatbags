@@ -50,7 +50,7 @@ public:
     bool onMousePressed(ofMouseEventArgs & mouseArgs);
     bool onMouseDragged(ofMouseEventArgs & mouseArgs);
     bool onMouseReleased(ofMouseEventArgs & mouseArgs);
-    bool onKeyPressed(ofKeyEventArgs & keyArgs);
+    // bool onKeyPressed(ofKeyEventArgs & keyArgs);
     
     // interactions
     DraggablePoint position, nosePosition;

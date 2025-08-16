@@ -85,6 +85,10 @@ void SensorManager::loadSensors(int numberFilters, ofJson& config) {
     }
 }
 
+void SensorManager::initialize() {
+    addSensor();
+}
+
 void SensorManager::load(ofJson& config) {
     if (config.contains("number_sensors")) {
         int numberSensors = config["number_sensors"];
@@ -441,7 +445,7 @@ bool SensorManager::onMouseReleased(ofMouseEventArgs& mouseArgs) {
 
 bool SensorManager::onKeyPressed(ofKeyEventArgs& keyArgs) {
     for (auto& entry : sensorEntries) {
-        if (entry.sensor && entry.sensor->onKeyPressed(keyArgs)) return true;
+        // if (entry.sensor && entry.sensor->onKeyPressed(keyArgs)) return true;
     }
     return false;
 }

@@ -88,25 +88,40 @@ void ofApp::setupListeners() {
 
 void ofApp::loadConfiguration() {
     ofJson configuration;
-    ofFile file("configuration.json");
-    file >> configuration;
-    
-    sensorManager.load(configuration);
-    filterManager.load(configuration);
-    oscSenderManager.load(configuration);
-    meatbagsManager.load(configuration);
-    
-    if (configuration.contains("general")) {
-        ofJson generalConfig;
-        generalConfig["general"] = configuration["general"];
-        generalGui.loadFrom(generalConfig);
+
+    try {
+        ofFile file("configuration.json");
+        if (file.exists()) {
+            file >> configuration;
+
+            sensorManager.load(configuration);
+            filterManager.load(configuration);
+            oscSenderManager.load(configuration);
+            meatbagsManager.load(configuration);
+
+            if (configuration.contains("general")) {
+                ofJson generalConfig;
+                generalConfig["general"] = configuration["general"];
+                generalGui.loadFrom(generalConfig);
+            }
+
+            if (configuration.contains("hidden")) {
+                ofJson hiddenConfig;
+                hiddenConfig["hidden"] = configuration["hidden"];
+                hiddenGui.loadFrom(hiddenConfig);
+            }
+
+            return;
+        }
     }
-    
-    if (configuration.contains("hidden")) {
-        ofJson hiddenConfig;
-        hiddenConfig["hidden"] = configuration["hidden"];
-        hiddenGui.loadFrom(hiddenConfig);
+    catch (int errorCode) {
+
     }
+
+    sensorManager.initialize();
+    filterManager.initialize();
+    oscSenderManager.initialize();
+    meatbagsManager.initialize();
 }
 
 //--------------------------------------------------------------

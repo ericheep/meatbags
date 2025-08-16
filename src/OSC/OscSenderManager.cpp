@@ -87,6 +87,10 @@ void OscSenderManager::refreshGUIPositions() {
     }
 }
 
+void OscSenderManager::initialize() {
+    addOscSender();
+}
+
 void OscSenderManager::loadOscSenders(int numberOscSenders, ofJson config) {
     for (int i = 0; i < numberOscSenders; i++) {
         addOscSender();
