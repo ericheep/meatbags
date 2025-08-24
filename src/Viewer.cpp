@@ -433,12 +433,13 @@ void Viewer::drawHelpText() {
     
     titleFont.draw("filter OSC format", 15, 280);
     helpFont.draw("/filter index isAnyBlobInside blobDistanceToCentroid", 15, 300);
-    helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 320);
+    helpFont.draw("/filterBlob filterIndex blobIndex x y width height", 15, 320);
+    helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 340);
     
-    titleFont.draw("logging OSC format", 15, 360);
-    helpFont.draw("/generalStatus sensorIndex status", 15, 380);
-    helpFont.draw("/connectionStatus sensorIndex status", 15, 400);
-    helpFont.draw("/laserStatus sensorIndex status", 15, 420);
+    titleFont.draw("logging OSC format", 15, 380);
+    helpFont.draw("/generalStatus sensorIndex status", 15, 400);
+    helpFont.draw("/connectionStatus sensorIndex status", 15, 420);
+    helpFont.draw("/laserStatus sensorIndex status", 15, 440);
 }
 
 void Viewer::drawSaveNotification() {
