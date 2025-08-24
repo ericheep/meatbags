@@ -24,6 +24,7 @@ public:
     void sendBlobOsc(vector<Blob>& blobs, const vector<Filter*>& filters);
     void sendFilterOsc(const vector<Filter*>& filters);
     void sendFilterStatus(const vector<Filter*>& filters);
+    void sendFilterBlob(const vector<Filter *>& filters);
     void sendFilterBlobs(const vector<Filter*>& filters);
     void sendLogs(const vector<Sensor*> sensors);
     
