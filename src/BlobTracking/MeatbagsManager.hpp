@@ -10,12 +10,12 @@
 #include "ofxGui.h"
 #include "Meatbags.hpp"
 #include "Blob.hpp"
+#include "memory.h"
 
 class MeatbagsManager {
 public:
     MeatbagsManager();
-    
-    
+
     void draw();
     void update();
     void updateBlobs();
@@ -34,12 +34,12 @@ public:
     void refreshGUIPositions();
 private:
     struct MeatbagsEntry {
-        unique_ptr<Meatbags> meatbags;
-        unique_ptr<ofxPanel> gui;
+        std::unique_ptr<Meatbags> meatbags;
+        std::unique_ptr<ofxPanel> gui;
     };
     
     vector<MeatbagsEntry> meatbagsEntries;
-    unique_ptr<ofxPanel> createGUIForMeatbags(Meatbags* meatbags);
+    std::unique_ptr<ofxPanel> createGUIForMeatbags(Meatbags * meatbags);
 };
 
 #endif /* MeatbagsManager_hpp */
