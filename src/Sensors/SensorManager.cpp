@@ -117,6 +117,7 @@ void SensorManager::addSensor(SensorType type) {
     
     sensor->positionX = sensorX;
     sensor->positionY = sensorY;
+    sensor->whichMeatbag = 1;
     
     auto gui = createGUIForSensor(sensor.get(), type);
     

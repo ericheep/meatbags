@@ -76,6 +76,7 @@ void OscSender::sendBlobOsc(vector<Blob>& blobs, const vector<Filter*>& filters)
 void OscSender::sendFilterOsc(const vector<Filter*>& filters) {
     sendFilterStatus(filters);
     sendFilterBlobs(filters);
+	sendFilterBlob(filters);
 }
 
 void OscSender::sendFilterStatus(const vector<Filter*>& filters) {
@@ -118,6 +119,43 @@ void OscSender::sendFilterBlobs(const vector<Filter*>& filters) {
         }
     
         oscSender.sendMessage(msg);
+    }
+}
+
+void OscSender::sendFilterBlob(const vector<Filter *> & filters) {
+    for (auto & filter : filters) {
+        if (!filter->isBlobInside) continue;
+        
+        for (auto & blob : filter->filterBlobs) {
+            ofxOscMessage msg;
+            msg.setAddress("/filterBlob");
+
+            msg.addIntArg(filter->index);
+            msg.addIntArg(blob.index);
+
+            float x = blob.centroid.x * 0.001;
+            float y = blob.centroid.y * 0.001;
+            float width = blob.bounds.getWidth() * 0.001;
+            float height = blob.bounds.getHeight() * 0.001;
+
+            if (filter->isNormalized) {
+                ofPoint normalizedCoordinate = filter->normalizeCoordinate(x, y);
+                ofPoint normalizedSize = filter->normalizeSize(x, y, width, height);
+
+                x = normalizedCoordinate.x;
+                y = normalizedCoordinate.y;
+
+                width = normalizedSize.x;
+                height = normalizedSize.y;
+            }
+
+            msg.addFloatArg(x);
+            msg.addFloatArg(y);
+            msg.addFloatArg(width);
+            msg.addFloatArg(height);
+
+            oscSender.sendMessage(msg);
+        }
     }
 }
 

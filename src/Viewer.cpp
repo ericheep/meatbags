@@ -69,21 +69,6 @@ void Viewer::drawCoordinates(vector<LidarPoint>& lidarPoints, int numberLidarPoi
 }
 
 void Viewer::drawGrid() {
-    
-    // old grid, was eating memory, might revisit later
-    /*float crossHalfLength = scale * 50;
-     for (int i = -25; i < 25; i++) {
-     for (int j = -10; j < 50; j++) {
-     float x = i * 1000.0 * scale + space.origin.x;
-     float y = j * 1000.0 * scale + space.origin.y;
-     
-     for (int k = 0; k < 3; k++) {
-     float ex = ofMap(k, 0, 3 - 1, x - scale * 333, x + scale * 333);
-     float ey = ofMap(k, 0, 3 - 1, y - scale * 333, y + scale * 333);
-     
-     ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
-     ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);}}}*/
-    
     glEnable(GL_LINE_STIPPLE);
     glLineStipple(2, 0x3030);
 
@@ -448,12 +433,13 @@ void Viewer::drawHelpText() {
     
     titleFont.draw("filter OSC format", 15, 280);
     helpFont.draw("/filter index isAnyBlobInside blobDistanceToCentroid", 15, 300);
-    helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 320);
+    helpFont.draw("/filterBlob filterIndex blobIndex x y width height", 15, 320);
+    helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 340);
     
-    titleFont.draw("logging OSC format", 15, 360);
-    helpFont.draw("/generalStatus sensorIndex status", 15, 380);
-    helpFont.draw("/connectionStatus sensorIndex status", 15, 400);
-    helpFont.draw("/laserStatus sensorIndex status", 15, 420);
+    titleFont.draw("logging OSC format", 15, 380);
+    helpFont.draw("/generalStatus sensorIndex status", 15, 400);
+    helpFont.draw("/connectionStatus sensorIndex status", 15, 420);
+    helpFont.draw("/laserStatus sensorIndex status", 15, 440);
 }
 
 void Viewer::drawSaveNotification() {

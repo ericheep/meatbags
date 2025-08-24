@@ -18,6 +18,7 @@ public:
     virtual void reset() override;
     
     ofPoint normalizeCoordinate(float x, float y);
+    ofPoint normalizeSize(float x, float y, float width, float height);
     void updateHomography();
 
     cv::Mat homography;
