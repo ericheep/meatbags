@@ -69,21 +69,6 @@ void Viewer::drawCoordinates(vector<LidarPoint>& lidarPoints, int numberLidarPoi
 }
 
 void Viewer::drawGrid() {
-    
-    // old grid, was eating memory, might revisit later
-    /*float crossHalfLength = scale * 50;
-     for (int i = -25; i < 25; i++) {
-     for (int j = -10; j < 50; j++) {
-     float x = i * 1000.0 * scale + space.origin.x;
-     float y = j * 1000.0 * scale + space.origin.y;
-     
-     for (int k = 0; k < 3; k++) {
-     float ex = ofMap(k, 0, 3 - 1, x - scale * 333, x + scale * 333);
-     float ey = ofMap(k, 0, 3 - 1, y - scale * 333, y + scale * 333);
-     
-     ofDrawLine(ex - crossHalfLength, y, ex + crossHalfLength, y);
-     ofDrawLine(x, ey - crossHalfLength, x, ey + crossHalfLength);}}}*/
-    
     glEnable(GL_LINE_STIPPLE);
     glLineStipple(2, 0x3030);
 
