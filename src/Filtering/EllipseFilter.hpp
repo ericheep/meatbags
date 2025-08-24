@@ -18,6 +18,7 @@ public:
     virtual void updateNormalization() override;
     virtual void reset() override;
     virtual ofPoint normalizeCoordinate(float x, float y) override;
+    virtual ofPoint normalizeSize(float x, float y, float width, float height) override;
 
     void updateDraggablePoints(int anchorIndex);
 

@@ -54,3 +54,21 @@ ofPoint QuadFilter::normalizeCoordinate(float x, float y) {
 
     return normalizedCoordinate;
 }
+
+ofPoint QuadFilter::normalizeSize(float x, float y, float width, float height) {
+    vector<cv::Point2f> inputCorners = {
+    	cv::Point2f(x, y), // top-left
+    	cv::Point2f(x + width, y), // top-right
+    	cv::Point2f(x, y + height), // bottom-left
+    	cv::Point2f(x + width, y + height) // bottom-right
+    };
+
+    vector<cv::Point2f> outputCorners;
+    cv::perspectiveTransform(inputCorners, outputCorners, homography);
+    
+    // Calculate width and height from transformed corners
+    float normalizedWidth = cv::norm(outputCorners[1] - outputCorners[0]); // top edge
+    float normalizedHeight = cv::norm(outputCorners[2] - outputCorners[0]); // left edge
+
+    return ofVec2f(normalizedWidth, normalizedHeight);
+}

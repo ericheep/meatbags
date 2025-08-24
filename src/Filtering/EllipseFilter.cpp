@@ -151,3 +151,50 @@ ofPoint EllipseFilter::normalizeCoordinate(float x, float y) {
     
     return normalizedCoordinate;
 }
+
+ofPoint EllipseFilter::normalizeSize(float x, float y, float width, float height) {
+    ofPoint center;
+    for (auto& p : draggablePoints) center += p;
+    center /= 4.0;
+
+    float maxDist = 0;
+    int i1 = 0, i2 = 0;
+    for (int i = 0; i < 4; ++i) {
+        for (int j = i + 1; j < 4; ++j) {
+            float d = draggablePoints[i].distance(draggablePoints[j]);
+            if (d > maxDist) {
+                maxDist = d;
+                i1 = i;
+                i2 = j;
+            }
+        }
+    }
+
+    ofPoint major1 = draggablePoints[i1];
+    ofPoint major2 = draggablePoints[i2];
+
+    std::vector<int> remaining;
+    for (int i = 0; i < 4; ++i) {
+        if (i != i1 && i != i2) remaining.push_back(i);
+    }
+    ofPoint minor1 = draggablePoints[remaining[0]];
+    ofPoint minor2 = draggablePoints[remaining[1]];
+
+    ofPoint majorVec = major2 - major1;
+    float rotation = atan2(majorVec.y, majorVec.x);
+    float a = major1.distance(major2) * 0.5;
+    float b = minor1.distance(minor2) * 0.5;
+
+    // Create width and height vectors
+    ofPoint widthVec(width, 0);
+    ofPoint heightVec(0, height);
+
+    // Apply inverse rotation to align with ellipse coordinate system
+    float cp = cos(-rotation);
+    float sp = sin(-rotation);
+
+    float normalizedWidth = (widthVec.x * cp - widthVec.y * sp) / a;
+    float normalizedHeight = (heightVec.x * sp + heightVec.y * cp) / b;
+
+    return ofPoint(abs(normalizedWidth), abs(normalizedHeight));
+}
