@@ -43,6 +43,10 @@ void FilterManager::loadFilters(int numberFilters, ofJson config) {
         filterConfig[filterKey] = config[filterKey];
         filterEntries[i].gui->loadFrom(filterConfig);
     }
+
+    for (auto& entry : filterEntries) {
+	    entry.filter->updateNormalization();
+    }
 }
 
 void FilterManager::load(ofJson config) {
