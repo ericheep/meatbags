@@ -26,6 +26,7 @@ public:
     virtual void checkBlobs(vector<Blob>& blobs);
     virtual bool checkInside(float x, float y);
     virtual ofPoint normalizeCoordinate(float x, float y) = 0;
+    virtual ofPoint normalizeSize(float x, float y, float width, float height) = 0;
     
     virtual void drawOutline();
     virtual void drawShape();
