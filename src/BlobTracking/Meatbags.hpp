@@ -10,6 +10,7 @@
 #include "ofxDropdown.h"
 #include "Blob.hpp"
 #include "Clusterer.hpp"
+#include "EuclideanClusterer.hpp"
 #include "DBSCANClusterer.hpp"
 #include <memory>
 

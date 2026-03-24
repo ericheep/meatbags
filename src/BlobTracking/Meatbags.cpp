@@ -13,7 +13,7 @@ Meatbags::Meatbags() {
 	index = 0;
 
 	// default to DBSCAN to preserve existing behaviour
-	clusterer = std::make_unique<DBSCANClusterer>(epsilon, minPoints);
+	clusterer = std::make_unique<EuclideanClusterer>(epsilon, minPoints);
 
 	blobPersistence.addListener(this, &Meatbags::setBlobPersistence);
 }
