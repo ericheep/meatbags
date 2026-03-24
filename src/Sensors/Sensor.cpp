@@ -222,6 +222,8 @@ void Sensor::updateDistances() {
 void Sensor::setMirrorAngles(bool &_mirrorAngles) {
 	mirrorAngles = _mirrorAngles;
 	
+	if (angles.empty()) return;
+
 	// -45 degrees offset
 	float thetaOffset = -HALF_PI * 0.5;
 	

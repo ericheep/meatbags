@@ -30,7 +30,6 @@ public:
 	void drawFilter(Filter* filter);
 	void drawFilters(const vector<Filter*>& filters);
 	void drawSensors(const vector<Sensor*>& sensors);
-	void drawConnections(const vector<Sensor*>& sensors);
 	void drawCursorCoordinate();
 	void drawHelpText();
 	void drawSaveNotification();

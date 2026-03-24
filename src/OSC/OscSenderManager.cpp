@@ -41,6 +41,12 @@ void OscSenderManager::removeOscSender() {
     }
 }
 
+vector<OscSender*> OscSenderManager::getOscSenders() {
+	vector<OscSender*> result;
+	for (auto& entry : oscSenderEntries) result.push_back(entry.oscSender.get());
+	return result;
+}
+
 std::unique_ptr<ofxPanel> OscSenderManager::createGUIForSender(OscSender* oscSender) {
     
     ofColor guiBarColor;

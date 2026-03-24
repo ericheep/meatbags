@@ -11,6 +11,11 @@
 		066B9AEC2F720C3700052574 /* DBScanClusterer.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 066B9AEB2F720C3400052574 /* DBScanClusterer.hpp */; };
 		066B9AEF2F720D2200052574 /* EuclideanClusterer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 066B9AEE2F720D2200052574 /* EuclideanClusterer.cpp */; };
 		"0684D959-A871-4826-B1BF-468928E319B0" /* ofxOscBundle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "C652DFE0-34AE-4466-81DD-C57883B216B4" /* ofxOscBundle.cpp */; };
+		068C912F2F726C11003C0F18 /* OscSenderPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 068C912E2F726C11003C0F18 /* OscSenderPanel.cpp */; };
+		068C91322F726DAA003C0F18 /* FilterPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 068C91312F726DAA003C0F18 /* FilterPanel.cpp */; };
+		06D408152F724768003AD186 /* GeneralPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06D408142F724768003AD186 /* GeneralPanel.cpp */; };
+		06D408182F724EB0003AD186 /* MeatbagsPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06D408172F724EB0003AD186 /* MeatbagsPanel.cpp */; };
+		06D4081B2F7255A9003AD186 /* SensorPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06D4081A2F7255A9003AD186 /* SensorPanel.cpp */; };
 		"0C31E3FC-010E-4F09-9339-2E2FEFC773C5" /* ofxLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "293D6256-136C-45B6-967C-11D3BA16B2F1" /* ofxLabel.cpp */; };
 		"1433162C-71EF-4B80-AC58-56B49F7445AE" /* ofxCvFloatImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "6C8FD42B-BED7-4B52-8B28-7AAAFCF054C4" /* ofxCvFloatImage.cpp */; };
 		"193D037A-12B6-42B3-9BDB-16DBA061A583" /* MemoryFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = "E2C3A76C-0CD0-4250-BDEF-494F83995B1E" /* MemoryFont.cpp */; };
@@ -120,9 +125,19 @@
 		066B9AEB2F720C3400052574 /* DBScanClusterer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = DBScanClusterer.hpp; sourceTree = "<group>"; };
 		066B9AED2F720D2200052574 /* EuclideanClusterer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = EuclideanClusterer.hpp; sourceTree = "<group>"; };
 		066B9AEE2F720D2200052574 /* EuclideanClusterer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = EuclideanClusterer.cpp; sourceTree = "<group>"; };
+		068C912D2F726C11003C0F18 /* OscSenderPanel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = OscSenderPanel.hpp; sourceTree = "<group>"; };
+		068C912E2F726C11003C0F18 /* OscSenderPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OscSenderPanel.cpp; sourceTree = "<group>"; };
+		068C91302F726DAA003C0F18 /* FilterPanel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = FilterPanel.hpp; sourceTree = "<group>"; };
+		068C91312F726DAA003C0F18 /* FilterPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FilterPanel.cpp; sourceTree = "<group>"; };
 		"0691E1E4-06D6-44A9-9A64-7160C0E0F3D8" /* dynamic_bitset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = dynamic_bitset.h; sourceTree = "<group>"; };
 		"06966332-7ED4-4404-B516-FADCAD959068" /* type_traits_detail.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = type_traits_detail.hpp; sourceTree = "<group>"; };
 		"06B13DFA-C889-40AB-B83F-4E4DFC1ECA5B" /* color_detail.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = color_detail.hpp; sourceTree = "<group>"; };
+		06D408132F724768003AD186 /* GeneralPanel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GeneralPanel.hpp; sourceTree = "<group>"; };
+		06D408142F724768003AD186 /* GeneralPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GeneralPanel.cpp; sourceTree = "<group>"; };
+		06D408162F724EB0003AD186 /* MeatbagsPanel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = MeatbagsPanel.hpp; sourceTree = "<group>"; };
+		06D408172F724EB0003AD186 /* MeatbagsPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MeatbagsPanel.cpp; sourceTree = "<group>"; };
+		06D408192F7255A9003AD186 /* SensorPanel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SensorPanel.hpp; sourceTree = "<group>"; };
+		06D4081A2F7255A9003AD186 /* SensorPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SensorPanel.cpp; sourceTree = "<group>"; };
 		"06E799D8-375B-4FD6-9959-98F960EBFD78" /* objdetect.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = objdetect.hpp; sourceTree = "<group>"; };
 		"06FB6737-C21A-471A-9467-603D467E4E43" /* ovx.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ovx.hpp; sourceTree = "<group>"; };
 		"071F951E-B4F9-4511-91AD-AA1738B88876" /* structured_light.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = structured_light.hpp; sourceTree = "<group>"; };
@@ -1295,6 +1310,23 @@
 				"4D8C9598-809B-4B24-AD54-6C1C2C38C872" /* posix */,
 			);
 			path = ip;
+			sourceTree = "<group>";
+		};
+		067C27D02F7273CA009F5B9C /* Panels */ = {
+			isa = PBXGroup;
+			children = (
+				06D408172F724EB0003AD186 /* MeatbagsPanel.cpp */,
+				06D408162F724EB0003AD186 /* MeatbagsPanel.hpp */,
+				06D408142F724768003AD186 /* GeneralPanel.cpp */,
+				06D408132F724768003AD186 /* GeneralPanel.hpp */,
+				06D4081A2F7255A9003AD186 /* SensorPanel.cpp */,
+				06D408192F7255A9003AD186 /* SensorPanel.hpp */,
+				068C912D2F726C11003C0F18 /* OscSenderPanel.hpp */,
+				068C912E2F726C11003C0F18 /* OscSenderPanel.cpp */,
+				068C91302F726DAA003C0F18 /* FilterPanel.hpp */,
+				068C91312F726DAA003C0F18 /* FilterPanel.cpp */,
+			);
+			path = Panels;
 			sourceTree = "<group>";
 		};
 		"075384E9-52A3-407D-8CEA-6961F2D0C60B" /* opencl */ = {
@@ -3346,6 +3378,7 @@
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
+				067C27D02F7273CA009F5B9C /* Panels */,
 				"344FAB48-656D-4347-9D54-D7019F2195F8" /* BlobTracking */,
 				"F88B8550-D8B4-437F-A71E-9B8CB7411DD5" /* Filtering */,
 				"E2C3A76C-0CD0-4250-BDEF-494F83995B1E" /* MemoryFont.cpp */,
@@ -3819,15 +3852,18 @@
 				"AC88052F-780E-42B4-9401-7537C25A95D6" /* FilterManager.cpp in Sources */,
 				066B9AEF2F720D2200052574 /* EuclideanClusterer.cpp in Sources */,
 				"37DA5A42-9570-4AB4-A9B4-7876E9106046" /* QuadFilter.cpp in Sources */,
+				068C91322F726DAA003C0F18 /* FilterPanel.cpp in Sources */,
 				"193D037A-12B6-42B3-9BDB-16DBA061A583" /* MemoryFont.cpp in Sources */,
 				"2CACD468-998F-49A6-A793-E39DA3960C79" /* DraggablePoint.cpp in Sources */,
 				"5DC04393-470D-40D3-B409-2FC2AB831305" /* UI.cpp in Sources */,
 				"E7BD30ED-5FA5-4AFD-B66C-988D6D288BA8" /* UIButton.cpp in Sources */,
 				"2FE4FEF6-6A14-4830-852E-408BB42DFBD9" /* OscSender.cpp in Sources */,
+				06D408182F724EB0003AD186 /* MeatbagsPanel.cpp in Sources */,
 				"F14BA3C5-BD59-46A8-98D2-B961C86FEA45" /* OscSenderManager.cpp in Sources */,
 				"AD3B2ABA-40A1-40B3-8605-1463808A3378" /* Hokuyo.cpp in Sources */,
 				"E3D03B4F-B80A-4C53-A092-B03B1FF4911C" /* InterfaceSelector.cpp in Sources */,
 				"A97275A7-E028-4FFE-BB5A-BE893BC6CE8F" /* OrbbecPulsar.cpp in Sources */,
+				06D4081B2F7255A9003AD186 /* SensorPanel.cpp in Sources */,
 				"605D88A7-7910-46AD-8578-F209552A58CF" /* Sensor.cpp in Sources */,
 				"19F21308-AE00-40CA-B713-825BD4164C07" /* SensorManager.cpp in Sources */,
 				"6EF76660-2D90-4547-94D5-D53CFCE9FADC" /* Viewer.cpp in Sources */,
@@ -3856,8 +3892,10 @@
 				"E4E72B08-D9AF-436D-8246-5DC530D3A7CB" /* ofxCvColorImage.cpp in Sources */,
 				"9795F7D8-14F0-4B78-97C3-D0B932B322C8" /* ofxCvContourFinder.cpp in Sources */,
 				"1433162C-71EF-4B80-AC58-56B49F7445AE" /* ofxCvFloatImage.cpp in Sources */,
+				06D408152F724768003AD186 /* GeneralPanel.cpp in Sources */,
 				"3573656D-4A11-4F86-9E46-4A186CA33C9E" /* ofxCvGrayscaleImage.cpp in Sources */,
 				"97FB489B-018F-4DF4-9610-E69642C5161E" /* ofxCvHaarFinder.cpp in Sources */,
+				068C912F2F726C11003C0F18 /* OscSenderPanel.cpp in Sources */,
 				"AF7DF713-91A5-40F1-B1AC-5522B69C4407" /* ofxCvImage.cpp in Sources */,
 				"1AFD07C0-267D-403C-8FA9-4928B595F273" /* ofxCvShortImage.cpp in Sources */,
 				"861152C7-63AD-4B00-B5DE-652AB1F98124" /* IpEndpointName.cpp in Sources */,

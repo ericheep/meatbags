@@ -65,7 +65,6 @@ void Viewer::draw(const vector<Blob>& blobs, const vector<Filter*>& filters, con
 		if (sensor->showSensorInformation) sensor->draw();
 	}
 
-	drawConnections(sensors);
 	drawCursorCoordinate();
 }
 
@@ -266,43 +265,6 @@ void Viewer::rebuildConnectionStrings(const vector<Sensor*>& sensors) {
 		cachedConnectionStrings.push_back("Sensor " + to_string(i + 1) + ": " + sensors[i]->model);
 	}
 	lastSensorCount = sensors.size();
-}
-
-void Viewer::drawConnections(const vector<Sensor*>& sensors) {
-	int numberSensors = sensors.size();
-
-	// rebuild if count changed OR any model string changed
-	bool needsRebuild = (numberSensors != lastSensorCount);
-	if (!needsRebuild && numberSensors == cachedConnectionStrings.size()) {
-		for (int i = 0; i < numberSensors; i++) {
-			string expected = "Sensor " + to_string(i + 1) + ": " + sensors[i]->model;
-			if (cachedConnectionStrings[i] != expected) {
-				needsRebuild = true;
-				break;
-			}
-		}
-	}
-
-	if (needsRebuild) {
-		 rebuildConnectionStrings(sensors);
-	 }
-
-	float connectionsBoxHeight = numberSensors * 20;
-	float y = space.height - connectionsBoxHeight + 8;
-	float x = 10;
-
-	for (int i = 0; i < numberSensors; i++) {
-		ofFill();
-		if (sensors[i]->isConnected) {
-			ofSetColor(0, 255, 0, 130);
-		} else {
-			ofSetColor(255, 0, 0, 130);
-		}
-
-		ofDrawRectangle(x, y + i * 20 - 8, 7, 7);
-		ofSetColor(sensors[i]->sensorColor);
-		sensorFont.draw(cachedConnectionStrings[i], x + 15, y + i * 20 - 1);
-	}
 }
 
 void Viewer::drawSensor(const Sensor* sensor) {

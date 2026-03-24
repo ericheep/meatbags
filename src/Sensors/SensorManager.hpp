@@ -77,6 +77,9 @@ public:
     
     vector<LidarPoint> lidarPoints;
     int numberLidarPoints;
+
+	SensorType stringToSensorType(const std::string& typeStr);
+	string sensorTypeToString(SensorType type);
 private:
     unique_ptr<Sensor> createSensorOfType(SensorType type);
     unique_ptr<ofxPanel> createGUIForSensor(Sensor* sensor, SensorType type);
@@ -88,8 +91,6 @@ private:
     void onSensorTypeChanged(string& selectedType);
     void transferSensorState(Sensor* oldSensor, Sensor* newSensor);
     SensorType getCurrentSensorType(Sensor* sensor);
-    SensorType stringToSensorType(const std::string& typeStr);
-    string sensorTypeToString(SensorType type);
     
     float lastFrameTime;
     vector<Filter*> filters;

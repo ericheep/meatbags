@@ -14,7 +14,6 @@ OrbbecPulsar::OrbbecPulsar() : Sensor() {
 	temperature = 0.0;
 	timestamp = 0;
 	
-	initializeVectors();
 	setupParameters();
 	
 	statusCommands.clear();
@@ -47,6 +46,8 @@ OrbbecPulsar::~OrbbecPulsar() {
 }
 
 void OrbbecPulsar::threadedFunction() {
+	initializeVectors();
+
 	this_thread::sleep_for(chrono::milliseconds(200));
 	
 	bool tcpConnected = tcpSetup();
@@ -524,12 +525,12 @@ void OrbbecPulsar::parseLidarWarning(const uint8_t* data, int bytesRead) {
 	parseString(data, bytesRead, lidarWarning);
 }
 
-void OrbbecPulsar::parseFirmwareVersion(const uint8_t* data, int bytesRead) {
-	parseString(data, bytesRead, firmwareVersion);
-}
-
 void OrbbecPulsar::parseSerialNumber(const uint8_t* data, int bytesRead) {
 	parseString(data, bytesRead, serialNumber);
+}
+
+void OrbbecPulsar::parseFirmwareVersion(const uint8_t* data, int bytesRead) {
+	parseString(data, bytesRead, firmwareVersion);
 }
 
 void OrbbecPulsar::parseDeviceModel(const uint8_t* data, int bytesRead) {

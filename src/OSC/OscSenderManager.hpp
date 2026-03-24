@@ -27,6 +27,8 @@ public:
     void saveTo(ofJson& configuration);
     
     void refreshGUIPositions();
+	
+	vector<OscSender*> getOscSenders();
 private:
     struct OscSenderEntry {
         unique_ptr<OscSender> oscSender;
