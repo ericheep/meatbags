@@ -114,7 +114,8 @@ protected:
     
     mutable std::mutex distancesMutex;
     mutable std::mutex distancesAvailableMutex;
-
+	std::mutex tcpMutex;
+	
     bool newDistancesAvailable;
 
 };

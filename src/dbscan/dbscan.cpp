@@ -5,7 +5,6 @@
 
 #include <type_traits>
 #include <vector>
-#include "tcb/span.hpp"
 
 // And this is the "dataset to kd-tree" adaptor class:
 
@@ -27,8 +26,8 @@ inline auto get_pt(const point3& p, std::size_t dim)
 template<typename Point>
 struct adaptor
 {
-    const tcb::span<const Point>&  points;
-    adaptor(const tcb::span<const Point>&  points) : points(points) { }
+    const std::span<const Point>&  points;
+    adaptor(const std::span<const Point>&  points) : points(points) { }
 
     /// CRTP helper method
     //inline const Derived& derived() const { return obj; }
@@ -115,7 +114,7 @@ auto dbscan(const Adaptor& adapt, float eps, int min_pts)
 }
 
 
-auto dbscan(const tcb::span<const point2>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
+auto dbscan(const std::span<const point2>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
 {
     const auto adapt = adaptor<point2>(data);
 
@@ -123,7 +122,7 @@ auto dbscan(const tcb::span<const point2>& data, float eps, int min_pts) -> std:
 }
 
 
-auto dbscan(const tcb::span<const point3>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
+auto dbscan(const std::span<const point3>& data, float eps, int min_pts) -> std::vector<std::vector<size_t>>
 {
     const auto adapt = adaptor<point3>(data);
 

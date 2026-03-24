@@ -1,55 +1,63 @@
 //
 //  Meatbags.hpp
-//  https://www.mit.edu/people/dpolicar/writing/prose/text/thinkingMeat.html
-//
+//  meatbags
 
-#ifndef Viz_hpp
-#define Viz_hpp
+#ifndef Meatbags_hpp
+#define Meatbags_hpp
 
 #include "ofMain.h"
-#include <stdio.h>
-#include <algorithm>
-#include "dbscan.hpp"
+#include "ofxGui.h"
+#include "ofxDropdown.h"
 #include "Blob.hpp"
+#include "Clusterer.hpp"
+#include "DBSCANClusterer.hpp"
+#include <memory>
 
 class Meatbags {
 public:
-    Meatbags();
-        
-    void update();
-    void updateBlobs();
-    void updateDraggablePoints();
-    void updateBounds();
-    
-    void filterCoordinates();
-    
-    void clusterBlobs();
-    void matchBlobs();
-    void addBlobs();
-    void renewBlobs();
-    void getBlobs(vector<Blob> &blob);
+	Meatbags();
 
-    int findFreeBlobIndex();
-    float compareBlobs(Blob newBlob, Blob oldBlob);
-    
-    void setMirrorX(bool mirrorX);
-    float pointDistance(ofPoint a, ofPoint b);
-    
-    void setFont(ofTrueTypeFont globalFont);
-    void setBlobPersistence(float & blobPersistence);
-    void setMaxCoordinateSize(int maxSize);
+	void update();
+	void updateBlobs();
+	void getBlobs(vector<Blob>& blobs);
+	void setMaxCoordinateSize(int maxCoordinateSize);
 
-    vector<Blob> newBlobs, oldBlobs;
-    vector<ofPoint> coordinates;
-    vector<int> intensities;
-    
-    ofParameter<float> blobPersistence;
-    ofParameter<float> epsilon;
-    ofParameter<int> minPoints;
-    
-    float lastFrameTime;
-    int numberCoordinates;
-    int index;
+	// swap clustering algorithm at runtime
+	void setClusterer(unique_ptr<Clusterer> c);
+	string getClustererName();
+
+	// access the current clusterer to adjust its parameters from GUI
+	Clusterer* getClusterer() { return clusterer.get(); }
+
+	ofxDropdown clustererTypes;
+
+	int              index;
+
+	vector<ofPoint>  coordinates;
+	vector<int>      intensities;
+	int              numberCoordinates;
+
+	ofParameter<float> epsilon        = { "epsilon", 150.0f, 1.0f, 1000.0f };
+	ofParameter<int>   minPoints      = { "min points", 3, 1, 50 };
+	ofParameter<float> blobPersistence = { "blob persistence", 0.5f, 0.0f, 5.0f };
+
+	vector<Blob>     oldBlobs;
+
+private:
+	void clusterBlobs();
+	void matchBlobs();
+	void addBlobs();
+	void renewBlobs();
+	int  findFreeBlobIndex();
+	float compareBlobs(Blob newBlob, Blob oldBlob);
+
+	void setBlobPersistence(float& _blobPersistence);
+
+	vector<Blob> newBlobs;
+
+	unique_ptr<Clusterer> clusterer;
+
+	double lastFrameTime;
 };
 
-#endif /* Viz_hpp */
+#endif /* Meatbags_hpp */
