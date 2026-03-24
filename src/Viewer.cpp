@@ -428,7 +428,7 @@ void Viewer::setCursorString(const ofPoint& mousePoint) {
 	ofPoint point = (mousePoint - space.origin - translation) / scale * 0.001f;
 
 	char buffer[32];
-	sprintf(buffer, "%.3f %.3f", point.x, point.y);
+	sprintf(buffer, "%.2f %.2f", point.x, point.y);
 	cursorString = buffer;
 }
 
