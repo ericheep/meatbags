@@ -484,8 +484,17 @@ void OrbbecPulsar::parseString(const uint8_t* data, int bytesRead, string& value
 		actualLength--;
 	}
 	
+	string raw(reinterpret_cast<const char*>(data + 9), actualLength);
+
+	// strip non-printable characters (handles embedded nulls, control bytes, high bytes)
+	string cleaned;
+	cleaned.reserve(raw.size());
+	for (unsigned char c : raw) {
+		if (c >= 32 && c < 127) cleaned += c;
+	}
+
 	std::lock_guard<std::mutex> lock(sensorDataMutex);
-	value.assign(reinterpret_cast<const char*>(data + 9), actualLength);
+	value = cleaned;
 }
 
 void OrbbecPulsar::parseTransmissionProtocol(const uint8_t* data, int bytesRead) {
@@ -515,12 +524,12 @@ void OrbbecPulsar::parseLidarWarning(const uint8_t* data, int bytesRead) {
 	parseString(data, bytesRead, lidarWarning);
 }
 
-void OrbbecPulsar::parseSerialNumber(const uint8_t* data, int bytesRead) {
-	parseString(data, bytesRead, serialNumber);
-}
-
 void OrbbecPulsar::parseFirmwareVersion(const uint8_t* data, int bytesRead) {
 	parseString(data, bytesRead, firmwareVersion);
+}
+
+void OrbbecPulsar::parseSerialNumber(const uint8_t* data, int bytesRead) {
+	parseString(data, bytesRead, serialNumber);
 }
 
 void OrbbecPulsar::parseDeviceModel(const uint8_t* data, int bytesRead) {
