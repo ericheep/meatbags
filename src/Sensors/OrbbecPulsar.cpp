@@ -42,18 +42,18 @@ OrbbecPulsar::~OrbbecPulsar() {
 	checkCommands.clear();
 	
 	sendDisableDataStreamCommand();
-	this_thread::sleep_for(chrono::milliseconds(250));
+	std::this_thread::sleep_for(std::chrono::milliseconds(250));
 }
 
 void OrbbecPulsar::threadedFunction() {
 	initializeVectors();
 
-	this_thread::sleep_for(chrono::milliseconds(200));
+	std::this_thread::sleep_for(std::chrono::milliseconds(200));
 	
 	bool tcpConnected = tcpSetup();
 	isConnected = tcpConnected;
 
-	this_thread::sleep_for(chrono::milliseconds(300));
+	std::this_thread::sleep_for(std::chrono::milliseconds(300));
 	
 	if (tcpConnected) {
 		sendConnectCommand();
@@ -63,17 +63,17 @@ void OrbbecPulsar::threadedFunction() {
 	vector<uint8_t> accumBuffer;
 	accumBuffer.reserve(4096);
 
-	auto lastDataTime = chrono::steady_clock::now();
-	const auto timeoutDuration = chrono::seconds(30);
+	auto lastDataTime = std::chrono::steady_clock::now();
+	const auto timeoutDuration = std::chrono::seconds(30);
 	
-	auto lastStatusTime = chrono::steady_clock::now();
-	const auto statusInterval = chrono::milliseconds(199);
+	auto lastStatusTime = std::chrono::steady_clock::now();
+	const auto statusInterval = std::chrono::milliseconds(199);
 	
-	auto lastCheckSettingTime = chrono::steady_clock::now();
-	const auto checkSettingInterval = chrono::milliseconds(200);
+	auto lastCheckSettingTime = std::chrono::steady_clock::now();
+	const auto checkSettingInterval = std::chrono::milliseconds(200);
 	
-	auto lastReconnectionTime = chrono::steady_clock::now();
-	const auto reconnectionTimeout = chrono::milliseconds(5000);
+	auto lastReconnectionTime = std::chrono::steady_clock::now();
+	const auto reconnectionTimeout = std::chrono::milliseconds(5000);
 
 	while (isThreadRunning()) {
 		// read incoming bytes under mutex and append to accumulation buffer
@@ -86,7 +86,7 @@ void OrbbecPulsar::threadedFunction() {
 
 		if (bytesRead > 0) {
 			accumBuffer.insert(accumBuffer.end(), receiveBuffer, receiveBuffer + bytesRead);
-			lastDataTime = chrono::steady_clock::now();
+			lastDataTime = std::chrono::steady_clock::now();
 		}
 
 		// process all complete frames from accumulation buffer
@@ -118,21 +118,21 @@ void OrbbecPulsar::threadedFunction() {
 			}
 		}
 
-		auto now = chrono::steady_clock::now();
+		auto now = std::chrono::steady_clock::now();
 		if (now - lastDataTime > timeoutDuration) {
 			ofLogNotice("Orbbec") << "Resending connect command";
 			sendConnectCommand();
-			lastDataTime = chrono::steady_clock::now();
+			lastDataTime = std::chrono::steady_clock::now();
 		}
 		
 		if (now - lastStatusTime > statusInterval) {
 			sendNextStatusCommand();
-			lastStatusTime = chrono::steady_clock::now();
+			lastStatusTime = std::chrono::steady_clock::now();
 		}
 		
 		if (now - lastCheckSettingTime > checkSettingInterval) {
 			checkNextSetting();
-			lastCheckSettingTime = chrono::steady_clock::now();
+			lastCheckSettingTime = std::chrono::steady_clock::now();
 		}
 
 		bool connected;
@@ -154,13 +154,13 @@ void OrbbecPulsar::threadedFunction() {
 					ofLogNotice("Orbbec") << "Reconnection unsuccessful";
 				}
 
-				lastReconnectionTime = chrono::steady_clock::now();
+				lastReconnectionTime = std::chrono::steady_clock::now();
 			}
 		} else {
-			lastReconnectionTime = chrono::steady_clock::now();
+			lastReconnectionTime = std::chrono::steady_clock::now();
 		}
 
-		this_thread::sleep_for(chrono::milliseconds(1));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
 

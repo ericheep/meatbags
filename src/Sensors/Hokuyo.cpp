@@ -36,14 +36,14 @@ void Hokuyo::threadedFunction() {
 		sendStreamDistancesCommand();
 	}
 	
-	auto lastDataTime = chrono::steady_clock::now();
-	const auto timeoutDuration = chrono::seconds(3);
+	auto lastDataTime = std::chrono::steady_clock::now();
+	const auto timeoutDuration = std::chrono::seconds(3);
 	
-	auto lastStatusTime = chrono::steady_clock::now();
-	const auto statusInterval = chrono::milliseconds(1000);
+	auto lastStatusTime = std::chrono::steady_clock::now();
+	const auto statusInterval = std::chrono::milliseconds(1000);
 
-	auto lastReconnectionTime = chrono::steady_clock::now();
-	const auto reconnectionTimeout = chrono::milliseconds(5000);
+	auto lastReconnectionTime = std::chrono::steady_clock::now();
+	const auto reconnectionTimeout = std::chrono::milliseconds(5000);
 	
 	while(isThreadRunning()) {
 		string response;
@@ -55,20 +55,20 @@ void Hokuyo::threadedFunction() {
 
 		if (response.length() > 0) {
 			parseResponse(response);
-			lastDataTime = chrono::steady_clock::now();
+			lastDataTime = std::chrono::steady_clock::now();
 		}
 
-		auto now = chrono::steady_clock::now();
+		auto now = std::chrono::steady_clock::now();
 		if (now - lastDataTime > timeoutDuration) {
 			sendStreamDistancesCommand();
-			lastDataTime = chrono::steady_clock::now();
+			lastDataTime = std::chrono::steady_clock::now();
 		}
 		
 		if (now - lastStatusTime > statusInterval) {
 			sendStatusInfoCommand();
 			sendVersionInfoCommand();
 			sendParameterInfoCommand();
-			lastStatusTime = chrono::steady_clock::now();
+			lastStatusTime = std::chrono::steady_clock::now();
 		}
 
 		bool connected;
@@ -91,13 +91,13 @@ void Hokuyo::threadedFunction() {
 					ofLogNotice("Hokuyo") << "Reconnection unsuccessful";
 				}
 
-				lastReconnectionTime = chrono::steady_clock::now();
+				lastReconnectionTime = std::chrono::steady_clock::now();
 			}
 		} else {
-			lastReconnectionTime = chrono::steady_clock::now();
+			lastReconnectionTime = std::chrono::steady_clock::now();
 		}
 		
-		this_thread::sleep_for(chrono::milliseconds(1));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
 

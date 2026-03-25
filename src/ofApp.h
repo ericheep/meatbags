@@ -1,8 +1,6 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxGui.h"
-#include "ofxDropdown.h"
 #include "ofJson.h"
 
 #include "SensorManager.hpp"
@@ -80,16 +78,7 @@ public:
 	UI           buttonUI;
 	Space        space;
 
-	ofColor guiBackgroundColor, guiBarColor, guiHeaderColor, guiTextColor;
-
-	ofxPanel hiddenGui;
-	ofxPanel generalGui;
-	ofxPanel oscSendersGui;
-
 	ofPoint initialTranslation;
-
-	ofParameterGroup generalSettings;
-	ofParameterGroup meatbagsSettings;
 
 	ofParameter<bool>    headlessMode;
 	ofParameter<ofPoint> translation;

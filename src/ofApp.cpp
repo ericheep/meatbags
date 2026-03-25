@@ -24,13 +24,9 @@ void ofApp::setup(){
 }
 
 void ofApp::setupGui() {
-	// hiddenGui still uses ofxGui for areaSize/translation (camera state only)
-	ofxGuiSetDefaultHeight(12);
-	ofxGuiSetDefaultWidth(200);
-
-	hiddenGui.setup("hidden");
-	hiddenGui.add(areaSize.set("area size (m)", 10.0, 0.5, 50.0));
-	hiddenGui.add(translation.set("translation", ofPoint(0.0, 0.0)));
+	// initialize camera state parameters directly
+	areaSize.set("area size (m)", 10.0, 0.5, 50.0);
+	translation.set("translation", ofPoint(0.0, 0.0));
 
 	// generalPanel
 	generalPanel.x = 10;
@@ -100,9 +96,12 @@ void ofApp::loadConfiguration() {
 			filterPanel.loadFrom(configuration);
 
 			if (configuration.contains("hidden")) {
-				ofJson hiddenConfig;
-				hiddenConfig["hidden"] = configuration["hidden"];
-				hiddenGui.loadFrom(hiddenConfig);
+				ofJson h = configuration["hidden"];
+				if (h.contains("area size (m)"))  areaSize  = h["area size (m)"].get<float>();
+				if (h.contains("translation")) {
+					ofJson t = h["translation"];
+					translation = ofPoint(t.value("x", 0.0f), t.value("y", 0.0f));
+				}
 			}
 
 			return;
@@ -178,7 +177,7 @@ void ofApp::drawSaveNotification() {
 
 void ofApp::drawFps() {
 	std::stringstream strm;
-	strm << setprecision(3) << "fps: " << ofGetFrameRate();
+	strm << std::setprecision(3) << "fps: " << ofGetFrameRate();
 	ofSetWindowTitle(strm.str());
 }
 
@@ -212,7 +211,10 @@ void ofApp::save() {
 	sensorPanel.saveTo(configuration);
 	oscSenderPanel.saveTo(configuration);
 	filterPanel.saveTo(configuration);
-	hiddenGui.saveTo(configuration);
+	// save camera state manually
+	configuration["hidden"]["area size (m)"] = areaSize.get();
+	configuration["hidden"]["translation"]["x"] = translation.get().x;
+	configuration["hidden"]["translation"]["y"] = translation.get().y;
 	sensorManager.saveTo(configuration);
 	filterManager.saveTo(configuration);
 	oscSenderManager.saveTo(configuration);
@@ -231,8 +233,6 @@ void ofApp::removeOscSender()    { oscSenderManager.removeOscSender(); }
 
 void ofApp::windowResized(int width, int height) {
 	setSpace();
-	filterManager.refreshGUIPositions();
-	oscSenderManager.refreshGUIPositions();
 }
 
 void ofApp::setTranslation() {

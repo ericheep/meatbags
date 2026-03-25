@@ -35,7 +35,7 @@ void Meatbags::setMaxCoordinateSize(int maxCoordinateSize) {
 	intensities.resize(maxCoordinateSize);
 }
 
-void Meatbags::setClusterer(unique_ptr<Clusterer> c) {
+void Meatbags::setClusterer(std::unique_ptr<Clusterer> c) {
 	clusterer = std::move(c);
 }
 

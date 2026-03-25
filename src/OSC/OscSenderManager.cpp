@@ -1,126 +1,79 @@
 //
 //  OscSenderManager.cpp
-//
+//  meatbags
 
 #include "OscSenderManager.hpp"
 
 OscSenderManager::OscSenderManager() {
 }
 
-void OscSenderManager::draw() {
-    for (auto& entry : oscSenderEntries) {
-        if (entry.gui) {
-            entry.gui->draw();
-        }
-    }
-}
-
-void OscSenderManager::send(vector<Blob>& blobs, const vector<Sensor*> sensors, const vector<Filter*>& filters) {
-    for (auto & entry : oscSenderEntries) {
-        if (entry.oscSender->sendBlobsActive) entry.oscSender->sendBlobOsc(blobs, filters);
-        if (entry.oscSender->sendFiltersActive) entry.oscSender->sendFilterOsc(filters);
-        if (entry.oscSender->sendLogsActive ) entry.oscSender->sendLogs(sensors);
-    }
-}
-
 void OscSenderManager::addOscSender() {
-    if (oscSenderEntries.size() < 5) {
-        auto oscSender = std::make_unique<OscSender>();
-        if (oscSender) oscSender->index = oscSenderEntries.size() + 1;
-        
-        auto gui = createGUIForSender(oscSender.get());
-        oscSenderEntries.push_back({std::move(oscSender), std::move(gui)});
-        
-        refreshGUIPositions();
-    }
+	auto oscSender = std::make_unique<OscSender>();
+	oscSender->index = oscSenderEntries.size() + 1;
+	oscSenderEntries.push_back({ std::move(oscSender) });
 }
 
 void OscSenderManager::removeOscSender() {
-    if (oscSenderEntries.size() > 1) {
-        oscSenderEntries.pop_back();
-    }
+	if (oscSenderEntries.size() > 1) {
+		oscSenderEntries.pop_back();
+	}
 }
 
 vector<OscSender*> OscSenderManager::getOscSenders() {
 	vector<OscSender*> result;
-	for (auto& entry : oscSenderEntries) result.push_back(entry.oscSender.get());
+	for (auto& entry : oscSenderEntries) {
+		result.push_back(entry.oscSender.get());
+	}
 	return result;
 }
 
-std::unique_ptr<ofxPanel> OscSenderManager::createGUIForSender(OscSender* oscSender) {
-    
-    ofColor guiBarColor;
-    guiBarColor = ofColor::grey;
-    guiBarColor.a = 100;
-    ofxGuiSetFillColor(guiBarColor);
-    
-    auto gui = std::make_unique<ofxPanel>();
-    
-    ofColor filterColor = ofColor::thistle;
-    ofColor backgroundColor = ofColor::snow;
-    backgroundColor.a = 210;
-    
-    gui->setDefaultBackgroundColor(backgroundColor);
-    gui->setBackgroundColor(backgroundColor);
-    gui->setHeaderBackgroundColor(filterColor);
-    gui->setFillColor(guiBarColor);
-    gui->setDefaultFillColor(guiBarColor);
-    
-    gui->setDefaultWidth(190);
-    gui->setup("osc sender " + to_string(oscSender->index));
-    gui->add(oscSender->oscSenderAddress.set("ip address", "127.0.0.1"));
-    gui->add(oscSender->oscSenderPort.set("port", 5432));
-    gui->add(oscSender->sendBlobsActive.set("send blobs", false));
-    gui->add(oscSender->sendFiltersActive.set("send filters", false));
-    gui->add(oscSender->sendLogsActive.set("send logs", false));
-    
-    return gui;
-}
-
-void OscSenderManager::refreshGUIPositions() {
-    for (int i = 0; i < oscSenderEntries.size(); ++i) {
-        auto& entry = oscSenderEntries[i];
-        if (!(entry.gui && entry.oscSender)) continue;
-        
-        int guiWidth = 190;
-        int guiHeight = 73;
-        int margin = 10;
-
-        int xPos = ofGetWidth() - guiWidth - margin - 197;
-        int yPos = margin + i * (guiHeight + margin);
-        
-        entry.gui->setPosition(xPos, yPos);
-    }
+void OscSenderManager::send(vector<Blob>& blobs, const vector<Sensor*> sensors, const vector<Filter*>& filters) {
+	for (auto& entry : oscSenderEntries) {
+		if (entry.oscSender->sendBlobsActive)   entry.oscSender->sendBlobOsc(blobs, filters);
+		if (entry.oscSender->sendFiltersActive) entry.oscSender->sendFilterOsc(filters);
+		if (entry.oscSender->sendLogsActive)    entry.oscSender->sendLogs(sensors);
+	}
 }
 
 void OscSenderManager::initialize() {
-    addOscSender();
+	addOscSender();
 }
 
-void OscSenderManager::loadOscSenders(int numberOscSenders, ofJson config) {
-    for (int i = 0; i < numberOscSenders; i++) {
-        addOscSender();
-    }
-    for (int i = 0; i < oscSenderEntries.size(); i++) {
-        string oscSenderKey = "osc_sender_" + to_string(i + 1);
-        ofJson oscSenderConfig;
-        oscSenderConfig[oscSenderKey] = config[oscSenderKey];
-        oscSenderEntries[i].gui->loadFrom(oscSenderConfig);
-    }
+void OscSenderManager::loadOscSenders(int n, ofJson& config) {
+	for (int i = 0; i < n; i++) addOscSender();
+
+	for (int i = 0; i < oscSenderEntries.size(); i++) {
+		string key = "osc_sender_" + to_string(i + 1);
+		if (!config.contains(key)) continue;
+		ofJson& s = config[key];
+		auto& sender = oscSenderEntries[i].oscSender;
+
+		if (s.contains("address"))       sender->oscSenderAddress  = s["address"].get<string>();
+		if (s.contains("port"))          sender->oscSenderPort     = s["port"].get<int>();
+		if (s.contains("send_blobs"))    sender->sendBlobsActive   = s["send_blobs"].get<bool>();
+		if (s.contains("send_filters"))  sender->sendFiltersActive = s["send_filters"].get<bool>();
+		if (s.contains("send_logs"))     sender->sendLogsActive    = s["send_logs"].get<bool>();
+	}
 }
 
 void OscSenderManager::load(ofJson config) {
-    if (config.contains("number_osc_senders")) {
-        int numberOscSenders = config["number_osc_senders"];
-        loadOscSenders(numberOscSenders, config);
-    } else {
-        addOscSender();
-    }
+	if (config.contains("number_osc_senders")) {
+		int n = config["number_osc_senders"];
+		loadOscSenders(n, config);
+	} else {
+		addOscSender();
+	}
 }
 
 void OscSenderManager::saveTo(ofJson& config) {
-    config["number_osc_senders"] = oscSenderEntries.size();
-    for (auto& entry : oscSenderEntries) {
-        entry.gui->saveTo(config);
-    }
+	config["number_osc_senders"] = oscSenderEntries.size();
+	for (int i = 0; i < oscSenderEntries.size(); i++) {
+		string key = "osc_sender_" + to_string(i + 1);
+		auto& sender = oscSenderEntries[i].oscSender;
+		config[key]["address"]      = sender->oscSenderAddress.get();
+		config[key]["port"]         = sender->oscSenderPort.get();
+		config[key]["send_blobs"]   = sender->sendBlobsActive.get();
+		config[key]["send_filters"] = sender->sendFiltersActive.get();
+		config[key]["send_logs"]    = sender->sendLogsActive.get();
+	}
 }

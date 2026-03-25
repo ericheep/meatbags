@@ -23,10 +23,6 @@ Sensor::Sensor() {
 	position.isMouseOver = false;
 	position.isMouseClicked = false;
 	
-	sensorTypes.add("Hokuyo");
-	sensorTypes.add("Orbbec Pulsar");
-	sensorTypes.disableMultipleSelection();
-	
 	interface = "";
 	localIPAddress = "";
 	port = 0;

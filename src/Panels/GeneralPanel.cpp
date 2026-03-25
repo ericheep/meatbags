@@ -165,7 +165,7 @@ void GeneralPanel::drawHeadlessToggle() {
 	}
 
 	ofSetColor(textColor);
-	ofDrawBitmapString("headless mode", check.getRight() + padding, row.y + 13);
+	ofDrawBitmapString("start hidden", check.getRight() + padding, row.y + 13);
 }
 
 // -----------------------------------------------------------------------------
