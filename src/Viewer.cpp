@@ -457,12 +457,12 @@ void Viewer::drawHelpText() {
 	helpFont.draw("(ctrl/cmd + s) press to save", 15, 160);
 
 	titleFont.draw("blob OSC format", 15, 200);
-	helpFont.draw("/blob index x y width length laserIntensity filterIndex1 filterIndex2 ...", 15, 220);
+	helpFont.draw("/blob index x y width length velocityX velocityY filterIndex1 filterIndex2 ...", 15, 220);
 	helpFont.draw("/blobsActive index1 index2 ...", 15, 240);
 
 	titleFont.draw("filter OSC format", 15, 280);
 	helpFont.draw("/filter index isAnyBlobInside blobDistanceToCentroid", 15, 300);
-	helpFont.draw("/filterBlob filterIndex blobIndex x y width height", 15, 320);
+	helpFont.draw("/filterBlob filterIndex blobIndex x y width height velocityX velocityY", 15, 320);
 	helpFont.draw("/filterBlobs filterIndex blobIndex1 x1 y1 blobIndex2 x2 y2 ...", 15, 340);
 
 	titleFont.draw("logging OSC format", 15, 380);

@@ -6,14 +6,15 @@
 #define Clusterer_hpp
 
 #include <vector>
+#include <string>
 #include "dbscan.hpp"
 
 class Clusterer {
 public:
-	virtual ~Clusterer() = default;
-	virtual std::vector<std::vector<int>> cluster(const std::vector<point2>& points) = 0;
-	virtual void setParameters(float epsilon, int minPoints) {}
-	virtual std::string getName() = 0;
+    virtual ~Clusterer() = default;
+    virtual std::vector<std::vector<int>> cluster(const std::vector<point2>& points) = 0;
+    virtual void setParameters(float epsilon, int minPoints) {}
+    virtual std::string getName() = 0;
 };
 
 #endif /* Clusterer_hpp */
