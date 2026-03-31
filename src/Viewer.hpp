@@ -56,7 +56,7 @@ public:
 	int circleResolution;
 	string cursorString;
 	vector<ofColor> sensorColors;
-	string version = "0.6.1";
+	string version = "0.7.0";
 
 private:
 	// grid cache

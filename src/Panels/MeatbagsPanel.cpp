@@ -4,8 +4,8 @@
 
 #include "MeatbagsPanel.hpp"
 
-static const int NUM_PARAMS = 3;
-static const char* PARAM_LABELS[] = { "epsilon", "min points", "persistence" };
+static const int NUM_PARAMS = 4;
+static const char* PARAM_LABELS[] = { "epsilon", "min points", "persistence", "vel smooth" };
 
 const std::vector<std::string>& MeatbagsPanel::clustererNames() {
 	static std::vector<std::string> names = { "DBSCAN", "Euclidean" };
@@ -134,7 +134,8 @@ MeatbagsPanel::ParamInfo MeatbagsPanel::getParamInfo(int p, Meatbags* m) {
 	switch (p) {
 		case 0: info.value = m->epsilon;         info.min = m->epsilon.getMin();         info.max = m->epsilon.getMax();         break;
 		case 1: info.value = m->minPoints;        info.min = m->minPoints.getMin();       info.max = m->minPoints.getMax();       break;
-		case 2: info.value = m->blobPersistence;  info.min = m->blobPersistence.getMin(); info.max = m->blobPersistence.getMax(); break;
+		case 2: info.value = m->blobPersistence;   info.min = m->blobPersistence.getMin();   info.max = m->blobPersistence.getMax();   break;
+		case 3: info.value = m->velocitySmoothing; info.min = m->velocitySmoothing.getMin(); info.max = m->velocitySmoothing.getMax(); break;
 	}
 	return info;
 }
@@ -143,7 +144,8 @@ void MeatbagsPanel::setParamValue(int p, float value, Meatbags* m) {
 	switch (p) {
 		case 0: m->epsilon        = ofClamp(value, m->epsilon.getMin(),         m->epsilon.getMax());         break;
 		case 1: m->minPoints      = ofClamp(value, m->minPoints.getMin(),       m->minPoints.getMax());       break;
-		case 2: m->blobPersistence = ofClamp(value, m->blobPersistence.getMin(), m->blobPersistence.getMax()); break;
+		case 2: m->blobPersistence  = ofClamp(value, m->blobPersistence.getMin(),  m->blobPersistence.getMax());  break;
+		case 3: m->velocitySmoothing = ofClamp(value, m->velocitySmoothing.getMin(), m->velocitySmoothing.getMax()); break;
 	}
 }
 

@@ -1,15 +1,16 @@
 //
 //  MeatbagsManager.hpp
 //  meatbags
-//
 
 #ifndef MeatbagsManager_hpp
 #define MeatbagsManager_hpp
 
-#include <stdio.h>
 #include "ofMain.h"
 #include "Meatbags.hpp"
 #include "Blob.hpp"
+#include <vector>
+#include <memory>
+#include <string>
 
 class MeatbagsManager {
 public:
@@ -17,12 +18,11 @@ public:
 
 	void update();
 	void updateBlobs();
-	void getBlobs(vector<Blob>& blobs);
+	void getBlobs(std::vector<Blob>& blobs);
 	void setMaxCoordinateSize(int maxCoordinateSize);
-	void addMeatbags(Meatbags* meatbag);
-	void removeMeatbag();
 	void addMeatbags();
-	vector<Meatbags*> getMeatbags();
+	void removeMeatbag();
+	std::vector<Meatbags*> getMeatbags();
 
 	void initialize();
 	void load(ofJson configuration);
@@ -34,7 +34,7 @@ private:
 		std::unique_ptr<Meatbags> meatbags;
 	};
 
-	vector<MeatbagsEntry> meatbagsEntries;
+	std::vector<MeatbagsEntry> meatbagsEntries;
 };
 
 #endif /* MeatbagsManager_hpp */

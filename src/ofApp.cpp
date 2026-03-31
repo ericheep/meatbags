@@ -30,7 +30,7 @@ void ofApp::setupGui() {
 
 	// generalPanel
 	generalPanel.x = 10;
-	generalPanel.y = 135;
+	generalPanel.y = 135;  // placeholder, updated dynamically in drawMeatbags
 	generalPanel.setup();
 	generalPanel.onInterfaceChanged = [this](string iface, string localIP) {
 		sensorManager.setInterfaceAndIP(iface, localIP);
@@ -64,6 +64,8 @@ void ofApp::setupListeners() {
 	buttonUI.onSensorRemoveCallback     = std::bind(&ofApp::removeSensor, this);
 	buttonUI.onOscSenderAddCallback     = std::bind(&ofApp::addOscSender, this);
 	buttonUI.onOscSenderRemoveCallback  = std::bind(&ofApp::removeOscSender, this);
+	buttonUI.onMeatbagAddCallback       = std::bind(&ofApp::addMeatbag, this);
+	buttonUI.onMeatbagRemoveCallback    = std::bind(&ofApp::removeMeatbag, this);
 
 	ofAddListener(ofEvents().mouseMoved,    this, &ofApp::onMouseMoved);
 	ofAddListener(ofEvents().mousePressed,  this, &ofApp::onMousePressed);
@@ -152,8 +154,9 @@ void ofApp::drawMeatbags() {
 	viewer.drawCoordinates(sensorManager.lidarPoints, sensorManager.numberLidarPoints);
 	viewer.draw(blobs, filterManager.getFilters(), sensorManager.getSensors());
 	buttonUI.draw();
-	// position panels dynamically with consistent margin
+	// position all left-side panels dynamically below the UI box
 	int margin = 4;
+	generalPanel.y  = (int)buttonUI.getBottom() + margin;
 	meatbagsPanel.y = generalPanel.y + generalPanel.totalHeight() + margin;
 	sensorPanel.y   = meatbagsPanel.y + meatbagsPanel.totalHeight(meatbagsManager.getMeatbags().size()) + margin;
 	meatbagsPanel.draw(meatbagsManager.getMeatbags());
@@ -226,6 +229,9 @@ void ofApp::save() {
 
 void ofApp::addFilter()          { filterManager.addFilter();    filterPanel.scrollY = 0.0f; }
 void ofApp::removeFilter()       { filterManager.removeFilter(); filterPanel.scrollY = 0.0f; }
+void ofApp::addMeatbag()      { meatbagsManager.addMeatbags(); }
+void ofApp::removeMeatbag()   { meatbagsManager.removeMeatbag(); }
+
 void ofApp::addSensor()       { sensorManager.addSensor();    sensorPanel.scrollY = 0.0f; }
 void ofApp::removeSensor()    { sensorManager.removeSensor(); sensorPanel.scrollY = 0.0f; }
 void ofApp::addOscSender()       { oscSenderManager.addOscSender(); }
