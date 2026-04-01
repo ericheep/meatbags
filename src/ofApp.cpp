@@ -181,7 +181,7 @@ void ofApp::drawSaveNotification() {
 
 void ofApp::drawFps() {
     std::stringstream strm;
-    strm << setprecision(3) << "fps: " << ofGetFrameRate();
+    strm << std::setprecision(3) << "fps: " << ofGetFrameRate();
     ofSetWindowTitle(strm.str());
 }
 
