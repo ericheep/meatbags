@@ -13,102 +13,103 @@
 
 class Sensor : public ofThread {
 public:
-	Sensor();
-	virtual ~Sensor();
+    Sensor();
+    virtual ~Sensor();
 
-	virtual void update() = 0;
+    virtual void update() = 0;
 
-	void draw();
-	void connect();
-	bool tcpSetup();
+    void draw();
+    void connect();
+    void reconnect();
+    bool tcpSetup();
 
-	void setInfoPosition(float x, float y);
-	void drawSensorInfo();
+    void setInfoPosition(float x, float y);
+    void drawSensorInfo();
 
-	virtual void setIPAddress(string& ipAddress);
+    virtual void setIPAddress(string& ipAddress);
 
-	void setInterfaceAndIP(string interface, string localIP);
-	void setLocalIPAddress(string& ipLocalAddress);
-	void setPositionX(float& positionX);
-	void setPositionY(float& positionY);
-	void setMirrorAngles(bool& mirrorX);
-	void setSensorRotation(float& sensorRotationDeg);
-	void setSpace(Space& space);
-	void setTranslation(ofPoint translation);
+    void setInterfaceAndIP(string interface, string localIP);
+    void setLocalIPAddress(string& ipLocalAddress);
+    void setPositionX(float& positionX);
+    void setPositionY(float& positionY);
+    void setMirrorAngles(bool& mirrorX);
+    void setSensorRotation(float& sensorRotationDeg);
+    void setSpace(Space& space);
+    void setTranslation(ofPoint translation);
 
-	ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
-	ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
+    ofPoint convertCoordinateToScreenPoint(ofPoint coordinate);
+    ofPoint convertScreenPointToCoordinate(ofPoint screenPoint);
 
-	bool onMouseMoved(ofMouseEventArgs& mouseArgs);
-	bool onMousePressed(ofMouseEventArgs& mouseArgs);
-	bool onMouseDragged(ofMouseEventArgs& mouseArgs);
-	bool onMouseReleased(ofMouseEventArgs& mouseArgs);
+    bool onMouseMoved(ofMouseEventArgs& mouseArgs);
+    bool onMousePressed(ofMouseEventArgs& mouseArgs);
+    bool onMouseDragged(ofMouseEventArgs& mouseArgs);
+    bool onMouseReleased(ofMouseEventArgs& mouseArgs);
 
-	// canvas interaction
-	DraggablePoint position, nosePosition;
-	float mouseBoxSize, mouseBoxHalfSize, noseRadius;
-	float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
-	bool  isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
+    // canvas interaction
+    DraggablePoint position, nosePosition;
+    float mouseBoxSize, mouseBoxHalfSize, noseRadius;
+    float mouseNoseBoxSize, mouseNoseBoxHalfSize, mouseNoseBoxRadius;
+    bool  isMouseOver, isMouseClicked, isMouseOverNose, isMouseOverNoseClicked;
 
-	string model;
-	string logStatus, logConnectionStatus, logMode, connectionStatus;
-	ofColor sensorColor;
+    string model;
+    string logStatus, logConnectionStatus, logMode, connectionStatus;
+    ofColor sensorColor;
 
-	ofParameter<string> ipAddress;
-	ofParameter<float>  positionX;
-	ofParameter<float>  positionY;
-	ofParameter<bool>   mirrorAngles;
-	ofParameter<bool>   isSleeping;
-	ofParameter<float>  sensorRotationDeg;
-	ofParameter<bool>   showSensorInformation;
-	ofParameter<int>    whichMeatbag;
+    ofParameter<string> ipAddress;
+    ofParameter<float>  positionX;
+    ofParameter<float>  positionY;
+    ofParameter<bool>   mirrorAngles;
+    ofParameter<bool>   isSleeping;
+    ofParameter<float>  sensorRotationDeg;
+    ofParameter<bool>   showSensorInformation;
+    ofParameter<int>    whichMeatbag;
 
-	// sensor-specific GUI params (read by SensorPanel)
-	ofParameter<int>  guiMotorSpeed;
-	ofParameter<bool> guiSpecialWorkingMode;
+    // sensor-specific GUI params (read by SensorPanel)
+    ofParameter<int>  guiMotorSpeed;
+    ofParameter<bool> guiSpecialWorkingMode;
 
-	vector<string> sensorInfoLines;
+    vector<string> sensorInfoLines;
 
-	void createCoordinate(int step, float distance);
-	vector<float> angles;
+    void createCoordinate(int step, float distance);
+    vector<float> angles;
 
-	vector<int> intensities;
-	float sensorRotationRad;
+    vector<int> intensities;
+    float sensorRotationRad;
 
-	float x, y, width, height;
-	string localIPAddress, interface;
-	int   port;
-	int   index;
+    float x, y, width, height;
+    string localIPAddress, interface;
+    int   port;
+    int   index;
 
-	float   scale;
-	ofPoint translation;
-	Space   space;
-	string  laserState;
+    float   scale;
+    ofPoint translation;
+    Space   space;
+    string  laserState;
 
-	float lastFrameTime;
-	int   angularResolution;
+    float lastFrameTime;
+    int   angularResolution;
 
-	std::atomic<bool> isConnected{ false };
+    std::atomic<bool> isConnected{ false };
 
-	virtual void initializeVectors();
-	virtual void setupParameters();
+    virtual void initializeVectors();
+    virtual void setupParameters();
 
-	ofxTCPClient tcpClient;
+    ofxTCPClient tcpClient;
 
-	void updateDistances();
-	vector<ofPoint> coordinates;
+    void updateDistances();
+    vector<ofPoint> coordinates;
 
-	bool newCoordinatesAvailable;
+    bool newCoordinatesAvailable;
 
 protected:
-	vector<float> distances;
-	vector<float> cachedDistances;
+    vector<float> distances;
+    vector<float> cachedDistances;
 
-	mutable std::mutex distancesMutex;
-	mutable std::mutex distancesAvailableMutex;
-	std::mutex tcpMutex;
+    mutable std::mutex distancesMutex;
+    mutable std::mutex distancesAvailableMutex;
+    std::mutex tcpMutex;
 
-	bool newDistancesAvailable;
+    bool newDistancesAvailable;
 };
 
 #endif /* Sensor_hpp */

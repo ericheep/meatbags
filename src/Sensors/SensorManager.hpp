@@ -16,69 +16,70 @@
 #include "LidarPoint.h"
 
 enum class SensorType {
-	Hokuyo,
-	OrbbecPulsar
+    Hokuyo,
+    OrbbecPulsar
 };
 
 class SensorManager {
 public:
-	struct SensorEntry {
-		int index;
-		std::unique_ptr<Sensor> sensor;
-		std::string nextType;
-	};
+    struct SensorEntry {
+        int index;
+        unique_ptr<Sensor> sensor;
+        std::string nextType;
+    };
 
-	SensorManager();
-	~SensorManager();
+    SensorManager();
+    ~SensorManager();
 
-	void update();
-	void clear();
+    void update();
+    void draw();
+    void clear();
 
-	void initialize();
-	void saveTo(ofJson& configuration);
-	void load(ofJson& configuration);
-	void loadSensors(int numberSensors, ofJson& configuration);
-	void setInterfaceAndIP(string interface, string IP);
+    void initialize();
+    void saveTo(ofJson& configuration);
+    void load(ofJson& configuration);
+    void loadSensors(int numberSensors, ofJson& configuration);
+    void setInterfaceAndIP(string interface, string IP);
 
-	void addSensor();
-	void addSensor(SensorType type);
-	void changeSensorType(int index, SensorType newType);
-	void removeSensor();
-	vector<Sensor*> getSensors();
+    void addSensor();
+    void addSensor(SensorType type);
+    void changeSensorType(int index, SensorType newType);
+    void removeSensor();
+    vector<Sensor*> getSensors();
 
-	void setFilters(const std::vector<Filter*>& filters);
-	void setSpace(Space& space);
-	void setTranslation(ofPoint translation);
+    void setFilters(const std::vector<Filter*>& filters);
+    void setSpace(Space& space);
+    void setTranslation(ofPoint translation);
 
-	bool checkWithinFilters(float x, float y);
-	void getCoordinates(const std::vector<Meatbags*>& meatbags);
+    bool checkWithinFilters(float x, float y);
+    void getCoordinates(const std::vector<Meatbags*>& meatbags);
 
-	bool onMouseMoved(ofMouseEventArgs& mouseArgs);
-	bool onMousePressed(ofMouseEventArgs& mouseArgs);
-	bool onMouseDragged(ofMouseEventArgs& mouseArgs);
-	bool onMouseReleased(ofMouseEventArgs& mouseArgs);
-	bool onKeyPressed(ofKeyEventArgs& keyArgs);
+    bool onMouseMoved(ofMouseEventArgs& mouseArgs);
+    bool onMousePressed(ofMouseEventArgs& mouseArgs);
+    bool onMouseDragged(ofMouseEventArgs& mouseArgs);
+    bool onMouseReleased(ofMouseEventArgs& mouseArgs);
+    bool onKeyPressed(ofKeyEventArgs& keyArgs);
 
-	bool areNewCoordinatesAvailable();
-	void start();
+    bool areNewCoordinatesAvailable();
+    void start();
 
-	SensorType stringToSensorType(const std::string& typeStr);
+    SensorType stringToSensorType(const std::string& typeStr);
 
-	vector<LidarPoint> lidarPoints;
-	int numberLidarPoints;
+    vector<LidarPoint> lidarPoints;
+    int numberLidarPoints;
 
 private:
-	vector<SensorEntry> sensorEntries;
+    vector<SensorEntry> sensorEntries;
 
-	std::unique_ptr<Sensor> createSensorOfType(SensorType type);
-	void transferSensorState(Sensor* oldSensor, Sensor* newSensor);
-	SensorType getCurrentSensorType(Sensor* sensor);
-	string     sensorTypeToString(SensorType type);
-	ofColor    sensorColorForIndex(int index);
+    unique_ptr<Sensor> createSensorOfType(SensorType type);
+    void transferSensorState(Sensor* oldSensor, Sensor* newSensor);
+    SensorType getCurrentSensorType(Sensor* sensor);
+    string     sensorTypeToString(SensorType type);
+    ofColor    sensorColorForIndex(int index);
 
-	float lastFrameTime;
-	vector<Filter*> filters;
-	bool hasStarted = false;
+    float lastFrameTime;
+    vector<Filter*> filters;
+    bool hasStarted = false;
 };
 
 #endif /* SensorManager_hpp */
