@@ -35,6 +35,7 @@ public:
 
 	void update();
 	void draw();
+	void updateMeatbagRange(int numMeatbags);
 	void clear();
 
 	void initialize();

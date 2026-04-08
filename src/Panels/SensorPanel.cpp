@@ -5,7 +5,7 @@
 #include "SensorPanel.hpp"
 
 const std::vector<std::string>& SensorPanel::sensorTypeNames() {
-	static std::vector<std::string> names = { "Hokuyo", "Orbbec Pulsar", "Orbbec Pulsar SDK" };
+	static std::vector<std::string> names = { "Hokuyo", "Orbbec Pulsar SDK" };
 	return names;
 }
 
@@ -14,11 +14,13 @@ const std::vector<int>& SensorPanel::motorSpeedOptions() {
 	return speeds;
 }
 
+
 string SensorPanel::rowLabel(RowType type) {
 	switch (type) {
 		case RowType::MirrorAngles: return "mirror angles";
 		case RowType::ShowInfo:     return "show info";
 		case RowType::FogMode:      return "fog mode";
+		case RowType::FilterLevel:  return "filter level";
 		case RowType::Standby:      return "standby";
 		default: return "";
 	}
@@ -101,15 +103,20 @@ std::vector<SensorPanel::RowType> SensorPanel::rowsForSensor(Sensor* s) {
 		RowType::TypeDropdown,
 		RowType::IPField,
 		RowType::WhichMeatbag,
-		RowType::Position,
-		RowType::Rotation,
-		RowType::MirrorAngles,
-		RowType::ShowInfo
 	};
 	if (isOrbbec(s)) {
 		rows.push_back(RowType::MotorSpeed);
+	}
+	rows.push_back(RowType::Position);
+	rows.push_back(RowType::Rotation);
+	if (isOrbbec(s)) {
+		rows.push_back(RowType::FilterLevel);
+	}
+	rows.push_back(RowType::MirrorAngles);
+	if (isOrbbec(s)) {
 		rows.push_back(RowType::FogMode);
 	}
+	rows.push_back(RowType::ShowInfo);
 	return rows;
 }
 
@@ -133,12 +140,14 @@ int SensorPanel::instanceYOffset(int i, const std::vector<Sensor*>& sensors) {
 			offset += instanceHeaderHeight;
 		} else {
 			offset += instanceHeight(j, sensors[j]);
-			bool jCollapsed  = j < instanceCollapsed.size()       && instanceCollapsed[j];
-			bool jDropOpen   = j < typeDropdownOpen.size()        && typeDropdownOpen[j];
-			bool jMsDropOpen = j < motorSpeedDropdownOpen.size()  && motorSpeedDropdownOpen[j];
+			bool jCollapsed  = j < instanceCollapsed.size()        && instanceCollapsed[j];
+			bool jDropOpen   = j < typeDropdownOpen.size()         && typeDropdownOpen[j];
+			bool jMsDropOpen = j < motorSpeedDropdownOpen.size()   && motorSpeedDropdownOpen[j];
+			bool jWmbDropOpen= j < whichMeatbagDropdownOpen.size() && whichMeatbagDropdownOpen[j];
 			if (!jCollapsed) {
-				if (jDropOpen)   offset += sensorTypeNames().size()  * rowHeight;
-				if (jMsDropOpen) offset += motorSpeedOptions().size() * rowHeight;
+				if (jDropOpen)    offset += sensorTypeNames().size()  * rowHeight;
+				if (jMsDropOpen)  offset += motorSpeedOptions().size() * rowHeight;
+				if (jWmbDropOpen) offset += (sensors[j]->whichMeatbag.getMax() - sensors[j]->whichMeatbag.getMin() + 1) * rowHeight;
 			}
 		}
 	}
@@ -153,12 +162,14 @@ int SensorPanel::totalContentHeight(const std::vector<Sensor*>& sensors) {
 			h += instanceHeaderHeight;
 		} else {
 			h += instanceHeight(i, sensors[i]);
-			bool collapsed   = i < instanceCollapsed.size()       && instanceCollapsed[i];
-			bool dropOpen    = i < typeDropdownOpen.size()        && typeDropdownOpen[i];
-			bool msDropOpen  = i < motorSpeedDropdownOpen.size()  && motorSpeedDropdownOpen[i];
+			bool collapsed    = i < instanceCollapsed.size()        && instanceCollapsed[i];
+			bool dropOpen     = i < typeDropdownOpen.size()         && typeDropdownOpen[i];
+			bool msDropOpen   = i < motorSpeedDropdownOpen.size()   && motorSpeedDropdownOpen[i];
+			bool wmbDropOpen  = i < whichMeatbagDropdownOpen.size() && whichMeatbagDropdownOpen[i];
 			if (!collapsed) {
-				if (dropOpen)   h += sensorTypeNames().size()  * rowHeight;
-				if (msDropOpen) h += motorSpeedOptions().size() * rowHeight;
+				if (dropOpen)    h += sensorTypeNames().size() * rowHeight;
+				if (msDropOpen)  h += motorSpeedOptions().size() * rowHeight;
+				if (wmbDropOpen) h += (sensors[i]->whichMeatbag.getMax() - sensors[i]->whichMeatbag.getMin() + 1) * rowHeight;
 			}
 		}
 	}
@@ -206,19 +217,27 @@ SensorPanel::SliderInfo SensorPanel::getSliderInfo(RowType type, Sensor* s) {
 	SliderInfo info;
 	info.isInt = false;
 	switch (type) {
-		case RowType::WhichMeatbag:
-			info.label = "which meatbag";
-			info.value = s->whichMeatbag;
-			info.min   = s->whichMeatbag.getMin();
-			info.max   = s->whichMeatbag.getMax();
-			info.isInt = true;
-			break;
 		case RowType::Rotation:
 			info.label = "rotation";
 			info.value = s->sensorRotationDeg;
 			info.min   = s->sensorRotationDeg.getMin();
 			info.max   = s->sensorRotationDeg.getMax();
 			break;
+		case RowType::FilterLevel: {
+			auto* sdk = dynamic_cast<OrbbecPulsarSDK*>(s);
+			if (sdk) {
+				info.label = "filter";
+				info.value = (float)sdk->guiFilterLevel.get();
+				info.min   = (float)sdk->guiFilterLevel.getMin();
+				info.max   = (float)sdk->guiFilterLevel.getMax();
+				info.isInt = true;
+			} else {
+				// not an SDK sensor — return rotation as fallback so slider isn't garbage
+				info.label = "filter";
+				info.value = 0; info.min = 0; info.max = 5; info.isInt = true;
+			}
+			break;
+		}
 		default: break;
 	}
 	return info;
@@ -226,8 +245,12 @@ SensorPanel::SliderInfo SensorPanel::getSliderInfo(RowType type, Sensor* s) {
 
 void SensorPanel::setSliderValue(RowType type, float value, Sensor* s) {
 	switch (type) {
-		case RowType::WhichMeatbag:  s->whichMeatbag      = (int)ofClamp(value, s->whichMeatbag.getMin(), s->whichMeatbag.getMax()); break;
 		case RowType::Rotation:      s->sensorRotationDeg = ofClamp(value, s->sensorRotationDeg.getMin(), s->sensorRotationDeg.getMax()); break;
+		case RowType::FilterLevel: {
+			auto* sdk = dynamic_cast<OrbbecPulsarSDK*>(s);
+			if (sdk) sdk->guiFilterLevel = (int)ofClamp(value, sdk->guiFilterLevel.getMin(), sdk->guiFilterLevel.getMax());
+			break;
+		}
 		default: break;
 	}
 }
@@ -256,12 +279,20 @@ void SensorPanel::setCheckboxValue(RowType type, bool value, Sensor* s) {
 // Draw
 // -----------------------------------------------------------------------------
 
+void SensorPanel::closeDropdowns() {
+	std::fill(whichMeatbagDropdownOpen.begin(), whichMeatbagDropdownOpen.end(), false);
+	std::fill(motorSpeedDropdownOpen.begin(),   motorSpeedDropdownOpen.end(),   false);
+	std::fill(typeDropdownOpen.begin(),          typeDropdownOpen.end(),          false);
+}
+
 void SensorPanel::draw(const std::vector<Sensor*>& sensors) {
 	int n = sensors.size();
 	while (typeDropdownOpen.size() < n)        typeDropdownOpen.push_back(false);
 	while (typeHoveredItem.size() < n)         typeHoveredItem.push_back("");
-	while (motorSpeedDropdownOpen.size() < n)  motorSpeedDropdownOpen.push_back(false);
-	while (motorSpeedHoveredItem.size() < n)   motorSpeedHoveredItem.push_back("");
+	while (motorSpeedDropdownOpen.size() < n)    motorSpeedDropdownOpen.push_back(false);
+	while (motorSpeedHoveredItem.size() < n)     motorSpeedHoveredItem.push_back("");
+	while (whichMeatbagDropdownOpen.size() < n)  whichMeatbagDropdownOpen.push_back(false);
+	while (whichMeatbagHoveredItem.size() < n)   whichMeatbagHoveredItem.push_back("");
 	while (instanceCollapsed.size() < n) instanceCollapsed.push_back(false);
 
 	// background — instance headers always visible even when collapsed
@@ -483,6 +514,47 @@ void SensorPanel::drawInstance(int i, Sensor* s, const std::vector<Sensor*>& sen
 			ofSetColor(textColor);
 			ofDrawBitmapString(rowLabel(type), checkRect.getRight() + padding, row.y + 13);
 
+		} else if (type == RowType::WhichMeatbag) {
+			// meatbag dropdown — options populated from whichMeatbag parameter range
+			bool wmbDropOpen = whichMeatbagDropdownOpen[i];
+			int  current     = s->whichMeatbag.get();
+			int  maxMeatbag  = s->whichMeatbag.getMax();
+
+			ofFill();
+			ofSetColor(controlRowColor);
+			ofDrawRectangle(row);
+			ofSetColor(ofColor(80, 80, 80));
+			ofDrawLine(row.x, row.getBottom(), row.getRight(), row.getBottom());
+
+			ofSetColor(textColor);
+			ofDrawBitmapString("meatbag", row.x + padding, row.y + 13);
+			string valStr = ofToString(current);
+			float  valW   = valStr.length() * 8;
+			ofSetColor(dimTextColor);
+			ofDrawBitmapString(valStr, rowRight - valW - padding, row.y + 13);
+
+			contentY += rowHeight;
+
+			if (wmbDropOpen) {
+				for (int m = s->whichMeatbag.getMin(); m <= maxMeatbag; m++) {
+					ofRectangle itemRect(x + indent, contentY, width - indent, rowHeight);
+					bool hovered = (whichMeatbagHoveredItem[i] == ofToString(m));
+					ofFill();
+					ofSetColor(hovered ? dropdownItemHoverColor : dropdownItemColor);
+					ofDrawRectangle(itemRect);
+					if (m == current) {
+						ofSetColor(accentColor);
+						ofDrawBitmapString("*", itemRect.x + padding, itemRect.y + 13);
+					}
+					ofSetColor(hovered ? textColor : dimTextColor);
+					ofDrawBitmapString(ofToString(m), itemRect.x + padding + 12, itemRect.y + 13);
+					ofSetColor(ofColor(50, 50, 50));
+					ofDrawLine(itemRect.x, itemRect.getBottom(), itemRect.getRight(), itemRect.getBottom());
+					contentY += rowHeight;
+				}
+			}
+			continue;
+
 		} else if (type == RowType::MotorSpeed) {
 			// motor speed dropdown — fixed options: 15, 20, 25, 30, 40 Hz
 			bool msDropOpen = motorSpeedDropdownOpen[i];
@@ -580,8 +652,10 @@ bool SensorPanel::onMousePressed(ofMouseEventArgs& args, const std::vector<Senso
 	int n = sensors.size();
 	while (typeDropdownOpen.size() < n)        typeDropdownOpen.push_back(false);
 	while (typeHoveredItem.size() < n)         typeHoveredItem.push_back("");
-	while (motorSpeedDropdownOpen.size() < n)  motorSpeedDropdownOpen.push_back(false);
-	while (motorSpeedHoveredItem.size() < n)   motorSpeedHoveredItem.push_back("");
+	while (motorSpeedDropdownOpen.size() < n)    motorSpeedDropdownOpen.push_back(false);
+	while (motorSpeedHoveredItem.size() < n)     motorSpeedHoveredItem.push_back("");
+	while (whichMeatbagDropdownOpen.size() < n)  whichMeatbagDropdownOpen.push_back(false);
+	while (whichMeatbagHoveredItem.size() < n)   whichMeatbagHoveredItem.push_back("");
 	while (instanceCollapsed.size() < n) instanceCollapsed.push_back(false);
 
 	if (panelHeaderRect().inside(mouse)) {
@@ -692,6 +766,28 @@ bool SensorPanel::onMousePressed(ofMouseEventArgs& args, const std::vector<Senso
 					isEditingFloat = isEditingIP = isDragging = false;
 					return true;
 				}
+
+			} else if (type == RowType::WhichMeatbag) {
+				ofRectangle row(x + indent, contentY, width - indent, rowHeight);
+				if (row.inside(mouse)) {
+					whichMeatbagDropdownOpen[i] = !whichMeatbagDropdownOpen[i];
+					return true;
+				}
+				contentY += rowHeight;
+				if (whichMeatbagDropdownOpen[i]) {
+					for (int m = sensors[i]->whichMeatbag.getMin(); m <= sensors[i]->whichMeatbag.getMax(); m++) {
+						ofRectangle itemRect(x + indent, contentY, width - indent, rowHeight);
+						if (itemRect.inside(mouse)) {
+							sensors[i]->whichMeatbag = m;
+							whichMeatbagDropdownOpen[i] = false;
+							return true;
+						}
+						contentY += rowHeight;
+					}
+					whichMeatbagDropdownOpen[i] = false;
+					return true;
+				}
+				continue;
 
 			} else if (type == RowType::MotorSpeed) {
 				ofRectangle row(x + indent, contentY, width - indent, rowHeight);
@@ -847,13 +943,16 @@ void SensorPanel::onMouseMoved(ofMouseEventArgs& args, const std::vector<Sensor*
 	int n = sensors.size();
 	while (typeDropdownOpen.size() < n)        typeDropdownOpen.push_back(false);
 	while (typeHoveredItem.size() < n)         typeHoveredItem.push_back("");
-	while (motorSpeedDropdownOpen.size() < n)  motorSpeedDropdownOpen.push_back(false);
-	while (motorSpeedHoveredItem.size() < n)   motorSpeedHoveredItem.push_back("");
+	while (motorSpeedDropdownOpen.size() < n)    motorSpeedDropdownOpen.push_back(false);
+	while (motorSpeedHoveredItem.size() < n)     motorSpeedHoveredItem.push_back("");
+	while (whichMeatbagDropdownOpen.size() < n)  whichMeatbagDropdownOpen.push_back(false);
+	while (whichMeatbagHoveredItem.size() < n)   whichMeatbagHoveredItem.push_back("");
 	while (instanceCollapsed.size() < n) instanceCollapsed.push_back(false);
 
 	for (int i = 0; i < n; i++) {
-		typeHoveredItem[i]       = "";
-		motorSpeedHoveredItem[i] = "";
+		typeHoveredItem[i]        = "";
+		motorSpeedHoveredItem[i]  = "";
+		whichMeatbagHoveredItem[i]= "";
 
 		int baseY    = instanceYOffset(i, sensors);
 		int contentY = baseY + instanceHeaderHeight + rowHeight;
@@ -892,11 +991,29 @@ void SensorPanel::onMouseMoved(ofMouseEventArgs& args, const std::vector<Sensor*
 				msContentY += rowHeight;
 			}
 		}
+		if (whichMeatbagDropdownOpen[i]) {
+			auto rows      = rowsForSensor(sensors[i]);
+			bool tDropOpen = typeDropdownOpen[i];
+			int wmbContentY = baseY + instanceHeaderHeight + rowHeight;
+			if (tDropOpen) wmbContentY += sensorTypeNames().size() * rowHeight;
+			for (int r = 1; r < (int)rows.size(); r++) {
+				if (rows[r] == RowType::WhichMeatbag) {
+					wmbContentY += rowHeight;
+					for (int m = sensors[i]->whichMeatbag.getMin(); m <= sensors[i]->whichMeatbag.getMax(); m++) {
+						ofRectangle itemRect(x + indent, wmbContentY, width - indent, rowHeight);
+						if (itemRect.inside(mouse)) {
+							whichMeatbagHoveredItem[i] = ofToString(m);
+							break;
+						}
+						wmbContentY += rowHeight;
+					}
+					break;
+				}
+				wmbContentY += rowHeight;
+			}
+		}
 	}
 }
-
-// -----------------------------------------------------------------------------
-// Keyboard
 // -----------------------------------------------------------------------------
 
 bool SensorPanel::onKeyPressed(ofKeyEventArgs& args, const std::vector<Sensor*>& sensors) {

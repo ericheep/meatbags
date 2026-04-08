@@ -43,6 +43,15 @@ void SensorManager::draw() {
 	}
 }
 
+void SensorManager::updateMeatbagRange(int numMeatbags) {
+	int maxMeatbag = ofMax(1, numMeatbags);
+	for (auto& entry : sensorEntries) {
+		if (!entry.sensor) continue;
+		int current = ofClamp(entry.sensor->whichMeatbag.get(), 1, maxMeatbag);
+		entry.sensor->whichMeatbag.set("which meatbag", current, 1, maxMeatbag);
+	}
+}
+
 void SensorManager::update() {
 	lastFrameTime = ofGetLastFrameTime();
 
@@ -76,7 +85,7 @@ void SensorManager::addSensor(SensorType type) {
 	auto sensor = createSensorOfType(type);
 	sensor->index       = sensorEntries.size() + 1;
 	sensor->sensorColor = sensorColorForIndex(sensor->index);
-	sensor->whichMeatbag = 1;
+	sensor->whichMeatbag.set("which meatbag", 1, 1, 1);  // max updated via updateMeatbagRange()
 
 	// default position spread in circle
 	ofPoint center(0, 1.25);
@@ -150,7 +159,7 @@ vector<Sensor*> SensorManager::getSensors() {
 
 std::unique_ptr<Sensor> SensorManager::createSensorOfType(SensorType type) {
 	switch (type) {
-		case SensorType::Hokuyo:       return std::make_unique<Hokuyo>();
+		case SensorType::Hokuyo:          return std::make_unique<Hokuyo>();
 		case SensorType::OrbbecPulsar:    return std::make_unique<OrbbecPulsar>();
 		case SensorType::OrbbecPulsarSDK: return std::make_unique<OrbbecPulsarSDK>();
 		default:                          return std::make_unique<OrbbecPulsar>();
@@ -319,8 +328,10 @@ void SensorManager::saveTo(ofJson& config) {
 
 		// Orbbec-specific
 		if (dynamic_cast<OrbbecPulsar*>(s)) {
-			config[key]["motor_speed"] = s->guiMotorSpeed.get();  // Hz: 15/20/25/30/40
-			config[key]["fog_mode"]    = s->guiSpecialWorkingMode.get();
+			config[key]["motor_speed"]  = s->guiMotorSpeed.get();
+			config[key]["fog_mode"]     = s->guiSpecialWorkingMode.get();
+			auto* sdk = dynamic_cast<OrbbecPulsarSDK*>(s);
+			if (sdk) config[key]["filter_level"] = sdk->guiFilterLevel.get();
 		}
 	}
 }
@@ -352,8 +363,10 @@ void SensorManager::loadSensors(int n, ofJson& config) {
 		if (sc.contains("show_info"))     s->showSensorInformation = sc["show_info"].get<bool>();
 
 		if (dynamic_cast<OrbbecPulsar*>(s)) {
-			if (sc.contains("motor_speed")) s->guiMotorSpeed          = sc["motor_speed"].get<int>();
-			if (sc.contains("fog_mode"))    s->guiSpecialWorkingMode  = sc["fog_mode"].get<bool>();
+			if (sc.contains("motor_speed"))  s->guiMotorSpeed         = sc["motor_speed"].get<int>();
+			if (sc.contains("fog_mode"))     s->guiSpecialWorkingMode = sc["fog_mode"].get<bool>();
+			auto* sdk = dynamic_cast<OrbbecPulsarSDK*>(s);
+			if (sdk && sc.contains("filter_level")) sdk->guiFilterLevel = sc["filter_level"].get<int>();
 		}
 	}
 }

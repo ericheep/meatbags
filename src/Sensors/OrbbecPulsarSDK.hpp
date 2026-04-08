@@ -31,7 +31,9 @@ public:
 	string lidarState;
 	string firmwareVersion;
 	float  temperature;
-	int    currentRotationSpeed;  // RPM as reported by device
+	int    currentRotationSpeed;
+
+	ofParameter<int> guiFilterLevel;
 
 private:
 	// SDK objects
@@ -45,7 +47,9 @@ private:
 
 	void startPipeline();
 	void stopPipeline();
+	void updateSensorInfo();
 	void onMotorSpeedChanged(int& hz);
+	void onFilterLevelChanged(int& level);
 
 	// Frame callback — runs on SDK internal thread
 	void onFrame(std::shared_ptr<ob::FrameSet> frameSet);
@@ -62,6 +66,4 @@ private:
 	// Reconnection
 	std::chrono::steady_clock::time_point lastReconnectAttempt;
 	static constexpr int RECONNECT_COOLDOWN_MS = 3000;
-	
-	void updateSensorInfo();
 };

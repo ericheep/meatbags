@@ -18,6 +18,7 @@ public:
 	SensorPanel();
 
 	void draw(const std::vector<Sensor*>& sensors);
+	void closeDropdowns();
 
 	bool onMousePressed(ofMouseEventArgs& args, const std::vector<Sensor*>& sensors);
 	void onMouseDragged(ofMouseEventArgs& args, const std::vector<Sensor*>& sensors);
@@ -48,6 +49,7 @@ private:
 		ShowInfo,
 		MotorSpeed,
 		FogMode,
+		FilterLevel,
 		Standby
 	};
 
@@ -78,7 +80,7 @@ private:
 	// -------------------------------------------------------------------------
 	// Param helpers
 	// -------------------------------------------------------------------------
-	struct SliderInfo { string label; float value, min, max; bool isInt; };
+	struct SliderInfo { string label; float value = 0, min = 0, max = 1; bool isInt = false; };
 	SliderInfo getSliderInfo(RowType type, Sensor* s);
 	void       setSliderValue(RowType type, float value, Sensor* s);
 
@@ -97,6 +99,8 @@ private:
 	std::vector<string> typeHoveredItem;
 	std::vector<bool>   motorSpeedDropdownOpen;
 	std::vector<string> motorSpeedHoveredItem;
+	std::vector<bool>   whichMeatbagDropdownOpen;
+	std::vector<string> whichMeatbagHoveredItem;
 
 	static const std::vector<int>& motorSpeedOptions();
 

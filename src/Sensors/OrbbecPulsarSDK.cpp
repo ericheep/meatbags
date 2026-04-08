@@ -28,6 +28,7 @@ OrbbecPulsarSDK::OrbbecPulsarSDK() {
 
 OrbbecPulsarSDK::~OrbbecPulsarSDK() {
 	guiMotorSpeed.removeListener(this, &OrbbecPulsarSDK::onMotorSpeedChanged);
+	guiFilterLevel.removeListener(this, &OrbbecPulsarSDK::onFilterLevelChanged);
 	stopPipeline();
 	if(isThreadRunning()) {
 		stopThread();
@@ -44,6 +45,19 @@ void OrbbecPulsarSDK::onMotorSpeedChanged(int& hz) {
 	}
 }
 
+void OrbbecPulsarSDK::onFilterLevelChanged(int& level) {
+	// filter level can be applied live without restarting the pipeline
+	if(obDevice && pipelineRunning) {
+		try {
+			obDevice->setIntProperty(OB_PROP_LIDAR_TAIL_FILTER_LEVEL_INT, level);
+			ofLogNotice("OrbbecSDK") << "Sensor " << index << " filter level set to " << level;
+		}
+		catch(ob::Error &e) {
+			ofLogError("OrbbecSDK") << "Sensor " << index << " filter level error: " << e.what();
+		}
+	}
+}
+
 // -----------------------------------------------------------------------------
 // Sensor interface
 // -----------------------------------------------------------------------------
@@ -52,6 +66,8 @@ void OrbbecPulsarSDK::setupParameters() {
 	Sensor::setupParameters();
 	guiMotorSpeed.set("motor speed", 20, 15, 40);
 	guiMotorSpeed.addListener(this, &OrbbecPulsarSDK::onMotorSpeedChanged);
+	guiFilterLevel.set("filter level", 0, 0, 5);
+	guiFilterLevel.addListener(this, &OrbbecPulsarSDK::onFilterLevelChanged);
 }
 
 void OrbbecPulsarSDK::initializeVectors() {
@@ -165,9 +181,9 @@ void OrbbecPulsarSDK::startPipeline() {
 		auto info       = obDevice->getDeviceInfo();
 		firmwareVersion = info->getFirmwareVersion();
 
-		// Disable tail filter (trailing point noise reduction — we do our own filtering)
+		// Disable tail filter by default — apply guiFilterLevel instead
 		try {
-			obDevice->setIntProperty(OB_PROP_LIDAR_TAIL_FILTER_LEVEL_INT, 0);
+			obDevice->setIntProperty(OB_PROP_LIDAR_TAIL_FILTER_LEVEL_INT, guiFilterLevel.get());
 		}
 		catch(...) {}
 
@@ -370,14 +386,12 @@ OBLiDARScanRate OrbbecPulsarSDK::hzToScanRate(int hz) {
 }
 
 int OrbbecPulsarSDK::scanRateToPointCount(OBLiDARScanRate rate) {
-	// SL450 datasheet: 72kHz measurement frequency / rotation Hz = points per rotation
 	switch(rate) {
-		case OB_LIDAR_SCAN_15HZ: return 3600;  // 72000/15 * (270/360)
-		case OB_LIDAR_SCAN_20HZ: return 2700;  // 72000/20 * (270/360)
-		case OB_LIDAR_SCAN_25HZ: return 2160;  // 72000/25 * (270/360)
-		case OB_LIDAR_SCAN_30HZ: return 1800;  // 72000/30 * (270/360)
-		case OB_LIDAR_SCAN_40HZ: return 1350;  // 72000/40 * (270/360)
-		default:                        return 2700;
+		case OB_LIDAR_SCAN_15HZ: return 3600;
+		case OB_LIDAR_SCAN_20HZ: return 2700;
+		case OB_LIDAR_SCAN_25HZ: return 2160;
+		case OB_LIDAR_SCAN_30HZ: return 1800;
+		case OB_LIDAR_SCAN_40HZ: return 1350;
+		default:                 return 2700;
 	}
 }
-
