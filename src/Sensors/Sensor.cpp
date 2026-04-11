@@ -181,9 +181,6 @@ void Sensor::setTranslation(ofPoint _translation) {
 void Sensor::setSensorRotation(float& _sensorRotationDeg) {
 	float wrapped = fmod(_sensorRotationDeg, 360.0f);
 	if (wrapped < 0.0f) wrapped += 360.0f;
-	if (wrapped != _sensorRotationDeg) {
-		_sensorRotationDeg = wrapped;
-	}
 	sensorRotationRad = wrapped / 360.0f * TWO_PI;
 }
 
@@ -326,7 +323,9 @@ bool Sensor::onMouseDragged(ofMouseEventArgs& mouseArgs) {
 	if (nosePosition.isMouseClicked) {
 		ofPoint screenPoint = convertCoordinateToScreenPoint(position);
 		float angle = atan2(screenPoint.y - mousePoint.y, screenPoint.x - mousePoint.x);
-		sensorRotationDeg = (angle + HALF_PI) * 180.0 / PI;
+		float deg = fmod((angle + HALF_PI) * 180.0f / PI, 360.0f);
+		if (deg < 0.0f) deg += 360.0f;
+		sensorRotationDeg = deg;
 		
 		return true;
 	}

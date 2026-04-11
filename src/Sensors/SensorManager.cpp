@@ -85,8 +85,14 @@ void SensorManager::addSensor(SensorType type) {
 	auto sensor = createSensorOfType(type);
 	sensor->index       = sensorEntries.size() + 1;
 	sensor->sensorColor = sensorColorForIndex(sensor->index);
-	sensor->whichMeatbag.set("which meatbag", 1, 1, 1);  // max updated via updateMeatbagRange()
+
+	sensor->setupParameters();
+	sensor->initializeVectors();
+
+	sensor->whichMeatbag.set("which meatbag", 1, 1, 1);
 	sensor->sensorRotationDeg.set("rotation", 0.0f, 0.0f, 360.0f);
+	sensor->guiMotorSpeed.set("motor speed", 20, 15, 40);
+	sensor->showSensorInformation = false;
 
 	// default position spread in circle
 	ofPoint center(0, 1.25);
@@ -94,8 +100,11 @@ void SensorManager::addSensor(SensorType type) {
 	sensor->positionX = cos(ratio * TWO_PI - HALF_PI) * 1.25f + center.x;
 	sensor->positionY = sin(ratio * TWO_PI - HALF_PI) * 1.25f + center.y;
 
-	sensor->showSensorInformation = false;
-	sensor->guiMotorSpeed.set("motor speed", 20, 15, 40);
+	// inherit current space and translation so canvas interaction works immediately
+	if (!sensorEntries.empty() && sensorEntries[0].sensor) {
+		sensor->setSpace(sensorEntries[0].sensor->space);
+		sensor->setTranslation(sensorEntries[0].sensor->translation);
+	}
 
 	SensorEntry entry;
 	entry.index  = sensor->index;
