@@ -22,6 +22,7 @@ public:
 	void update()            override;
 	void setupParameters()   override;
 	void initializeVectors() override;
+	void setMirrorAngles(bool& mirror) override;
 
 	// Called by Sensor::connect() via startThread() — we override to use SDK instead
 	void connect();

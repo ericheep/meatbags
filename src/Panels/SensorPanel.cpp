@@ -5,7 +5,7 @@
 #include "SensorPanel.hpp"
 
 const std::vector<std::string>& SensorPanel::sensorTypeNames() {
-	static std::vector<std::string> names = { "Hokuyo", "Orbbec Pulsar SDK" };
+	static std::vector<std::string> names = { "Hokuyo", "Orbbec Pulsar" };
 	return names;
 }
 
@@ -94,8 +94,7 @@ SensorPanel::SensorPanel() {
 // -----------------------------------------------------------------------------
 
 bool SensorPanel::isOrbbec(Sensor* s) {
-	return dynamic_cast<OrbbecPulsar*>(s)    != nullptr
-		|| dynamic_cast<OrbbecPulsarSDK*>(s) != nullptr;
+	return dynamic_cast<OrbbecPulsarSDK*>(s) != nullptr;
 }
 
 std::vector<SensorPanel::RowType> SensorPanel::rowsForSensor(Sensor* s) {
@@ -392,8 +391,8 @@ void SensorPanel::drawInstance(int i, Sensor* s, const std::vector<Sensor*>& sen
 	ofSetColor(ofColor(80, 80, 80));
 	ofDrawLine(typeRow.x, typeRow.getBottom(), typeRow.getRight(), typeRow.getBottom());
 
-	string currentType = dynamic_cast<OrbbecPulsarSDK*>(s) ? "Orbbec Pulsar SDK"
-					   : dynamic_cast<OrbbecPulsar*>(s)    ? "Orbbec Pulsar"
+	string currentType = dynamic_cast<OrbbecPulsarSDK*>(s) ? "Orbbec Pulsar"
+					   : false ? "Orbbec Pulsar"
 					   : "Hokuyo";
 	ofSetColor(textColor);
 	ofDrawBitmapString("type", typeRow.x + padding, typeRow.y + 13);
@@ -597,6 +596,42 @@ void SensorPanel::drawInstance(int i, Sensor* s, const std::vector<Sensor*>& sen
 
 			ofSetColor(ofColor(50, 50, 50));
 			// don't increment contentY here — already done above
+			continue;
+
+		} else if (type == RowType::FilterLevel) {
+			auto* sdk = dynamic_cast<OrbbecPulsarSDK*>(s);
+			int level = sdk ? sdk->guiFilterLevel.get() : 0;
+			int minL  = sdk ? sdk->guiFilterLevel.getMin() : 0;
+			int maxL  = sdk ? sdk->guiFilterLevel.getMax() : 5;
+
+			ofFill();
+			ofSetColor(controlRowColor);
+			ofDrawRectangle(row);
+
+			ofSetColor(textColor);
+			ofDrawBitmapString("filter level", row.x + padding, row.y + 13);
+
+			float btnW    = 16.0f;
+			float btnRight = rowRight - padding;
+			ofRectangle plusRect (btnRight - btnW,              row.y + 1, btnW,      rowHeight - 2);
+			ofRectangle valRect  (plusRect.x  - btnW - 2,       row.y + 1, btnW,      rowHeight - 2);
+			ofRectangle minusRect(valRect.x   - btnW - 2,       row.y + 1, btnW,      rowHeight - 2);
+
+			ofFill();
+			ofSetColor(level > minL ? numberBoxColor : ofColor(25, 25, 25));
+			ofDrawRectangle(minusRect);
+			ofSetColor(level < maxL ? numberBoxColor : ofColor(25, 25, 25));
+			ofDrawRectangle(plusRect);
+
+			ofSetColor(dimTextColor);
+			ofDrawBitmapString("-", minusRect.x + 4, minusRect.y + 13);
+			ofDrawBitmapString("+", plusRect.x  + 3, plusRect.y  + 13);
+			ofSetColor(textColor);
+			ofDrawBitmapString(ofToString(level), valRect.x + (btnW * 0.5f) - 4, valRect.y + 13);
+
+			ofSetColor(ofColor(50, 50, 50));
+			ofDrawLine(row.x, row.getBottom(), row.getRight(), row.getBottom());
+			contentY += rowHeight;
 			continue;
 
 		} else {
@@ -809,6 +844,30 @@ bool SensorPanel::onMousePressed(ofMouseEventArgs& args, const std::vector<Senso
 					motorSpeedDropdownOpen[i] = false;
 					return true;
 				}
+				continue;
+
+			} else if (type == RowType::FilterLevel) {
+				auto* sdk = dynamic_cast<OrbbecPulsarSDK*>(sensors[i]);
+				if (sdk) {
+					float btnW    = 16.0f;
+					float btnRight = (float)(x + width) - padding;
+					ofRectangle plusRect (btnRight - btnW,        row.y + 1, btnW, rowHeight - 2);
+					ofRectangle valRect  (plusRect.x - btnW - 2,  row.y + 1, btnW, rowHeight - 2);
+					ofRectangle minusRect(valRect.x  - btnW - 2,  row.y + 1, btnW, rowHeight - 2);
+					if (plusRect.inside(mouse)) {
+						sdk->guiFilterLevel = ofClamp(sdk->guiFilterLevel.get() + 1,
+													  sdk->guiFilterLevel.getMin(),
+													  sdk->guiFilterLevel.getMax());
+						return true;
+					}
+					if (minusRect.inside(mouse)) {
+						sdk->guiFilterLevel = ofClamp(sdk->guiFilterLevel.get() - 1,
+													  sdk->guiFilterLevel.getMin(),
+													  sdk->guiFilterLevel.getMax());
+						return true;
+					}
+				}
+				contentY += rowHeight;
 				continue;
 
 			} else if (type == RowType::MirrorAngles || type == RowType::ShowInfo ||
@@ -1031,7 +1090,7 @@ bool SensorPanel::onKeyPressed(ofKeyEventArgs& args, const std::vector<Sensor*>&
 		if (key == OF_KEY_ESC)       { isEditingFloat = false; return true; }
 		if (key == OF_KEY_BACKSPACE) { if (!editFloatText.empty()) editFloatText.pop_back(); return true; }
 		char c = (char)key;
-		if (std::isdigit(c) || c == '-' || c == '.') { editFloatText += c; return true; }
+		if (std::isdigit(c) || c == '.') { editFloatText += c; return true; }
 		return false;
 	}
 

@@ -8,7 +8,6 @@
 #include "ofMain.h"
 #include "Sensor.hpp"
 #include "Hokuyo.hpp"
-#include "OrbbecPulsar.hpp"
 #include "OrbbecPulsarSDK.hpp"
 #include <vector>
 #include <functional>

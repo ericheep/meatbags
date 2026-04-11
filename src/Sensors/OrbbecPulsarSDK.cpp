@@ -15,15 +15,17 @@
 // -----------------------------------------------------------------------------
 
 OrbbecPulsarSDK::OrbbecPulsarSDK() {
-	model                = "Orbbec Pulsar SDK";
+	model                = "Orbbec Pulsar";
 	lidarState           = "disconnected";
 	firmwareVersion      = "";
 	temperature          = 0.0f;
 	currentRotationSpeed = 0;
 	lastReconnectAttempt = std::chrono::steady_clock::now() - std::chrono::seconds(10);
 
-	// SL450 default angular resolution at 20Hz = 2700 points per rotation
-	angularResolution = 2700;
+	// Default to 20Hz resolution — will be correctly sized in startPipeline
+	// before the callback fires, so no race condition
+	angularResolution = scanRateToPointCount(OB_LIDAR_SCAN_20HZ);
+	initializeVectors();
 }
 
 OrbbecPulsarSDK::~OrbbecPulsarSDK() {
@@ -37,12 +39,14 @@ OrbbecPulsarSDK::~OrbbecPulsarSDK() {
 }
 
 void OrbbecPulsarSDK::onMotorSpeedChanged(int& hz) {
-	// pipeline restart required to apply new scan rate — only if already running
 	if(pipelineRunning) {
 		ofLogNotice("OrbbecSDK") << "Sensor " << index << " motor speed changed to " << hz << " Hz, restarting pipeline";
 		stopPipeline();
-		// threadedFunction will detect pipelineRunning == false and call startPipeline()
 	}
+	// Initialize vectors to the correct size for the new speed before pipeline restarts
+	// threadedFunction will call startPipeline() which expects vectors already sized correctly
+	angularResolution = scanRateToPointCount(hzToScanRate(hz));
+	initializeVectors();
 }
 
 void OrbbecPulsarSDK::onFilterLevelChanged(int& level) {
@@ -70,9 +74,34 @@ void OrbbecPulsarSDK::setupParameters() {
 	guiFilterLevel.addListener(this, &OrbbecPulsarSDK::onFilterLevelChanged);
 }
 
+void OrbbecPulsarSDK::setMirrorAngles(bool& mirror) {
+	// Don't call base setMirrorAngles — it assumes a 360° scan.
+	// Just update the value and let our initializeVectors rebuild angles correctly.
+	// Guard against recursive call from Sensor::initializeVectors → setMirrorAngles → initializeVectors
+	mirrorAngles = mirror;
+	if (!angles.empty() && (int)angles.size() == angularResolution) {
+		// rebuild angles in place without re-allocating
+		const float base    = 45.0f * DEG_TO_RAD;
+		const float stepRad = 270.0f * DEG_TO_RAD / (float)angularResolution;
+		for(int i = 0; i < angularResolution; i++) {
+			float t   = base + (float)i * stepRad;
+			angles[i] = mirrorAngles ? -(t + HALF_PI) : (t - HALF_PI);
+		}
+	}
+}
+
 void OrbbecPulsarSDK::initializeVectors() {
-	angularResolution = scanRateToPointCount(hzToScanRate(guiMotorSpeed.get()));
 	Sensor::initializeVectors();
+
+	// SL450 scans counterclockwise from 45° to 315° (270° total) in sensor frame.
+	// Non-mirrored needs -HALF_PI offset, mirrored needs +HALF_PI (because negation flips it).
+	const float base    = 45.0f * DEG_TO_RAD;
+	const float stepRad = 270.0f * DEG_TO_RAD / (float)angularResolution;
+
+	for(int i = 0; i < angularResolution; i++) {
+		float t   = base + (float)i * stepRad;
+		angles[i] = mirrorAngles ? -(t + HALF_PI) : (t - HALF_PI);
+	}
 }
 
 void OrbbecPulsarSDK::update() {
@@ -200,9 +229,16 @@ void OrbbecPulsarSDK::startPipeline() {
 		}
 
 		config->enableStream(profile);
+		config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ALL_TYPE_FRAME_REQUIRE);
 
-		// Only deliver framesets that contain all enabled stream types
-		config->setFrameAggregateOutputMode(OB_FRAME_AGGREGATE_OUTPUT_ANY_SITUATION);
+		// Always initialize vectors from the actual selected profile before the callback starts
+		// Safe here — pipeline not yet running, no callback thread active
+		auto lidarProfile = profile->as<ob::LiDARStreamProfile>();
+		angularResolution = scanRateToPointCount(lidarProfile->getScanRate());
+		initializeVectors();
+
+		ofLogNotice("OrbbecSDK") << "Sensor " << index << " starting pipeline — "
+			<< angularResolution << " pts/rotation @ " << guiMotorSpeed.get() << " Hz";
 
 		// Start with callback
 		obPipeline->start(config, [this](std::shared_ptr<ob::FrameSet> frameSet) {
@@ -213,13 +249,15 @@ void OrbbecPulsarSDK::startPipeline() {
 		isConnected      = true;
 		connectionStatus = "Connected (" + std::string(info->getName()) + " fw:" + firmwareVersion + ")";
 
-		// Update angularResolution to match actual profile
-		auto lidarProfile = profile->as<ob::LiDARStreamProfile>();
-		angularResolution = scanRateToPointCount(lidarProfile->getScanRate());
-		initializeVectors();
+		// Note: do NOT call initializeVectors() here — the constructor pre-allocates to 3600 slots
+		// which is what makes the angleOffset math work correctly in onFrame.
+		// Just log the actual profile resolution for info.
+		lidarProfile = profile->as<ob::LiDARStreamProfile>();
+		int  actualPoints = scanRateToPointCount(lidarProfile->getScanRate());
 
 		ofLogNotice("OrbbecSDK") << "Sensor " << index << " connected — "
-			<< angularResolution << " pts/rotation @ " << guiMotorSpeed.get() << " Hz";
+			<< actualPoints << " pts/rotation @ " << guiMotorSpeed.get() << " Hz"
+			<< " (angleOffset=" << (3600 - actualPoints) << ")";
 	}
 	catch(ob::Error &e) {
 		ofLogError("OrbbecSDK") << "Sensor " << index << " connect error: " << e.what();
@@ -263,11 +301,7 @@ void OrbbecPulsarSDK::onFrame(std::shared_ptr<ob::FrameSet> frameSet) {
 	auto lidarFrame = frame->as<ob::LiDARPointsFrame>();
 	if(!lidarFrame) return;
 
-	auto format = lidarFrame->getFormat();
-
-	// We use OB_FORMAT_LIDAR_SCAN: OBLiDARScanPoint { float angle; float distance; }
-	// angle in degrees, distance in mm — directly compatible with our coordinate pipeline
-	if(format != OB_FORMAT_LIDAR_SCAN) {
+	if(lidarFrame->getFormat() != OB_FORMAT_LIDAR_SCAN) {
 		ofLogWarning("OrbbecSDK") << "Sensor " << index << " unexpected format, expected LIDAR_SCAN";
 		return;
 	}
@@ -277,39 +311,32 @@ void OrbbecPulsarSDK::onFrame(std::shared_ptr<ob::FrameSet> frameSet) {
 
 	if(pointCount == 0) return;
 
-	// Resize vectors if resolution changed
-	if((int)pointCount != angularResolution) {
-		angularResolution = (int)pointCount;
-		initializeVectors();
+	// distances.size() is pre-set to match exactly what this profile delivers,
+	// so we write directly with no offset arithmetic
+	if((int)pointCount > (int)distances.size()) {
+		// shouldn't happen, but guard against it
+		ofLogWarning("OrbbecSDK") << "Sensor " << index << " pointCount " << pointCount
+			<< " > distances.size() " << distances.size() << " — dropping frame";
+		return;
 	}
 
 	{
 		std::lock_guard<std::mutex> lock(distancesMutex);
 		for(uint32_t i = 0; i < pointCount; i++) {
-			distances[i] = points[i].distance;  // mm, same unit as existing OrbbecPulsar
+			distances[i] = points[i].distance;  // mm
 		}
 	}
-
-	// Update angles from scan points (angle in degrees → radians handled in setMirrorAngles)
-	// Override angles array directly from SDK data since scan points carry per-point angles
-	for(uint32_t i = 0; i < pointCount && i < (uint32_t)angles.size(); i++) {
-		float angleDeg = points[i].angle;
-		float angleRad = angleDeg * DEG_TO_RAD;
-		angles[i]      = (mirrorAngles ? -angleRad : angleRad);
-	}
-
-	// Update sensor info for overlay display
-	lidarState          = "normal";
-	connectionStatus    = "Connected";
-	logStatus           = lidarState;
-	logConnectionStatus = connectionStatus;
 
 	{
 		std::lock_guard<std::mutex> lock(distancesAvailableMutex);
 		newDistancesAvailable = true;
 	}
 
-	lastFrameTime = ofGetElapsedTimef();
+	lastFrameTime       = ofGetElapsedTimef();
+	lidarState          = "normal";
+	connectionStatus    = "Connected";
+	logStatus           = lidarState;
+	logConnectionStatus = connectionStatus;
 
 	updateSensorInfo();
 }

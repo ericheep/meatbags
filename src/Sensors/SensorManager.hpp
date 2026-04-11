@@ -9,7 +9,6 @@
 #include "ofMain.h"
 #include "Sensor.hpp"
 #include "Hokuyo.hpp"
-#include "OrbbecPulsar.hpp"
 #include "OrbbecPulsarSDK.hpp"
 #include "Space.h"
 #include "Filter.hpp"
@@ -18,7 +17,6 @@
 
 enum class SensorType {
 	Hokuyo,
-	OrbbecPulsar,
 	OrbbecPulsarSDK
 };
 

@@ -32,7 +32,7 @@ public:
 	void setLocalIPAddress(string& ipLocalAddress);
 	void setPositionX(float& positionX);
 	void setPositionY(float& positionY);
-	void setMirrorAngles(bool& mirrorX);
+	virtual void setMirrorAngles(bool& mirrorX);
 	void setSensorRotation(float& sensorRotationDeg);
 	void setSpace(Space& space);
 	void setTranslation(ofPoint translation);
